@@ -11,6 +11,8 @@ using ScoringAppReact.Models;
 using Abp;
 using ScoringAppReact.Players.Dto;
 using System;
+using Abp.Runtime.Session;
+using Abp.UI;
 
 namespace ScoringAppReact.Players
 {
@@ -18,10 +20,11 @@ namespace ScoringAppReact.Players
     public class PlayerAppService : AbpServiceBase, IPlayerAppService
     {
         private readonly IRepository<Player, long> _repository;
-
-        public PlayerAppService(IRepository<Player, long> repository)
+        private readonly IAbpSession _abpSession;
+        public PlayerAppService(IRepository<Player, long> repository, IAbpSession abpSession)
         {
             _repository = repository;
+            _abpSession = abpSession;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto playerDto)
@@ -42,7 +45,7 @@ namespace ScoringAppReact.Players
         {
             if (string.IsNullOrEmpty(playerDto.Name))
             {
-                Console.WriteLine("PLayer Name Missing");
+                throw new UserFriendlyException("Name must required");
                 //return;
             }
                 
@@ -60,7 +63,7 @@ namespace ScoringAppReact.Players
                 FileName = playerDto.FileName,
                 Gender = playerDto.Gender,
                 CreatingTime = playerDto.CreationTime,
-                TenantId = playerDto.TenantId
+                TenantId = _abpSession.TenantId
             });
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
@@ -99,7 +102,7 @@ namespace ScoringAppReact.Players
                 FileName = playerDto.FileName,
                 Gender = playerDto.Gender,
                 CreatingTime = playerDto.CreationTime,
-                TenantId = playerDto.TenantId
+                TenantId = _abpSession.TenantId
             });
 
             if (result != null)

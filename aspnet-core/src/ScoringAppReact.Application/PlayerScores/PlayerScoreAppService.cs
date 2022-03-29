@@ -176,7 +176,7 @@ namespace ScoringAppReact.PlayerScores
         private async Task<PagedResultDto<PlayerScoreDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId));
+                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == _abpSession.TenantId));
 
             var pagedAndFilteredPlayers = filteredPlayers.PageBy(input);
             //.OrderBy(i => i.Name)

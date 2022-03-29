@@ -111,10 +111,9 @@ namespace ScoringAppReact.Teams
             };
         }
 
-        public async Task<TeamDto> GetById(long productId)
+        public async Task<TeamDto> GetById(long id)
         {
             var result = await _repository.GetAll()
-                .Where(i => i.Id == productId)
                 .Select(i =>
                 new TeamDto()
                 {
@@ -127,19 +126,19 @@ namespace ScoringAppReact.Teams
                     City = i.City,
                     Place = i.Place
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(i => i.Id == id);
             return result;
         }
 
-        public async Task<ResponseMessageDto> DeleteAsync(long playerId)
+        public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
-            var model = await _repository.GetAll().Where(i => i.Id == playerId).FirstOrDefaultAsync();
+            var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
             model.IsDeleted = true;
             var result = await _repository.UpdateAsync(model);
 
             return new ResponseMessageDto()
             {
-                Id = playerId,
+                Id = id,
                 SuccessMessage = AppConsts.SuccessfullyDeleted,
                 Success = true,
                 Error = false,
