@@ -12,6 +12,8 @@ using Abp;
 using ScoringAppReact.Teams.Dto;
 using Abp.Runtime.Session;
 using Microsoft.AspNetCore.Mvc;
+using Abp.UI;
+using System;
 
 namespace ScoringAppReact.Teams
 {
@@ -113,6 +115,11 @@ namespace ScoringAppReact.Teams
 
         public async Task<TeamDto> GetById(long id)
         {
+            if (id == 0)
+            {
+                throw new UserFriendlyException("Team id required");
+                //return;
+            }
             var result = await _repository.GetAll()
                 .Select(i =>
                 new TeamDto()
@@ -132,7 +139,19 @@ namespace ScoringAppReact.Teams
 
         public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
+            if (id == 0)
+            {
+                throw new UserFriendlyException("Team id required");
+                //return;
+            }
             var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
+
+            if (model == null)
+            {
+                throw new UserFriendlyException("No record found with associated Id");
+                //return;
+            }
+
             model.IsDeleted = true;
             var result = await _repository.UpdateAsync(model);
 
@@ -145,18 +164,26 @@ namespace ScoringAppReact.Teams
             };
         }
 
-        public async Task<List<TeamDto>> GetAll(long? tenantId)
+        public async Task<List<TeamDto>> GetAll()
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-                .Select(i => new TeamDto()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j=> j.Player).ToList()
+            try
+            {
+               return await _repository.GetAll()
+              .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
+              .Select(i => new TeamDto()
+              {
+                  Id = i.Id,
+                  Name = i.Name,
+                  Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList()
 
-                }).ToListAsync();
-            return result;
+              }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams",e);
+
+            }
+
         }
 
         public async Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input)

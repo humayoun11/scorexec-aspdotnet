@@ -15,10 +15,8 @@ namespace ScoringAppReact.Matches.Dto
         public long? EventId { get; set; }
         public long? TossWinningTeam { get; set; }
         public long? DateOfMatch { get; set; }
-        public long HomeTeamId { get; set; }
-        public long OppponentTeamId { get; set; }
-        public float? HomeTeamOvers { get; set; }
-        public float? OppTeamOvers { get; set; }
+        public long Team1_Id { get; set; }
+        public long Team2_Id { get; set; }
         public string FileName { get; set; }
         public int MatchTypeId { get; set; }
         public int? EventStage { get; set; }

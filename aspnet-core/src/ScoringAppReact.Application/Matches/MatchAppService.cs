@@ -12,6 +12,7 @@ using Abp;
 using Abp.Runtime.Session;
 using ScoringAppReact.Matches.Dto;
 using Abp.UI;
+using System;
 
 namespace ScoringAppReact.Matches
 {
@@ -41,37 +42,73 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateMatchDto matchDto)
+        private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateMatchDto model)
         {
-            var result = (ObjectMapper.Map<Match>(matchDto));
-            result.TenantId = _abpSession.TenantId;
-            await _repository.InsertAsync(result);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
-
-            if (result.Id != 0)
+            try
             {
+                var result = await _repository.InsertAsync(new Match()
+                {
+                    GroundId = model.GroundId,
+                    MatchOvers = model.MatchOvers,
+                    HomeTeamId = model.Team1_Id,
+                    OppponentTeamId = model.Team2_Id,
+                    MatchDescription = model.MatchDescription,
+                    DateOfMatch = model.DateOfMatch,
+                    Season = model.Season,
+                    MatchTypeId = model.MatchTypeId,
+                    TossWinningTeam = model.TossWinningTeam,
+                    PlayerOTM = model.PlayerOTM,
+                    EventId = model.EventId,
+                    EventStage = model.EventStage,
+                    FileName = model.FileName,
+                    TenantId = _abpSession.TenantId
+                });
+                await _repository.InsertAsync(result);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+
+                if (result.Id != 0)
+                {
+                    return new ResponseMessageDto()
+                    {
+                        Id = result.Id,
+                        SuccessMessage = AppConsts.SuccessfullyInserted,
+                        Success = true,
+                        Error = false,
+                    };
+                }
                 return new ResponseMessageDto()
                 {
-                    Id = result.Id,
-                    SuccessMessage = AppConsts.SuccessfullyInserted,
-                    Success = true,
-                    Error = false,
+                    Id = 0,
+                    ErrorMessage = AppConsts.InsertFailure,
+                    Success = false,
+                    Error = true,
                 };
             }
-            return new ResponseMessageDto()
+            catch (Exception e)
             {
-                Id = 0,
-                ErrorMessage = AppConsts.InsertFailure,
-                Success = false,
-                Error = true,
-            };
+                throw new UserFriendlyException("No Record Exists", e);
+            }
+
         }
 
-        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateMatchDto matchDto)
+        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateMatchDto model)
         {
             var result = await _repository.UpdateAsync(new Match()
             {
-
+                Id = model.Id.Value,
+                GroundId = model.GroundId,
+                MatchOvers = model.MatchOvers,
+                HomeTeamId = model.Team1_Id,
+                OppponentTeamId = model.Team2_Id,
+                MatchDescription = model.MatchDescription,
+                DateOfMatch = model.DateOfMatch,
+                Season = model.Season,
+                MatchTypeId = model.MatchTypeId,
+                TossWinningTeam = model.TossWinningTeam,
+                PlayerOTM = model.PlayerOTM,
+                EventId = model.EventId,
+                EventStage = model.EventStage,
+                TenantId = _abpSession.TenantId
             });
 
             if (result != null)
@@ -126,7 +163,11 @@ namespace ScoringAppReact.Matches
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
                 .Select(i => new MatchDto()
                 {
-                    Id = i.Id
+                    Id = i.Id,
+                    Ground = i.Ground.Name,
+                    Team1 = i.HomeTeam.Name,
+                    Team2 = i.OppponentTeam.Name,
+                    DateOfMatch = i.DateOfMatch
 
                 }).ToListAsync();
             return result;
@@ -151,8 +192,8 @@ namespace ScoringAppReact.Matches
                 {
                     Id = i.Id,
                     Ground = i.Ground.Name,
-                    HomeTeam = i.HomeTeam.Name,
-                    OppponentTeam = i.OppponentTeam.Name,
+                    Team1 = i.HomeTeam.Name,
+                    Team2 = i.OppponentTeam.Name,
                     DateOfMatch = i.DateOfMatch,
                     MatchType = i.MatchTypeId.ToString(),
                 }).ToListAsync());
