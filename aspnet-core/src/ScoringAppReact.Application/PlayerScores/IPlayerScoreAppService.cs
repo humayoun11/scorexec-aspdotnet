@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Abp.Application.Services;
-using Abp.Application.Services.Dto;
-using ScoringAppReact.Players.Dto;
+using ScoringAppReact.PlayerScores.Dto;
 
 namespace ScoringAppReact.PlayerScores
 {
     public interface IPlayerScoreAppService : IApplicationService
     {
 
-        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerScoreDto typeDto);
+        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerScoreDto model);
 
         Task<PlayerScoreDto> GetById(long id);
 

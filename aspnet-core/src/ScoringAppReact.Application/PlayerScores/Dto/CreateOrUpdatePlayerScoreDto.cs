@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Abp.Authorization.Roles;
 using ScoringAppReact.Authorization.Roles;
 
-namespace ScoringAppReact.Players.Dto
+namespace ScoringAppReact.PlayerScores.Dto
 {
     public class CreateOrUpdatePlayerScoreDto
     {

@@ -12,6 +12,8 @@ using Abp;
 using ScoringAppReact.Players.Dto;
 using System;
 using Abp.Runtime.Session;
+using Abp.UI;
+using ScoringAppReact.PlayerScores.Dto;
 
 namespace ScoringAppReact.PlayerScores
 {
@@ -32,16 +34,16 @@ namespace ScoringAppReact.PlayerScores
             ResponseMessageDto result;
             if (model.Id == 0 || model.Id == null)
             {
-                result = await CreatePlayerAsync(model);
+                result = await CreatePlayerScoreAsync(model);
             }
             else
             {
-                result = await UpdatePlayerAsync(model);
+                result = await UpdatePlayerScoreAsync(model);
             }
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerScoreDto model)
+        private async Task<ResponseMessageDto> CreatePlayerScoreAsync(CreateOrUpdatePlayerScoreDto model)
         {
             //if (string.IsNullOrEmpty(model.Name))
             //{
@@ -95,7 +97,7 @@ namespace ScoringAppReact.PlayerScores
             };
         }
 
-        private async Task<ResponseMessageDto> UpdatePlayerAsync(CreateOrUpdatePlayerScoreDto model)
+        private async Task<ResponseMessageDto> UpdatePlayerScoreAsync(CreateOrUpdatePlayerScoreDto model)
         {
             var result = await _repository.UpdateAsync(new PlayerScore()
             {
@@ -147,17 +149,26 @@ namespace ScoringAppReact.PlayerScores
             return ObjectMapper.Map<PlayerScoreDto>(result);
         }
 
-
-
-        public async Task<ResponseMessageDto> DeleteAsync(long playerId)
+        public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
-            var model = await _repository.FirstOrDefaultAsync(i => i.Id == playerId);
+            if (id == 0)
+            {
+                throw new UserFriendlyException("Id id required");
+                //return;
+            }
+            var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
+
+            if (model == null)
+            {
+                throw new UserFriendlyException("No record found with associated Id");
+                //return;
+            }
             model.IsDeleted = true;
             var result = await _repository.UpdateAsync(model);
 
             return new ResponseMessageDto()
             {
-                Id = playerId,
+                Id = id,
                 SuccessMessage = AppConsts.SuccessfullyDeleted,
                 Success = true,
                 Error = false,
