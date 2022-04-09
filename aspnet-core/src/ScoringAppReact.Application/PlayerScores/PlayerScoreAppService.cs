@@ -72,7 +72,8 @@ namespace ScoringAppReact.PlayerScores
                 Four = model.Four,
                 Six = model.Six,
                 Fielder = model.Fielder,
-                IsPlayedInning = model.IsPlayedInning
+                IsPlayedInning = model.IsPlayedInning,
+                TenantId = _abpSession.TenantId
 
             });
 
@@ -120,7 +121,8 @@ namespace ScoringAppReact.PlayerScores
                 Four = model.Four,
                 Six = model.Six,
                 Fielder = model.Fielder,
-                IsPlayedInning = model.IsPlayedInning
+                IsPlayedInning = model.IsPlayedInning,
+                TenantId = _abpSession.TenantId
             });
 
             if (result != null)
@@ -181,8 +183,31 @@ namespace ScoringAppReact.PlayerScores
                 Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId &&
                 i.TeamId == teamId && i.MatchId == matchId)
+                .Select(i => new PlayerScoreDto
+                {
+                    Id = i.Id,
+                    PlayerId = i.PlayerId,
+                    Position = i.Position,
+                    MatchId = i.MatchId,
+                    TeamId = i.TeamId,
+                    BowlerId = i.BowlerId,
+                    Bat_Runs = i.Bat_Runs,
+                    Bat_Balls = i.Bat_Balls,
+                    HowOutId = i.HowOutId,
+                    Ball_Runs = i.Ball_Runs,
+                    Overs = i.Overs,
+                    Wickets = i.Wickets,
+                    Catches = i.Catches,
+                    Stump = i.Stump,
+                    Maiden = i.Maiden,
+                    RunOut = i.RunOut,
+                    Four = i.Four,
+                    Six = i.Six,
+                    Fielder = i.Fielder,
+                    IsPlayedInning = i.IsPlayedInning,
+                })
                 .ToListAsync();
-            return ObjectMapper.Map<List<PlayerScoreDto>>(result);
+            return result;
         }
         private async Task<PagedResultDto<PlayerScoreDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {

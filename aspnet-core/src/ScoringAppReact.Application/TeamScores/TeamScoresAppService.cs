@@ -44,11 +44,11 @@ namespace ScoringAppReact.TeamScores
 
         private async Task<ResponseMessageDto> CreateTeamScoreAsync(CreateOrUpdateTeamScoreDto model)
         {
-            //if (string.IsNullOrEmpty(model.Name))
-            //{
-            //    Console.WriteLine("PLayer Name Missing");
-            //    //return;
-            //}
+            var alreadyAdded = await _repository.FirstOrDefaultAsync(i => i.MatchId == model.MatchId && i.TeamId == model.TeamId);
+            if (alreadyAdded != null)
+            {
+                throw new UserFriendlyException("Already added with associated team and match");
+            }
 
 
             var result = await _repository.InsertAsync(new TeamScore()
@@ -76,6 +76,7 @@ namespace ScoringAppReact.TeamScores
                     SuccessMessage = AppConsts.SuccessfullyInserted,
                     Success = true,
                     Error = false,
+                    result = result
                 };
             }
             return new ResponseMessageDto()
@@ -112,6 +113,7 @@ namespace ScoringAppReact.TeamScores
                     SuccessMessage = AppConsts.SuccessfullyUpdated,
                     Success = true,
                     Error = false,
+                    result = result
                 };
             }
             return new ResponseMessageDto()
