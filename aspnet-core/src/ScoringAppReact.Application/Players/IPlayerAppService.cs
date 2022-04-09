@@ -9,16 +9,18 @@ namespace ScoringAppReact.Players
     public interface IPlayerAppService : IApplicationService
     {
 
-        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto typeDto);
+        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model);
 
-        Task<PlayerDto> GetById(long typeId);
+        Task<PlayerDto> GetById(long id);
 
-        Task<ResponseMessageDto> DeleteAsync(long typeId);
+        Task<ResponseMessageDto> DeleteAsync(long id);
 
         Task<List<PlayerDto>> GetAll();
 
         Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input);
 
         Task<List<PlayerDto>> GetAllByTeamId(long teamId);
+
+        Task<PlayerStatisticsDto> PlayerStatistics(int id);
     }
 }

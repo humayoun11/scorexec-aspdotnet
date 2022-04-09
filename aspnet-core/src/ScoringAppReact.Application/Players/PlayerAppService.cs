@@ -14,39 +14,45 @@ using System;
 using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.Teams.Dto;
+using System.Data;
 
 namespace ScoringAppReact.Players
 {
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class PlayerAppService : AbpServiceBase, IPlayerAppService
     {
+        private readonly DbContext _context;
         private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
         private readonly IAbpSession _abpSession;
-        public PlayerAppService(IRepository<Player, long> repository, IAbpSession abpSession, IRepository<TeamPlayer, long> teamPlayerRepository)
+        public PlayerAppService(IRepository<Player, long> repository,
+            IAbpSession abpSession,
+            IRepository<TeamPlayer,
+                long> teamPlayerRepository, DbContext context)
         {
+            _context = context;
             _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
         }
 
-        public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto playerDto)
+        public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model)
         {
             ResponseMessageDto result;
-            if (playerDto.Id == 0 || playerDto.Id == null)
+            if (model.Id == 0 || model.Id == null)
             {
-                result = await CreatePlayerAsync(playerDto);
+                result = await CreatePlayerAsync(model);
             }
             else
             {
-                result = await UpdatePlayerAsync(playerDto);
+                result = await UpdatePlayerAsync(model);
             }
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto playerDto)
+        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto model)
         {
-            if (string.IsNullOrEmpty(playerDto.Name))
+            if (string.IsNullOrEmpty(model.Name))
             {
                 throw new UserFriendlyException("Name must required");
                 //return;
@@ -55,17 +61,17 @@ namespace ScoringAppReact.Players
 
             var result = await _repository.InsertAsync(new Player()
             {
-                Name = playerDto.Name,
-                Address = playerDto.Address,
-                BattingStyleId = playerDto.BattingStyleId,
-                BowlingStyleId = playerDto.BowlingStyleId,
-                PlayerRoleId = playerDto.PlayerRoleId,
-                CNIC = playerDto.CNIC,
-                Contact = playerDto.Contact,
-                DOB = playerDto.DOB,
-                FileName = playerDto.FileName,
-                Gender = playerDto.Gender,
-                CreatingTime = playerDto.CreationTime,
+                Name = model.Name,
+                Address = model.Address,
+                BattingStyleId = model.BattingStyleId,
+                BowlingStyleId = model.BowlingStyleId,
+                PlayerRoleId = model.PlayerRoleId,
+                CNIC = model.CNIC,
+                Contact = model.Contact,
+                DOB = model.DOB,
+                FileName = model.FileName,
+                Gender = model.Gender,
+                CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
             });
 
@@ -73,7 +79,7 @@ namespace ScoringAppReact.Players
 
             var teamPlayer = await _teamPlayerRepository.InsertAsync(new TeamPlayer()
             {
-                TeamId = playerDto.TeamId,
+                TeamId = model.TeamId,
                 PlayerId = result.Id
             });
 
@@ -98,21 +104,21 @@ namespace ScoringAppReact.Players
             };
         }
 
-        private async Task<ResponseMessageDto> UpdatePlayerAsync(CreateOrUpdatePlayerDto playerDto)
+        private async Task<ResponseMessageDto> UpdatePlayerAsync(CreateOrUpdatePlayerDto model)
         {
             var result = await _repository.UpdateAsync(new Player()
             {
-                Name = playerDto.Name,
-                Address = playerDto.Address,
-                BattingStyleId = playerDto.BattingStyleId,
-                BowlingStyleId = playerDto.BowlingStyleId,
-                PlayerRoleId = playerDto.PlayerRoleId,
-                CNIC = playerDto.CNIC,
-                Contact = playerDto.Contact,
-                DOB = playerDto.DOB,
-                FileName = playerDto.FileName,
-                Gender = playerDto.Gender,
-                CreatingTime = playerDto.CreationTime,
+                Name = model.Name,
+                Address = model.Address,
+                BattingStyleId = model.BattingStyleId,
+                BowlingStyleId = model.BowlingStyleId,
+                PlayerRoleId = model.PlayerRoleId,
+                CNIC = model.CNIC,
+                Contact = model.Contact,
+                DOB = model.DOB,
+                FileName = model.FileName,
+                Gender = model.Gender,
+                CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
             });
 
@@ -166,6 +172,37 @@ namespace ScoringAppReact.Players
                 FileName = i.FileName
             }).ToListAsync();
             return result;
+        }
+
+
+        public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
+        {
+
+            //ViewBag.Season = new SelectList(_context.Matches.Select(i => i.Season).ToList().Distinct(), "Season");
+
+            // ViewBag.MatchType = new SelectList(_context.MatchType, "MatchTypeId", "MatchTypeName");
+            //ViewBag.Overs = new SelectList(_context.Matches.Select(i => i.MatchOvers).ToList().Distinct(), "MatchOvers");
+            try
+            {
+                //var connection = _context.Database.GetDbConnection();
+                //var model = connection.QuerySingleOrDefault<PlayerStatisticsDto>(
+                //    "usp_GetSinglePlayerStatistics",
+                //    new
+                //    {
+                //        @paramPlayerId = id
+
+                //    },
+                //    commandType: CommandType.StoredProcedure) ?? new PlayerStatisticsDto
+                //    {
+
+                //    };
+                //return model;
+                return null;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
         }
 
         public async Task<List<PlayerDto>> GetAllByTeamId(long teamId)
