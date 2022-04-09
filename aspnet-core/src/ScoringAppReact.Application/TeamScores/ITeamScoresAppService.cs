@@ -16,7 +16,7 @@ namespace ScoringAppReact.TeamScores
 
         Task<ResponseMessageDto> DeleteAsync(long id);
 
-        Task<List<TeamScoreDto>> GetAll(long teamId, long matchId);
+        Task<TeamScoreDto> GetByTeamIdAndMatchId(long teamId, long matchId);
     }
 }
 

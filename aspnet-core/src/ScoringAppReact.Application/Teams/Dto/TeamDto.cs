@@ -17,6 +17,7 @@ namespace ScoringAppReact.Teams.Dto
         public bool IsRegistered { get; set; }
         public string City { get; set; }
         public string FileName { get; set; }
+        public int Type { get; set; }
         public List<Player> Players { get; set; }
     }
 }

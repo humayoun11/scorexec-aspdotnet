@@ -13,6 +13,7 @@ using ScoringAppReact.Players.Dto;
 using System;
 using Abp.Runtime.Session;
 using Abp.UI;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Players
 {
@@ -20,11 +21,13 @@ namespace ScoringAppReact.Players
     public class PlayerAppService : AbpServiceBase, IPlayerAppService
     {
         private readonly IRepository<Player, long> _repository;
+        private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
         private readonly IAbpSession _abpSession;
-        public PlayerAppService(IRepository<Player, long> repository, IAbpSession abpSession)
+        public PlayerAppService(IRepository<Player, long> repository, IAbpSession abpSession, IRepository<TeamPlayer, long> teamPlayerRepository)
         {
             _repository = repository;
             _abpSession = abpSession;
+            _teamPlayerRepository = teamPlayerRepository;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto playerDto)
@@ -48,9 +51,9 @@ namespace ScoringAppReact.Players
                 throw new UserFriendlyException("Name must required");
                 //return;
             }
-                
 
-           var result = await _repository.InsertAsync(new Player()
+
+            var result = await _repository.InsertAsync(new Player()
             {
                 Name = playerDto.Name,
                 Address = playerDto.Address,
@@ -68,7 +71,15 @@ namespace ScoringAppReact.Players
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (result.Id != 0)
+            var teamPlayer = await _teamPlayerRepository.InsertAsync(new TeamPlayer()
+            {
+                TeamId = playerDto.TeamId,
+                PlayerId = result.Id
+            });
+
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (result.Id != 0 && teamPlayer.Id != 0)
             {
                 return new ResponseMessageDto()
                 {
@@ -127,7 +138,7 @@ namespace ScoringAppReact.Players
         public async Task<PlayerDto> GetById(long id)
         {
             var result = await _repository
-                .FirstOrDefaultAsync(i=> i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
             return ObjectMapper.Map<PlayerDto>(result);
         }
 
@@ -146,14 +157,27 @@ namespace ScoringAppReact.Players
             };
         }
 
-        public async Task<List<PlayerDto>> GetAll(long? tenantId)
+        public async Task<List<PlayerDto>> GetAll()
         {
-            var result = await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == tenantId).Select(i => new PlayerDto()
+            var result = await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId).Select(i => new PlayerDto()
             {
                 Id = i.Id,
                 Name = i.Name,
                 FileName = i.FileName
             }).ToListAsync();
+            return result;
+        }
+
+        public async Task<List<PlayerDto>> GetAllByTeamId(long teamId)
+        {
+            var result = await _repository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Teams.Any(j => j.TeamId == teamId))
+                .Select(i => new PlayerDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    FileName = i.FileName
+                }).ToListAsync();
             return result;
         }
 
@@ -183,9 +207,17 @@ namespace ScoringAppReact.Players
                     IsDeactivated = i.IsDeactivated,
                     Contact = i.Contact,
                     FileName = i.FileName,
-                    Address = i.Address
+                    Address = i.Address,
+                    Teams = i.Teams.Where(j => j.PlayerId == i.Id).Select(j => j.Team).Select(k => new TeamDto()
+                    {
+                        Id = k.Id,
+                        Name = k.Name,
+                        Type = k.Type
 
-                }).ToListAsync());
+                    }).ToList()
+
+
+                }).ToListAsync()); ;
         }
     }
 }

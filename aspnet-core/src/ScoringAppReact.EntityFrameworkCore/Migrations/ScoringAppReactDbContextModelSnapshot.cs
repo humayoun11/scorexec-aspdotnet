@@ -2188,7 +2188,7 @@ namespace ScoringAppReact.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("Byes")
+                    b.Property<int?>("Byes")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationTime")
@@ -2212,13 +2212,13 @@ namespace ScoringAppReact.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("LegByes")
+                    b.Property<int?>("LegByes")
                         .HasColumnType("int");
 
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("NoBalls")
+                    b.Property<int?>("NoBalls")
                         .HasColumnType("int");
 
                     b.Property<int>("Overs")
@@ -2236,7 +2236,7 @@ namespace ScoringAppReact.Migrations
                     b.Property<int>("Wickets")
                         .HasColumnType("int");
 
-                    b.Property<int>("Wideballs")
+                    b.Property<int?>("Wideballs")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -2601,7 +2601,7 @@ namespace ScoringAppReact.Migrations
             modelBuilder.Entity("ScoringAppReact.Models.TeamPlayer", b =>
                 {
                     b.HasOne("ScoringAppReact.Models.Player", "Player")
-                        .WithMany()
+                        .WithMany("Teams")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

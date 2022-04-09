@@ -61,7 +61,8 @@ namespace ScoringAppReact.TeamScores
                 Byes = model.Byes,
                 LegByes = model.LegByes,
                 TeamId = model.TeamId,
-                MatchId = model.MatchId
+                MatchId = model.MatchId,
+                TenantId = _abpSession.TenantId
 
             });
 
@@ -99,7 +100,8 @@ namespace ScoringAppReact.TeamScores
                 Byes = model.Byes,
                 LegByes = model.LegByes,
                 TeamId = model.TeamId,
-                MatchId = model.MatchId
+                MatchId = model.MatchId,
+                TenantId = _abpSession.TenantId
             });
 
             if (result != null)
@@ -154,14 +156,24 @@ namespace ScoringAppReact.TeamScores
             };
         }
 
-        public async Task<List<TeamScoreDto>> GetAll(long teamId, long matchId)
+        public async Task<TeamScoreDto> GetByTeamIdAndMatchId(long teamId, long matchId)
         {
-            var result = await _repository.GetAll().
-                Where(i => i.IsDeleted == false &&
-                i.TenantId == _abpSession.TenantId &&
-                i.TeamId == teamId && i.MatchId == matchId)
-                .ToListAsync();
-            return ObjectMapper.Map<List<TeamScoreDto>>(result);
+            var result = await _repository.GetAll().Select(j => new TeamScoreDto()
+            {
+                Id = j.Id,
+                TotalScore = j.TotalScore,
+                Byes = j.Byes,
+                LegByes = j.LegByes,
+                NoBalls = j.NoBalls,
+                Wideballs = j.Wideballs,
+                Overs = j.Overs,
+                Wickets = j.Wickets,
+                TeamId = j.TeamId,
+                MatchId = j.MatchId,
+                TenantId = j.TenantId
+            }).FirstOrDefaultAsync(i => i.TeamId == teamId && i.MatchId == matchId && i.TenantId == _abpSession.TenantId);
+
+            return result;
         }
         private async Task<PagedResultDto<TeamScoreDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {

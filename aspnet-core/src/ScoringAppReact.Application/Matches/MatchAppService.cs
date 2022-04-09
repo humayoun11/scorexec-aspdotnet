@@ -50,8 +50,8 @@ namespace ScoringAppReact.Matches
                 {
                     GroundId = model.GroundId,
                     MatchOvers = model.MatchOvers,
-                    HomeTeamId = model.Team1_Id,
-                    OppponentTeamId = model.Team2_Id,
+                    HomeTeamId = model.Team1Id,
+                    OppponentTeamId = model.Team2Id,
                     MatchDescription = model.MatchDescription,
                     DateOfMatch = model.DateOfMatch,
                     Season = model.Season,
@@ -98,8 +98,8 @@ namespace ScoringAppReact.Matches
                 Id = model.Id.Value,
                 GroundId = model.GroundId,
                 MatchOvers = model.MatchOvers,
-                HomeTeamId = model.Team1_Id,
-                OppponentTeamId = model.Team2_Id,
+                HomeTeamId = model.Team1Id,
+                OppponentTeamId = model.Team2Id,
                 MatchDescription = model.MatchDescription,
                 DateOfMatch = model.DateOfMatch,
                 Season = model.Season,
@@ -196,6 +196,8 @@ namespace ScoringAppReact.Matches
                     Team2 = i.OppponentTeam.Name,
                     DateOfMatch = i.DateOfMatch,
                     MatchType = i.MatchTypeId.ToString(),
+                    Team1Id = i.HomeTeamId,
+                    Team2Id = i.OppponentTeamId
                 }).ToListAsync());
         }
     }

@@ -15,8 +15,10 @@ namespace ScoringAppReact.Players
 
         Task<ResponseMessageDto> DeleteAsync(long typeId);
 
-        Task<List<PlayerDto>> GetAll(long? tenantId);
+        Task<List<PlayerDto>> GetAll();
 
         Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input);
+
+        Task<List<PlayerDto>> GetAllByTeamId(long teamId);
     }
 }

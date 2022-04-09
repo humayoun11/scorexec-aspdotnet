@@ -8,10 +8,10 @@ namespace ScoringAppReact.Models
         public int TotalScore { get; set; }
         public int Overs { get; set; }
         public int Wickets { get; set; }
-        public int Wideballs { get; set; }
-        public int NoBalls { get; set; }
-        public int Byes { get; set; }
-        public int LegByes { get; set; }
+        public int? Wideballs { get; set; }
+        public int? NoBalls { get; set; }
+        public int? Byes { get; set; }
+        public int? LegByes { get; set; }
         public long TeamId { get; set; }
         public Team Team { get; set; }
         public long MatchId { get; set; }
