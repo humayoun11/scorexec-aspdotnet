@@ -85,13 +85,15 @@ namespace ScoringAppReact.Teams
         {
             var result = await _repository.UpdateAsync(new Team()
             {
+                Id= teamDto.Id.Value,
                 Name = teamDto.Name,
                 Contact = teamDto.Contact,
                 FileName = teamDto.FileName,
                 Zone = teamDto.Zone,
                 IsRegistered = teamDto.IsRegistered,
                 City = teamDto.City,
-                Place = teamDto.Place
+                Place = teamDto.Place,
+                TenantId = _abpSession.TenantId
             });
 
             if (result != null)

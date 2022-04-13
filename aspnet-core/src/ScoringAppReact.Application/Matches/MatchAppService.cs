@@ -60,7 +60,6 @@ namespace ScoringAppReact.Matches
                     PlayerOTM = model.PlayerOTM,
                     EventId = model.EventId,
                     EventStage = model.EventStage,
-                    FileName = model.FileName,
                     TenantId = _abpSession.TenantId
                 });
                 await _repository.InsertAsync(result);
@@ -130,13 +129,29 @@ namespace ScoringAppReact.Matches
             };
         }
 
-        public async Task<MatchDto> GetById(long matchId)
+        public async Task<CreateOrUpdateMatchDto> GetById(long id)
         {
-            var result = await _repository
-                .FirstOrDefaultAsync(i => i.Id == matchId);
+            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i=> new CreateOrUpdateMatchDto
+            {
+                Id = i.Id,
+                GroundId = i.GroundId,
+                MatchOvers = i.MatchOvers,
+                Team1Id = i.HomeTeamId,
+                Team2Id = i.OppponentTeamId,
+                MatchDescription = i.MatchDescription,
+                DateOfMatch = i.DateOfMatch,
+                Season = i.Season,
+                MatchTypeId = i.MatchTypeId,
+                TossWinningTeam = i.TossWinningTeam,
+                PlayerOTM = i.PlayerOTM,
+                EventId = i.EventId,
+                EventStage = i.EventStage,
+
+            })
+                .FirstOrDefaultAsync();
             if (result == null)
                 throw new UserFriendlyException("No Record Exists");
-            return ObjectMapper.Map<MatchDto>(result);
+            return result;
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long matchId)

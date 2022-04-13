@@ -8,6 +8,7 @@
         public const string DefaultPassPhrase = "gsKxGZ012HLL3MI5";
         public const string SuccessfullyInserted = "Record Successfully Inserted";
         public const string SuccessfullyUpdated = "Record Successfully Updated";
+        public const string SuccessFullyGetData = "Success";
         public const string SuccessfullyDeleted = "Record Successfully Deleted";
         public const string InsertFailure = "Record Failed To Insert";
         public const string UpdateFailure = "Record Failed To Update";

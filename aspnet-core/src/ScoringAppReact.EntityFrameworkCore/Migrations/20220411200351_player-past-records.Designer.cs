@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScoringAppReact.EntityFrameworkCore;
 
 namespace ScoringAppReact.Migrations
 {
     [DbContext(typeof(ScoringAppReactDbContext))]
-    partial class ScoringAppReactDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220411200351_player-past-records")]
+    partial class playerpastrecords
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1965,137 +1967,6 @@ namespace ScoringAppReact.Migrations
                     b.ToTable("Players");
                 });
 
-            modelBuilder.Entity("ScoringAppReact.Models.PlayerPastRecord", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("BestScore")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("DoBowled")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DoCatch")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DoHitWicket")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DoLBW")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DoStump")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("FiveWickets")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetBowled")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetCatch")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetHitWicket")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetLBW")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetRunOut")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GetStump")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("NumberOf100s")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NumberOf50s")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OnFieldCatch")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OnFieldRunOut")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OnFieldStump")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("PlayerId1")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("TenantId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalBallRuns")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalBatBalls")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalBatRuns")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalFours")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalInnings")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalMaidens")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalMatch")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalNotOut")
-                        .HasColumnType("int");
-
-                    b.Property<float?>("TotalOvers")
-                        .HasColumnType("real");
-
-                    b.Property<int?>("TotalSixes")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalWickets")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId1");
-
-                    b.ToTable("PlayerPastRecords");
-                });
-
             modelBuilder.Entity("ScoringAppReact.Models.PlayerScore", b =>
                 {
                     b.Property<long>("Id")
@@ -2702,13 +2573,6 @@ namespace ScoringAppReact.Migrations
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ScoringAppReact.Models.PlayerPastRecord", b =>
-                {
-                    b.HasOne("ScoringAppReact.Models.Player", "Player")
-                        .WithMany()
-                        .HasForeignKey("PlayerId1");
                 });
 
             modelBuilder.Entity("ScoringAppReact.Models.PlayerScore", b =>

@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
 using Abp;
 using ScoringAppReact.Players.Dto;
-using System;
 using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.Teams.Dto;
@@ -21,16 +20,14 @@ namespace ScoringAppReact.Players
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class PlayerAppService : AbpServiceBase, IPlayerAppService
     {
-        private readonly DbContext _context;
         private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
         private readonly IAbpSession _abpSession;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
-                long> teamPlayerRepository, DbContext context)
+                long> teamPlayerRepository)
         {
-            _context = context;
             _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
@@ -108,6 +105,7 @@ namespace ScoringAppReact.Players
         {
             var result = await _repository.UpdateAsync(new Player()
             {
+                Id = model.Id.Value,
                 Name = model.Name,
                 Address = model.Address,
                 BattingStyleId = model.BattingStyleId,
@@ -143,9 +141,21 @@ namespace ScoringAppReact.Players
 
         public async Task<PlayerDto> GetById(long id)
         {
-            var result = await _repository
-                .FirstOrDefaultAsync(i => i.Id == id);
-            return ObjectMapper.Map<PlayerDto>(result);
+            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new PlayerDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Address = i.Address,
+                BattingStyleId = i.BattingStyleId,
+                BowlingStyleId = i.BowlingStyleId,
+                PlayerRoleId = i.PlayerRoleId,
+                CNIC = i.CNIC,
+                Contact = i.Contact,
+                DOB = i.DOB,
+                FileName = i.FileName,
+                Gender = i.Gender,
+            }).FirstOrDefaultAsync();
+            return result;
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long playerId)
@@ -175,35 +185,35 @@ namespace ScoringAppReact.Players
         }
 
 
-        public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
-        {
+        //public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
+        //{
 
-            //ViewBag.Season = new SelectList(_context.Matches.Select(i => i.Season).ToList().Distinct(), "Season");
+        //    //ViewBag.Season = new SelectList(_context.Matches.Select(i => i.Season).ToList().Distinct(), "Season");
 
-            // ViewBag.MatchType = new SelectList(_context.MatchType, "MatchTypeId", "MatchTypeName");
-            //ViewBag.Overs = new SelectList(_context.Matches.Select(i => i.MatchOvers).ToList().Distinct(), "MatchOvers");
-            try
-            {
-                //var connection = _context.Database.GetDbConnection();
-                //var model = connection.QuerySingleOrDefault<PlayerStatisticsDto>(
-                //    "usp_GetSinglePlayerStatistics",
-                //    new
-                //    {
-                //        @paramPlayerId = id
+        //    // ViewBag.MatchType = new SelectList(_context.MatchType, "MatchTypeId", "MatchTypeName");
+        //    //ViewBag.Overs = new SelectList(_context.Matches.Select(i => i.MatchOvers).ToList().Distinct(), "MatchOvers");
+        //    try
+        //    {
+        //        //var connection = _context.Database.GetDbConnection();
+        //        //var model = connection.QuerySingleOrDefault<PlayerStatisticsDto>(
+        //        //    "usp_GetSinglePlayerStatistics",
+        //        //    new
+        //        //    {
+        //        //        @paramPlayerId = id
 
-                //    },
-                //    commandType: CommandType.StoredProcedure) ?? new PlayerStatisticsDto
-                //    {
+        //        //    },
+        //        //    commandType: CommandType.StoredProcedure) ?? new PlayerStatisticsDto
+        //        //    {
 
-                //    };
-                //return model;
-                return null;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
-            }
-        }
+        //        //    };
+        //        //return model;
+        //        return null;
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        throw;
+        //    }
+        //}
 
         public async Task<List<PlayerDto>> GetAllByTeamId(long teamId)
         {

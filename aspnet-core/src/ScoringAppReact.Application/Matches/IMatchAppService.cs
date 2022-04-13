@@ -11,7 +11,7 @@ namespace ScoringAppReact.Matches
 
         Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateMatchDto typeDto);
 
-        Task<MatchDto> GetById(long typeId);
+        Task<CreateOrUpdateMatchDto> GetById(long typeId);
 
         Task<ResponseMessageDto> DeleteAsync(long typeId);
 
