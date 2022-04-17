@@ -146,9 +146,33 @@ namespace ScoringAppReact.PlayerScores
 
         public async Task<PlayerScoreDto> GetById(long id)
         {
-            var result = await _repository.GetAll()
-                .FirstOrDefaultAsync(i => i.Id == id);
-            return ObjectMapper.Map<PlayerScoreDto>(result);
+            var result = await _repository
+                .GetAll()
+                .Select(i => new PlayerScoreDto
+                {
+                    Id = i.Id,
+                    PlayerId = i.PlayerId,
+                    Position = i.Position,
+                    MatchId = i.MatchId,
+                    TeamId = i.TeamId,
+                    BowlerId = i.BowlerId,
+                    Bat_Runs = i.Bat_Runs,
+                    Bat_Balls = i.Bat_Balls,
+                    HowOutId = i.HowOutId,
+                    Ball_Runs = i.Ball_Runs,
+                    Overs = i.Overs,
+                    Wickets = i.Wickets,
+                    Catches = i.Catches,
+                    Stump = i.Stump,
+                    Maiden = i.Maiden,
+                    RunOut = i.RunOut,
+                    Four = i.Four,
+                    Six = i.Six,
+                    Fielder = i.Fielder,
+                    IsPlayedInning = i.IsPlayedInning,
+
+                }).FirstOrDefaultAsync(i => i.Id == id);
+            return result;
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long id)
@@ -177,16 +201,17 @@ namespace ScoringAppReact.PlayerScores
             };
         }
 
-        public async Task<List<PlayerScoreDto>> GetAll(long teamId, long matchId)
+        public async Task<List<PlayerScoreListDto>> GetAll(long teamId, long matchId)
         {
             var result = await _repository.GetAll().
                 Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId &&
                 i.TeamId == teamId && i.MatchId == matchId)
-                .Select(i => new PlayerScoreDto
+                .Select(i => new PlayerScoreListDto
                 {
                     Id = i.Id,
                     PlayerId = i.PlayerId,
+                    PlayerName = i.Player.Name,
                     Position = i.Position,
                     MatchId = i.MatchId,
                     TeamId = i.TeamId,

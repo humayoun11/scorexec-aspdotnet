@@ -11,7 +11,7 @@ namespace ScoringAppReact
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }
         public bool Error { get; set; }
-
         public Object result {get; set;}
+        public List<Object> array {get; set;}
     }
 }
