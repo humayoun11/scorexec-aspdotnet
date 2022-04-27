@@ -14,6 +14,7 @@ using Abp.Runtime.Session;
 using Microsoft.AspNetCore.Mvc;
 using Abp.UI;
 using System;
+using ScoringAppReact.Events.Dto;
 
 namespace ScoringAppReact.Teams
 {
@@ -93,6 +94,7 @@ namespace ScoringAppReact.Teams
                 IsRegistered = teamDto.IsRegistered,
                 City = teamDto.City,
                 Place = teamDto.Place,
+                Type = teamDto.Type,
                 TenantId = _abpSession.TenantId
             });
 
@@ -188,6 +190,28 @@ namespace ScoringAppReact.Teams
 
         }
 
+        public async Task<List<TeamDto>> GetAllTeamsByEventId(long id)
+        {
+            try
+            {
+                return await _repository.GetAll()
+               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j=> j.EventId == id))
+               .Select(i => new TeamDto()
+               {
+                   Id = i.Id,
+                   Name = i.Name,
+                   Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList()
+
+               }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
+        }
+
         public async Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
@@ -212,7 +236,8 @@ namespace ScoringAppReact.Teams
                     Zone = i.Zone,
                     IsRegistered = i.IsRegistered,
                     City = i.City,
-                    Place = i.Place
+                    Place = i.Place,
+                    Type = i.Type
                 }).ToListAsync());
         }
     }

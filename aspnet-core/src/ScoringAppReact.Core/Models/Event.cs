@@ -25,6 +25,7 @@ namespace ScoringAppReact.Models
         //public int? NumberOfTeam { get; set; }
         public List<Match> Matches { get; set; }
         public List<EventTeam> EventTeams { get; set; }
+        public EventBracket EventBracket { get; set; }
         public int? TenantId { get; set; }
     }
 }

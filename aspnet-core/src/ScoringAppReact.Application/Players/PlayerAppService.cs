@@ -14,6 +14,11 @@ using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.Teams.Dto;
 using System.Data;
+using Abp.EntityFrameworkCore.Repositories;
+using Abp.EntityFrameworkCore;
+using ScoringAppReact.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using AutoMapper;
 
 namespace ScoringAppReact.Players
 {
@@ -23,14 +28,17 @@ namespace ScoringAppReact.Players
         private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
         private readonly IAbpSession _abpSession;
+        private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
-                long> teamPlayerRepository)
+                long> teamPlayerRepository,
+            IDbContextProvider<ScoringAppReactDbContext> context)
         {
             _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
+            _context = context;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model)
@@ -74,20 +82,79 @@ namespace ScoringAppReact.Players
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            var teamPlayer = await _teamPlayerRepository.InsertAsync(new TeamPlayer()
+            var teamPlayerList = new List<TeamPlayer>();
+            foreach (var item in model.TeamIds)
             {
-                TeamId = model.TeamId,
-                PlayerId = result.Id
-            });
+                var res = new TeamPlayer()
+                {
+                    PlayerId = result.Id,
+                    TeamId = item
+                };
+                teamPlayerList.Add(res);
+            }
 
+            await _teamPlayerRepository.GetDbContext().AddRangeAsync(teamPlayerList);
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (result.Id != 0 && teamPlayer.Id != 0)
+            if (result.Id != 0)
             {
                 return new ResponseMessageDto()
                 {
                     Id = result.Id,
                     SuccessMessage = AppConsts.SuccessfullyInserted,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            return new ResponseMessageDto()
+            {
+                Id = 0,
+                ErrorMessage = AppConsts.InsertFailure,
+                Success = false,
+                Error = true,
+            };
+        }
+
+        public async Task<ResponseMessageDto> CreateOrUpdateTeamPlayersAsync(TeamPlayerDto model)
+        {
+            var allTeamPlayers = _teamPlayerRepository.GetAll().Where(i => i.TeamId == model.TeamId && i.IsDeleted == false).ToList();
+            var prev = allTeamPlayers.Select(i => i.PlayerId);
+            var toDelete = prev.Except(model.PlayerIds);
+            var toAddNew = model.PlayerIds.Except(prev);
+            if (toDelete.Any())
+            {
+                var deletePlayers = new List<TeamPlayer>();
+                foreach (var id in toDelete)
+                {
+                    var player = allTeamPlayers.Where(j => j.PlayerId == id).FirstOrDefault();
+                    player.IsDeleted = true;
+                    deletePlayers.Add(player);
+                }
+                _teamPlayerRepository.GetDbContext().UpdateRange(deletePlayers);
+            }
+            if (toAddNew.ToList().Any())
+            {
+                var addNewPlayers = new List<TeamPlayer>();
+                foreach (var id in toAddNew)
+                {
+                    var player = new TeamPlayer()
+                    {
+                        TeamId = model.TeamId,
+                        PlayerId = id
+                    };
+                    addNewPlayers.Add(player);
+                }
+                _teamPlayerRepository.GetDbContext().AddRange(addNewPlayers);
+            }
+
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.TeamId != 0)
+            {
+                return new ResponseMessageDto()
+                {
+                    Id = model.TeamId,
+                    SuccessMessage = AppConsts.SuccessfullyUpdated,
                     Success = true,
                     Error = false,
                 };
@@ -119,6 +186,38 @@ namespace ScoringAppReact.Players
                 CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
             });
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+            var allTeams = _teamPlayerRepository.GetAll().Where(i => i.PlayerId == result.Id && i.IsDeleted == false).ToList();
+            var prev = allTeams.Select(i => i.TeamId);
+            var toDelete = prev.Except(model.TeamIds);
+            var toAddNew = model.TeamIds.Except(prev);
+
+            if (toDelete.Any())
+            {
+                var deleteTeams = new List<TeamPlayer>();
+                foreach (var id in toDelete)
+                {
+                    var team = allTeams.Where(j => j.TeamId == id).FirstOrDefault();
+                    team.IsDeleted = true;
+                    deleteTeams.Add(team);
+                }
+                _teamPlayerRepository.GetDbContext().UpdateRange(deleteTeams);
+            }
+            if (toAddNew.ToList().Any())
+            {
+                var addNewTeams = new List<TeamPlayer>();
+                foreach (var id in toAddNew)
+                {
+                    var team = new TeamPlayer()
+                    {
+                        TeamId = id,
+                        PlayerId = result.Id
+                    };
+                    addNewTeams.Add(team);
+                }
+                _teamPlayerRepository.GetDbContext().AddRange(addNewTeams);
+            }
+            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             if (result != null)
             {
@@ -139,9 +238,9 @@ namespace ScoringAppReact.Players
             };
         }
 
-        public async Task<PlayerDto> GetById(long id)
+        public async Task<PlayerEditDto> GetById(long id)
         {
-            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new PlayerDto
+            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new PlayerEditDto
             {
                 Id = i.Id,
                 Name = i.Name,
@@ -154,6 +253,7 @@ namespace ScoringAppReact.Players
                 DOB = i.DOB,
                 FileName = i.FileName,
                 Gender = i.Gender,
+                TeamIds = i.Teams.Select(i => i.TeamId).ToList()
             }).FirstOrDefaultAsync();
             return result;
         }
@@ -184,36 +284,25 @@ namespace ScoringAppReact.Players
             return result;
         }
 
+        private Task<PlayerStatisticsDto> PlayerStatistics(int id)
+        {
 
-        //public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
-        //{
+            try
+            {
+                var dbContext = _context.GetDbContext();
 
-        //    //ViewBag.Season = new SelectList(_context.Matches.Select(i => i.Season).ToList().Distinct(), "Season");
+                var connection = dbContext.Database.GetDbConnection();
 
-        //    // ViewBag.MatchType = new SelectList(_context.MatchType, "MatchTypeId", "MatchTypeName");
-        //    //ViewBag.Overs = new SelectList(_context.Matches.Select(i => i.MatchOvers).ToList().Distinct(), "MatchOvers");
-        //    try
-        //    {
-        //        //var connection = _context.Database.GetDbConnection();
-        //        //var model = connection.QuerySingleOrDefault<PlayerStatisticsDto>(
-        //        //    "usp_GetSinglePlayerStatistics",
-        //        //    new
-        //        //    {
-        //        //        @paramPlayerId = id
+                //var result = connection.Database.SingleOrDefault<PlayerStatisticsDto>()
+                //    .FromSql(string.Format("EXEC {0} {1}", "", id)).SingleOrDefault();
 
-        //        //    },
-        //        //    commandType: CommandType.StoredProcedure) ?? new PlayerStatisticsDto
-        //        //    {
-
-        //        //    };
-        //        //return model;
-        //        return null;
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        throw;
-        //    }
-        //}
+                return null;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+        }
 
         public async Task<List<PlayerDto>> GetAllByTeamId(long teamId)
         {

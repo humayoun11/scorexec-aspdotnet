@@ -8,14 +8,16 @@ namespace ScoringAppReact.Events
     public interface IEventAppService : IApplicationService
     {
 
-        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateEventDto typeDto);
+        Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateEventDto model);
 
-        Task<EventDto> GetById(long typeId);
+        Task<EventDto> GetById(long id);
 
-        Task<ResponseMessageDto> DeleteAsync(long typeId);
+        Task<ResponseMessageDto> DeleteAsync(long id);
 
-        Task<List<EventDto>> GetAll(long? tenantId);
+        Task<List<EventDto>> GetAll();
 
         Task<PagedResultDto<EventDto>> GetPaginatedAllAsync(PagedEventResultRequestDto input);
+
+        Task<ResponseMessageDto> CreateOrUpdateEventTeamsAsync(EventTeamDto model);
     }
 }

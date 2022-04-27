@@ -12,5 +12,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScoringAppReact.Core\ScoringAppReact.Core.csproj" />
+    <ProjectReference Include="..\ScoringAppReact.EntityFrameworkCore\ScoringAppReact.EntityFrameworkCore.csproj" />
   </ItemGroup>
 </Project>

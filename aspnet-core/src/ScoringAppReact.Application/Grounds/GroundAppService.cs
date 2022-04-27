@@ -109,7 +109,7 @@ namespace ScoringAppReact.Grounds
                 //return;
             }
 
-            var result = await _repository.GetAll()
+            var result = await _repository.GetAll().Where(i => i.Id == id)
                 .Select(i =>
                 new GroundDto()
                 {
@@ -117,7 +117,7 @@ namespace ScoringAppReact.Grounds
                     Name = i.Name,
                     Location = i.Location
                 })
-                .FirstOrDefaultAsync(i => i.Id == id);
+                .FirstOrDefaultAsync();
             return result;
         }
 
@@ -160,7 +160,7 @@ namespace ScoringAppReact.Grounds
         public async Task<PagedResultDto<GroundDto>> GetPaginatedAllAsync(PagedGroundResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId))
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
                 .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
                     x => x.Name.Contains(input.Name));
 

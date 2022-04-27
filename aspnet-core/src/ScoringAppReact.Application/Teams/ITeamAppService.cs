@@ -18,5 +18,7 @@ namespace ScoringAppReact.Teams
         Task<List<TeamDto>> GetAll();
 
         Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input);
+
+        Task<List<TeamDto>> GetAllTeamsByEventId(long id);
     }
 }

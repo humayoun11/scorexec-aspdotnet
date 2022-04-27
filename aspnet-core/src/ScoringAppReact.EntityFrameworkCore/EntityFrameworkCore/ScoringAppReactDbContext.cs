@@ -21,6 +21,9 @@ namespace ScoringAppReact.EntityFrameworkCore
         public DbSet<TeamScore> TeamScores { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventTeam> EventTeams { get; set; }
+        public DbSet<EventBracket> EventBrackets { get; set; }
+        public DbSet<Gallery> Galleries { get; set; }
+        public DbSet<EntityGallery> EntityGalleries { get; set; }
         public DbSet<PlayerPastRecord> PlayerPastRecords { get; set; }
         public ScoringAppReactDbContext(DbContextOptions<ScoringAppReactDbContext> options)
             : base(options)

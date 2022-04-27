@@ -11,7 +11,7 @@ namespace ScoringAppReact.Players
 
         Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model);
 
-        Task<PlayerDto> GetById(long id);
+        Task<PlayerEditDto> GetById(long id);
 
         Task<ResponseMessageDto> DeleteAsync(long id);
 
@@ -20,6 +20,7 @@ namespace ScoringAppReact.Players
         Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input);
 
         Task<List<PlayerDto>> GetAllByTeamId(long teamId);
+        Task<ResponseMessageDto> CreateOrUpdateTeamPlayersAsync(TeamPlayerDto model);
 
        // Task<PlayerStatisticsDto> PlayerStatistics(int id);
     }

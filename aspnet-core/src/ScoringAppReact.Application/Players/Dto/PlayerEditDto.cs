@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Abp.Application.Services.Dto;
 using Abp.Authorization.Roles;
 using ScoringAppReact.Authorization.Roles;
 
 namespace ScoringAppReact.Players.Dto
 {
-    public class PlayerEditDto: EntityDto<int>
+    public class PlayerEditDto: EntityDto<long>
     {
         public string Name { get; set; }
         public string Contact { get; set; }
@@ -18,7 +19,7 @@ namespace ScoringAppReact.Players.Dto
         public long? DOB { get; set; }
         public string IsGuestorRegistered { get; set; }
         public bool IsDeactivated { get; set; }
-        public long TeamId { get; set; }
+        public List<long> TeamIds { get; set; }
         public string FileName { get; set; }
         public int? TenantId { get; set; }
     }

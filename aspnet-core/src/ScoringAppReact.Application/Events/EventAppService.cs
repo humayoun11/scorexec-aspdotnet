@@ -11,6 +11,8 @@ using ScoringAppReact.Models;
 using Abp;
 using Abp.Runtime.Session;
 using ScoringAppReact.Events.Dto;
+using System;
+using Abp.EntityFrameworkCore.Repositories;
 
 namespace ScoringAppReact.Events
 {
@@ -18,24 +20,26 @@ namespace ScoringAppReact.Events
     public class EventAppService : AbpServiceBase, IEventAppService
     {
         private readonly IRepository<Event, long> _repository;
+        private readonly IRepository<EventTeam, long> _eventTeamRepository;
         private readonly IAbpSession _abpSession;
-        public EventAppService(IRepository<Event, long> repository, IAbpSession abpSession)
+        public EventAppService(IRepository<Event, long> repository, IRepository<EventTeam, long> eventTeamRepository, IAbpSession abpSession)
         {
             _repository = repository;
             _abpSession = abpSession;
+            _eventTeamRepository = eventTeamRepository;
         }
 
 
-        public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateEventDto eventDto)
+        public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateEventDto model)
         {
             ResponseMessageDto result;
-            if (eventDto.Id == 0)
+            if (model.Id == 0)
             {
-                result = await CreateEventAsync(eventDto);
+                result = await CreateEventAsync(model);
             }
             else
             {
-                result = await UpdateEventAsync(eventDto);
+                result = await UpdateEventAsync(model);
             }
             return result;
         }
@@ -81,6 +85,7 @@ namespace ScoringAppReact.Events
         {
             var result = await _repository.UpdateAsync(new Event()
             {
+                Id = model.Id.Value,
                 Name = model.Name,
                 FileName = model.FileName,
                 Organizor = model.Organizor,
@@ -114,37 +119,98 @@ namespace ScoringAppReact.Events
             };
         }
 
-        public async Task<EventDto> GetById(long eventId)
+        public async Task<ResponseMessageDto> CreateOrUpdateEventTeamsAsync(EventTeamDto model)
         {
+            var allEventTeams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
+            var prev = allEventTeams.Select(i => i.TeamId);
+            var toDelete = prev.Except(model.TeamIds);
+            var toAddNew = model.TeamIds.Except(prev);
+            if (toDelete.Any())
+            {
+                var deleteTeams = new List<EventTeam>();
+                foreach (var id in toDelete)
+                {
+                    var team = allEventTeams.Where(j => j.TeamId == id).FirstOrDefault();
+                    team.IsDeleted = true;
+                    deleteTeams.Add(team);
+                }
+                _eventTeamRepository.GetDbContext().UpdateRange(deleteTeams);
+            }
+            if (toAddNew.ToList().Any())
+            {
+                var addNewTeams = new List<EventTeam>();
+                foreach (var id in toAddNew)
+                {
+                    var team = new EventTeam()
+                    {
+                        EventId = model.EventId,
+                        TeamId = id,
+                        TenantId = _abpSession.TenantId
+                    };
+                    addNewTeams.Add(team);
+                }
+                _eventTeamRepository.GetDbContext().AddRange(addNewTeams);
+            }
+
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.EventId != 0)
+            {
+                return new ResponseMessageDto()
+                {
+                    Id = model.EventId,
+                    SuccessMessage = AppConsts.SuccessfullyUpdated,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            return new ResponseMessageDto()
+            {
+                Id = 0,
+                ErrorMessage = AppConsts.InsertFailure,
+                Success = false,
+                Error = true,
+            };
+        }
+
+        public async Task<EventDto> GetById(long id)
+        {
+            if(id == 0)
+            {
+                throw new ArgumentNullException(nameof(id));
+            } 
             var result = await _repository.GetAll()
-                .Where(i => i.Id == eventId)
+                .Where(i => i.Id == id)
                 .Select(i =>
                 new EventDto()
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    FileName = i.FileName,
+                    StartDate = i.StartDate,
+                    EndDate = i.EndDate,
+                    EventType = i.EventType,
+                    TournamentType = i.TournamentType
                 })
                 .FirstOrDefaultAsync();
             return result;
         }
 
-        public async Task<ResponseMessageDto> DeleteAsync(long playerId)
+        public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
-            var model = await _repository.GetAll().Where(i => i.Id == playerId).FirstOrDefaultAsync();
+            var model = await _repository.GetAll().Where(i => i.Id == id).FirstOrDefaultAsync();
             model.IsDeleted = true;
             var result = await _repository.UpdateAsync(model);
 
             return new ResponseMessageDto()
             {
-                Id = playerId,
+                Id = id,
                 SuccessMessage = AppConsts.SuccessfullyDeleted,
                 Success = true,
                 Error = false,
             };
         }
 
-        public async Task<List<EventDto>> GetAll(long? tenantId)
+        public async Task<List<EventDto>> GetAll()
         {
             var result = await _repository.GetAll()
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
@@ -176,7 +242,11 @@ namespace ScoringAppReact.Events
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    FileName = i.FileName
+                    FileName = i.FileName,
+                    EventType = i.EventType,
+                    TournamentType = i.TournamentType,
+                    StartDate = i.StartDate,
+                    EndDate= i.EndDate
                 }).ToListAsync());
         }
     }

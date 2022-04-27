@@ -19,7 +19,7 @@ namespace ScoringAppReact.Players.Dto
         public long? DOB { get; set; }
         public string IsGuestorRegistered { get; set; }
         public bool IsDeactivated { get; set; }
-        public long TeamId { get; set; }
+        public List<long> TeamIds { get; set; }
         public string FileName { get; set; }
         public long? CreationTime { get; set; }
         public int? TenantId { get; set; }
