@@ -215,12 +215,12 @@ namespace ScoringAppReact.Teams
         public async Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId))
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) && (!input.Type.HasValue || i.Type == input.Type))
                 .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.Contains(input.Name));
+                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers
-                .OrderBy(i => i.Name)
+                .OrderByDescending(i => i.Id)
                 .PageBy(input);
 
             var totalCount = filteredPlayers.Count();

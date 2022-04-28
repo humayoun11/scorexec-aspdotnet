@@ -161,11 +161,11 @@ namespace ScoringAppReact.Grounds
         {
             var filteredPlayers = _repository.GetAll()
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.Contains(input.Name));
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers
-                .OrderBy(i => i.Name)
+                .OrderByDescending(i => i.Id)
                 .PageBy(input);
 
             var totalCount = filteredPlayers.Count();

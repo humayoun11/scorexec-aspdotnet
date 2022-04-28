@@ -234,24 +234,6 @@ namespace ScoringAppReact.PlayerScores
                 .ToListAsync();
             return result;
         }
-        private async Task<PagedResultDto<PlayerScoreDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
-        {
-            var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == _abpSession.TenantId));
-
-            var pagedAndFilteredPlayers = filteredPlayers.PageBy(input);
-            //.OrderBy(i => i.Name)
-
-
-            var totalCount = filteredPlayers.Count();
-
-            return new PagedResultDto<PlayerScoreDto>(
-                totalCount: totalCount,
-                items: await pagedAndFilteredPlayers.Select(i => new PlayerScoreDto()
-                {
-                    Id = i.Id
-                }).ToListAsync());
-        }
     }
 }
 

@@ -320,12 +320,16 @@ namespace ScoringAppReact.Players
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId))
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.Contains(input.Name));
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId))
+                .WhereIf(input.TeamId.HasValue, i=> i.Teams.Any(j=> j.TeamId == input.TeamId))
+                .WhereIf(input.PlayingRole.HasValue, i=> i.PlayerRoleId == input.PlayingRole)
+                .WhereIf(input.BattingStyle.HasValue, i => i.BattingStyleId == input.BattingStyle)
+                .WhereIf(input.BowlingStyle.HasValue, i => i.BowlingStyleId == input.BowlingStyle)
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers
-                .OrderBy(i => i.Name)
+                .OrderByDescending(i => i.Id)
                 .PageBy(input);
 
             var totalCount = filteredPlayers.Count();

@@ -191,9 +191,13 @@ namespace ScoringAppReact.Matches
         public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId));
-            //.WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-            //    x => x.Name.Contains(input.Name));
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId))
+                .WhereIf(input.Overs.HasValue, i => i.MatchOvers == input.Overs)
+                .WhereIf(input.Team1Id.HasValue, i => i.HomeTeamId == input.Team1Id)
+                .WhereIf(input.Team2Id.HasValue, i => i.OppponentTeamId == input.Team2Id)
+                .WhereIf(input.Type.HasValue, i => i.MatchTypeId == input.Type)
+                .WhereIf(input.Date.HasValue, i => i.DateOfMatch == input.Date)
+                .WhereIf(input.GroundId.HasValue, i => i.GroundId == input.GroundId);
 
             var pagedAndFilteredPlayers = filteredPlayers
                 .OrderBy(i => i.DateOfMatch)
@@ -212,7 +216,8 @@ namespace ScoringAppReact.Matches
                     DateOfMatch = i.DateOfMatch,
                     MatchType = i.MatchTypeId.ToString(),
                     Team1Id = i.HomeTeamId,
-                    Team2Id = i.OppponentTeamId
+                    Team2Id = i.OppponentTeamId,
+                    MatchOvers = i.MatchOvers
                 }).ToListAsync());
         }
     }

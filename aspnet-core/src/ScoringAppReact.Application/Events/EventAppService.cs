@@ -175,10 +175,10 @@ namespace ScoringAppReact.Events
 
         public async Task<EventDto> GetById(long id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 throw new ArgumentNullException(nameof(id));
-            } 
+            }
             var result = await _repository.GetAll()
                 .Where(i => i.Id == id)
                 .Select(i =>
@@ -226,12 +226,14 @@ namespace ScoringAppReact.Events
         public async Task<PagedResultDto<EventDto>> GetPaginatedAllAsync(PagedEventResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == input.TenantId))
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.Contains(input.Name));
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) 
+                && (!input.Type.HasValue || i.EventType == input.Type) && (!input.StartDate.HasValue || i.StartDate >= input.StartDate)
+                && (!input.EndDate.HasValue || i.EndDate <= input.EndDate))
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers
-                .OrderBy(i => i.Name)
+                .OrderByDescending(i => i.Id)
                 .PageBy(input);
 
             var totalCount = filteredPlayers.Count();
@@ -246,7 +248,7 @@ namespace ScoringAppReact.Events
                     EventType = i.EventType,
                     TournamentType = i.TournamentType,
                     StartDate = i.StartDate,
-                    EndDate= i.EndDate
+                    EndDate = i.EndDate
                 }).ToListAsync());
         }
     }

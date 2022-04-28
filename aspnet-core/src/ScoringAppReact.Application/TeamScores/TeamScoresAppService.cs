@@ -177,24 +177,6 @@ namespace ScoringAppReact.TeamScores
 
             return result;
         }
-        private async Task<PagedResultDto<TeamScoreDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
-        {
-            var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (!input.TenantId.HasValue || i.TenantId == _abpSession.TenantId));
-
-            var pagedAndFilteredPlayers = filteredPlayers.PageBy(input);
-            //.OrderBy(i => i.Name)
-
-
-            var totalCount = filteredPlayers.Count();
-
-            return new PagedResultDto<TeamScoreDto>(
-                totalCount: totalCount,
-                items: await pagedAndFilteredPlayers.Select(i => new TeamScoreDto()
-                {
-                    Id = i.Id
-                }).ToListAsync());
-        }
     }
 }
 
