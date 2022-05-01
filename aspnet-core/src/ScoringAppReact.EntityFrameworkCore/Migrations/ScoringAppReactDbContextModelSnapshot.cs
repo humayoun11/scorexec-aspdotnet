@@ -2483,8 +2483,8 @@ namespace ScoringAppReact.Migrations
                     b.Property<int?>("NoBalls")
                         .HasColumnType("int");
 
-                    b.Property<int>("Overs")
-                        .HasColumnType("int");
+                    b.Property<float>("Overs")
+                        .HasColumnType("real");
 
                     b.Property<long>("TeamId")
                         .HasColumnType("bigint");

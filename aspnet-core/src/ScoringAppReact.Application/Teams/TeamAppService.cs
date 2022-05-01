@@ -168,17 +168,17 @@ namespace ScoringAppReact.Teams
             };
         }
 
-        public async Task<List<TeamDto>> GetAll()
+        public async Task<List<TeamListDto>> GetAll()
         {
             try
             {
                return await _repository.GetAll()
               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-              .Select(i => new TeamDto()
+              .Select(i => new TeamListDto()
               {
                   Id = i.Id,
                   Name = i.Name,
-                  Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList()
+                  EventId = i.EventTeams.Select(j=> j.EventId).FirstOrDefault()
 
               }).ToListAsync();
             }

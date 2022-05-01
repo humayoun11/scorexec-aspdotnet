@@ -11,9 +11,7 @@ namespace ScoringAppReact.Players.Dto
         public string PlayerRole { get; set; }
         public string BattingStyle { get; set; }
         public string BowlingStyle { get; set; }
-        public int TeamId { get; set; }
-        public string TeamName { get; set; }
-        public DateTime DOB { get; set; }
+        public double DOB { get; set; }
         public int TotalMatch { get; set; }
         public int TotalInnings { get; set; }
         public int TotalBatRuns { get; set; }

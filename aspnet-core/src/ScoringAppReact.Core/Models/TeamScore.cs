@@ -6,7 +6,7 @@ namespace ScoringAppReact.Models
     public class TeamScore : FullAuditedEntity<long>, IMayHaveTenant
     {
         public int TotalScore { get; set; }
-        public int Overs { get; set; }
+        public float Overs { get; set; }
         public int Wickets { get; set; }
         public int? Wideballs { get; set; }
         public int? NoBalls { get; set; }

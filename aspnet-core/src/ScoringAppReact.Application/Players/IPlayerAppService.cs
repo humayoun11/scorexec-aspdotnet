@@ -22,6 +22,8 @@ namespace ScoringAppReact.Players
         Task<List<PlayerDto>> GetAllByTeamId(long teamId);
         Task<ResponseMessageDto> CreateOrUpdateTeamPlayersAsync(TeamPlayerDto model);
 
+        Task<PlayerStatisticsDto> PlayerStatistics(int id);
+
        // Task<PlayerStatisticsDto> PlayerStatistics(int id);
     }
 }

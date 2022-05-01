@@ -15,7 +15,7 @@ namespace ScoringAppReact.Teams
 
         Task<ResponseMessageDto> DeleteAsync(long typeId);
 
-        Task<List<TeamDto>> GetAll();
+        Task<List<TeamListDto>> GetAll();
 
         Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input);
 

@@ -19,6 +19,10 @@ using Abp.EntityFrameworkCore;
 using ScoringAppReact.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using AutoMapper;
+using System.Threading;
+using System;
+using Dapper;
+using Abp.Domain.Uow;
 
 namespace ScoringAppReact.Players
 {
@@ -284,7 +288,9 @@ namespace ScoringAppReact.Players
             return result;
         }
 
-        private Task<PlayerStatisticsDto> PlayerStatistics(int id)
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
+        public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
         {
 
             try
@@ -292,15 +298,18 @@ namespace ScoringAppReact.Players
                 var dbContext = _context.GetDbContext();
 
                 var connection = dbContext.Database.GetDbConnection();
+                var paramPlayerId = id;
+                int? paramSeason = null;
+                int? paramMatchTypeId = null;
+                var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
+                    new { paramPlayerId, paramSeason, paramMatchTypeId },
+                    commandType: CommandType.StoredProcedure);
 
-                //var result = connection.Database.SingleOrDefault<PlayerStatisticsDto>()
-                //    .FromSql(string.Format("EXEC {0} {1}", "", id)).SingleOrDefault();
-
-                return null;
+                return result;
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                throw;
+                throw e;
             }
         }
 
@@ -321,11 +330,11 @@ namespace ScoringAppReact.Players
         {
             var filteredPlayers = _repository.GetAll()
                 .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId))
-                .WhereIf(input.TeamId.HasValue, i=> i.Teams.Any(j=> j.TeamId == input.TeamId))
-                .WhereIf(input.PlayingRole.HasValue, i=> i.PlayerRoleId == input.PlayingRole)
+                .WhereIf(input.TeamId.HasValue, i => i.Teams.Any(j => j.TeamId == input.TeamId))
+                .WhereIf(input.PlayingRole.HasValue, i => i.PlayerRoleId == input.PlayingRole)
                 .WhereIf(input.BattingStyle.HasValue, i => i.BattingStyleId == input.BattingStyle)
                 .WhereIf(input.BowlingStyle.HasValue, i => i.BowlingStyleId == input.BowlingStyle)
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
                     x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers

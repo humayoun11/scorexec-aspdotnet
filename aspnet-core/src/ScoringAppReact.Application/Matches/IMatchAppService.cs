@@ -15,8 +15,14 @@ namespace ScoringAppReact.Matches
 
         Task<ResponseMessageDto> DeleteAsync(long typeId);
 
-        Task<List<MatchDto>> GetAll(long? tenantId);
+        Task<List<MatchDto>> GetAll();
 
         Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input);
+
+        Task<List<BracketStages>> GetTeamsOfStage(int eventId);
+
+        Task<List<MatchDto>> GetAllMatchesBYEventId(long eventId);
+
+        List<EventMatches> GetAllStagedMatchesByEventId(long eventId);
     }
 }

@@ -5,7 +5,7 @@ using ScoringAppReact.Authorization.Roles;
 
 namespace ScoringAppReact.Matches.Dto
 {
-    public class MatchEditDto : EntityDto<int>
+    public class MatchEditDto : EntityDto<long>
     {
         public long? GroundId { get; set; }
         public int MatchOvers { get; set; }

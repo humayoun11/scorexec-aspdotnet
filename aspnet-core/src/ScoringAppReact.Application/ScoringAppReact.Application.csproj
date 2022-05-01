@@ -11,6 +11,9 @@
     <RootNamespace>ScoringAppReact</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.123" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ScoringAppReact.Core\ScoringAppReact.Core.csproj" />
     <ProjectReference Include="..\ScoringAppReact.EntityFrameworkCore\ScoringAppReact.EntityFrameworkCore.csproj" />
   </ItemGroup>

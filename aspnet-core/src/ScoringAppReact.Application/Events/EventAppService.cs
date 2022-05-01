@@ -20,13 +20,18 @@ namespace ScoringAppReact.Events
     public class EventAppService : AbpServiceBase, IEventAppService
     {
         private readonly IRepository<Event, long> _repository;
+        private readonly IRepository<Match, long> _matchRepository;
         private readonly IRepository<EventTeam, long> _eventTeamRepository;
         private readonly IAbpSession _abpSession;
-        public EventAppService(IRepository<Event, long> repository, IRepository<EventTeam, long> eventTeamRepository, IAbpSession abpSession)
+        public EventAppService(IRepository<Event, long> repository,
+            IRepository<EventTeam, long> eventTeamRepository,
+            IRepository<Match, long> matchRepository,
+            IAbpSession abpSession)
         {
             _repository = repository;
             _abpSession = abpSession;
             _eventTeamRepository = eventTeamRepository;
+            _matchRepository = matchRepository;
         }
 
 
@@ -153,6 +158,28 @@ namespace ScoringAppReact.Events
             }
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
+            if (model.IsCreateMatch)
+            {
+                var teams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
+                var matchList = new List<Match>();
+                for (var i = 0; i < teams.Count; i += 2)
+                {
+                    matchList.Add(new Match()
+                    {
+                        HomeTeamId = teams[i].TeamId,
+                        OppponentTeamId = teams[i+1].TeamId,
+                        MatchTypeId = MatchTypeConsts.Tournament,
+                        EventId = model.EventId,
+                        EventStage = EventStageConsts.Group,
+                        TenantId = _abpSession.TenantId
+                    });
+                }
+                _matchRepository.GetDbContext().AddRange(matchList);
+
+            }
+
+
+            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             if (model.EventId != 0)
             {
@@ -218,7 +245,7 @@ namespace ScoringAppReact.Events
                 {
                     Id = i.Id,
                     Name = i.Name,
-
+                    EventType = i.EventType
                 }).ToListAsync();
             return result;
         }
@@ -226,10 +253,10 @@ namespace ScoringAppReact.Events
         public async Task<PagedResultDto<EventDto>> GetPaginatedAllAsync(PagedEventResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) 
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId)
                 && (!input.Type.HasValue || i.EventType == input.Type) && (!input.StartDate.HasValue || i.StartDate >= input.StartDate)
                 && (!input.EndDate.HasValue || i.EndDate <= input.EndDate))
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
                     x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers

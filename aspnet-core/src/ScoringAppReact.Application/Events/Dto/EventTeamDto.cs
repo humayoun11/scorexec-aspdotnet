@@ -9,5 +9,7 @@ namespace ScoringAppReact.Events.Dto
     {
         public long EventId { get; set; }
         public List<long> TeamIds { get; set; }
+
+        public bool IsCreateMatch { get; set; }
     }
 }
