@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Abp.UI;
 using System;
 using ScoringAppReact.Events.Dto;
+using ScoringAppReact.Matches.Dto;
 
 namespace ScoringAppReact.Teams
 {
@@ -22,11 +23,14 @@ namespace ScoringAppReact.Teams
     public class TeamAppService : AbpServiceBase, ITeamAppService
     {
         private readonly IRepository<Team, long> _repository;
+        private readonly IRepository<Match, long> _matchRepository;
         private readonly IAbpSession _abpSession;
-        public TeamAppService(IRepository<Team, long> repository, IAbpSession abpSession)
+        public TeamAppService(IRepository<Team, long> repository, IRepository<Match, long> matchRepository,
+            IAbpSession abpSession)
         {
             _repository = repository;
             _abpSession = abpSession;
+            _matchRepository = matchRepository;
         }
 
 
@@ -86,7 +90,7 @@ namespace ScoringAppReact.Teams
         {
             var result = await _repository.UpdateAsync(new Team()
             {
-                Id= teamDto.Id.Value,
+                Id = teamDto.Id.Value,
                 Name = teamDto.Name,
                 Contact = teamDto.Contact,
                 FileName = teamDto.FileName,
@@ -172,19 +176,19 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-               return await _repository.GetAll()
-              .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-              .Select(i => new TeamListDto()
-              {
-                  Id = i.Id,
-                  Name = i.Name,
-                  EventId = i.EventTeams.Select(j=> j.EventId).FirstOrDefault()
+                return await _repository.GetAll()
+               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
+               .Select(i => new TeamListDto()
+               {
+                   Id = i.Id,
+                   Name = i.Name,
+                   EventId = i.EventTeams.Select(j => j.EventId).FirstOrDefault()
 
-              }).ToListAsync();
+               }).ToListAsync();
             }
             catch (Exception e)
             {
-                throw new UserFriendlyException("Something went wrong with geeting all teams",e);
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
 
             }
 
@@ -195,7 +199,7 @@ namespace ScoringAppReact.Teams
             try
             {
                 return await _repository.GetAll()
-               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j=> j.EventId == id))
+               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,
@@ -239,6 +243,43 @@ namespace ScoringAppReact.Teams
                     Place = i.Place,
                     Type = i.Type
                 }).ToListAsync());
+        }
+
+        public async Task<List<TeamDto>> GetAllTeamsByMatchId(long id)
+        {
+            try
+            {
+                var match = await _matchRepository.GetAll()
+               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Id == id)
+               .Select(i => new MatchDto()
+               {
+                   Id = i.Id,
+                   Team1 = i.HomeTeam.Name,
+                   Team1Id = i.HomeTeam.Id,
+                   Team2 = i.OppponentTeam.Name,
+                   Team2Id = i.OppponentTeam.Id,
+
+               }).SingleOrDefaultAsync();
+                var teamList = new List<TeamDto>();
+                for (var x = 0; x < 2; x++)
+                {
+                    var team = new TeamDto
+                    {
+                        Id = x == 0 ? match.Team1Id : match.Team2Id,
+                        Name = x == 0 ? match.Team1 : match.Team2,
+                    };
+                    teamList.Add(team);
+
+                }
+                return teamList;
+
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
         }
     }
 }

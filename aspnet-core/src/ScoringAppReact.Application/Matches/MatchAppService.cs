@@ -272,21 +272,45 @@ namespace ScoringAppReact.Matches
                     eventMatches[outer] = new EventMatches();
                 }
 
-                eventMatches[outer].Matches = result
-                .Select(i => new MatchDto()
+                if (eventMatches[outer].Matches == null)
                 {
-                    Id = i.Id,
-                    MatchOvers = i.MatchOvers,
-                    Team1Id = i.HomeTeamId,
-                    Team2Id = i.OppponentTeamId,
-                    Team1 = i.HomeTeam.Name,
-                    Team2 = i.OppponentTeam.Name,
-                    MatchDescription = i.MatchDescription,
-                    DateOfMatch = i.DateOfMatch,
-                    Season = i.Season,
-                    EventId = i.EventId,
+                    eventMatches[outer].Matches = result
+                      .Select(i => new MatchDto()
+                      {
+                          Id = i.Id,
+                          MatchOvers = i.MatchOvers,
+                          Team1Id = i.HomeTeamId,
+                          Team2Id = i.OppponentTeamId,
+                          Team1 = i.HomeTeam.Name,
+                          Team2 = i.OppponentTeam.Name,
+                          MatchDescription = i.MatchDescription,
+                          DateOfMatch = i.DateOfMatch,
+                          Season = i.Season,
+                          EventId = i.EventId
+                      }).ToList();
+                }
+                else
+                {
+                    foreach (var item in result)
+                    {
+                        var index = eventMatches[outer].Matches.FindIndex(i => i.Team1Id == item.HomeTeamId && i.Team2Id == item.OppponentTeamId);
+                        eventMatches[outer].Matches[index] = result.Where(i => i.HomeTeamId == item.HomeTeamId && i.OppponentTeamId == item.OppponentTeamId)
+                      .Select(i => new MatchDto()
+                      {
+                          Id = i.Id,
+                          MatchOvers = i.MatchOvers,
+                          Team1Id = i.HomeTeamId,
+                          Team2Id = i.OppponentTeamId,
+                          Team1 = i.HomeTeam.Name,
+                          Team2 = i.OppponentTeam.Name,
+                          MatchDescription = i.MatchDescription,
+                          DateOfMatch = i.DateOfMatch,
+                          Season = i.Season,
+                          EventId = i.EventId
+                      }).SingleOrDefault();
+                    }
+                }
 
-                }).ToList();
 
                 if (eventMatches[outer + 1] == null)
                 {
@@ -420,6 +444,35 @@ namespace ScoringAppReact.Matches
                     MatchOvers = i.MatchOvers,
                     EventName = i.Event.Name ?? "N/A"
                 }).ToListAsync());
+        }
+
+        public async Task<EventMatch> EditEventMatch(long id)
+        {
+            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new EventMatch
+            {
+                Id = i.Id,
+                GroundId = i.GroundId,
+                Ground = i.Ground.Name,
+                MatchOvers = i.MatchOvers,
+                Team1Id = i.HomeTeamId,
+                Team1 = i.HomeTeam.Name,
+                Team2Id = i.OppponentTeamId,
+                Team2 = i.OppponentTeam.Name,
+                MatchDescription = i.MatchDescription,
+                DateOfMatch = i.DateOfMatch,
+                Season = i.Season,
+                MatchTypeId = i.MatchTypeId,
+                TossWinningTeam = i.TossWinningTeam,
+                PlayerOTM = i.PlayerOTM,
+                EventId = i.EventId,
+                Event = i.Event.Name,
+                EventStage = i.EventStage,
+
+            })
+                .FirstOrDefaultAsync();
+            if (result == null)
+                throw new UserFriendlyException("No Record Exists");
+            return result;
         }
     }
 }

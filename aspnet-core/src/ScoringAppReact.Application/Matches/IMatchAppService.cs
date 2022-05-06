@@ -24,5 +24,7 @@ namespace ScoringAppReact.Matches
         Task<List<MatchDto>> GetAllMatchesBYEventId(long eventId);
 
         List<EventMatches> GetAllStagedMatchesByEventId(long eventId);
+
+        Task<EventMatch> EditEventMatch(long id);
     }
 }

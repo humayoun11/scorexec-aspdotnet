@@ -24,6 +24,6 @@ namespace ScoringAppReact.Players
 
         Task<PlayerStatisticsDto> PlayerStatistics(int id);
 
-       // Task<PlayerStatisticsDto> PlayerStatistics(int id);
+        Task<List<PlayerDto>> GetAllByMatchId(long id);
     }
 }

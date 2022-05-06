@@ -31,17 +31,21 @@ namespace ScoringAppReact.Players
     {
         private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
+        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
         private readonly IAbpSession _abpSession;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
                 long> teamPlayerRepository,
+            IRepository<PlayerScore,
+                long> playerScoreRepository,
             IDbContextProvider<ScoringAppReactDbContext> context)
         {
             _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
+            _playerScoreRepository = playerScoreRepository;
             _context = context;
         }
 
@@ -322,6 +326,19 @@ namespace ScoringAppReact.Players
                     Id = i.Id,
                     Name = i.Name,
                     FileName = i.FileName
+                }).ToListAsync();
+            return result;
+        }
+
+
+        public async Task<List<PlayerDto>> GetAllByMatchId(long id)
+        {
+            var result = await _playerScoreRepository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == id)
+                .Select(i => new PlayerDto()
+                {
+                    Id = i.Id,
+                    Name = i.Player.Name,
                 }).ToListAsync();
             return result;
         }
