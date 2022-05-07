@@ -294,7 +294,7 @@ namespace ScoringAppReact.Players
 
         [AbpAllowAnonymous]
         [UnitOfWork(isTransactional: false)]
-        public async Task<PlayerStatisticsDto> PlayerStatistics(int id)
+        public async Task<PlayerStatisticsDto> PlayerStatistics(long playerId, long matchType, long season)
         {
 
             try
@@ -302,9 +302,9 @@ namespace ScoringAppReact.Players
                 var dbContext = _context.GetDbContext();
 
                 var connection = dbContext.Database.GetDbConnection();
-                var paramPlayerId = id;
-                int? paramSeason = null;
-                int? paramMatchTypeId = null;
+                var paramPlayerId = playerId;
+                var paramSeason = matchType;
+                var paramMatchTypeId = season;
                 var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
                     new { paramPlayerId, paramSeason, paramMatchTypeId },
                     commandType: CommandType.StoredProcedure);
