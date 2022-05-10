@@ -1,4 +1,4 @@
-Create PROCEDURE [usp_GetMostRuns]
+Alter PROCEDURE [usp_GetMostRuns]
 @paramTeamId AS INT,
 @paramSeason As Int,
 @paramOvers As Int,

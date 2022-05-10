@@ -23,7 +23,7 @@ namespace ScoringAppReact.Statistics
         {
             _context = context;
         }
-        public async Task<List<MostRunsdto>> MostRuns(MostRunsInput input)
+        public async Task<List<MostRunsdto>> MostRuns(BattingInput input)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace ScoringAppReact.Statistics
             }
         }
 
-        public async Task<List<MostWicketsdto>> MostWickets(MostRunsInput input)
+        public async Task<List<MostWicketsdto>> MostWickets(BowlingInput input)
         {
             try
             {
@@ -60,13 +60,12 @@ namespace ScoringAppReact.Statistics
                 var paramTeamId = input.TeamId;
                 var paramSeason = input.Season;
                 var paramOvers = input.Overs;
-                var paramPosition = input.Position;
                 var paramMatchType = input.MatchType;
                 var paramTournamentId = input.EventId;
                 var paramPlayerRoleId = input.PlayerRoleId;
                 var result = await connection.QueryAsync<MostWicketsdto>("usp_GetMostRuns",
                     new
-                    { paramTeamId, paramSeason, paramOvers, paramPosition, paramMatchType, paramTournamentId, paramPlayerRoleId },
+                    { paramTeamId, paramSeason, paramOvers, paramMatchType, paramTournamentId, paramPlayerRoleId },
 
                     commandType: CommandType.StoredProcedure) ?? new List<MostWicketsdto>();
                 return result.ToList();

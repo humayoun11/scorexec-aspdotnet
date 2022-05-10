@@ -278,6 +278,24 @@ namespace ScoringAppReact.Events
                     EndDate = i.EndDate
                 }).ToListAsync());
         }
+
+        public async Task<List<EventDto>> GetAllEventsByTeamId(long id)
+        {
+            var result = await _repository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j=> j.TeamId == id))
+                .Select(i => new EventDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    EventType = i.EventType,
+                    TournamentType = i.TournamentType,
+                    StartDate = i.StartDate,
+                    EndDate = i.EndDate,
+                    Organizor = i.Organizor,
+                    OrganizorContact = i.OrganizorContact
+                }).ToListAsync();
+            return result;
+        }
     }
 }
 

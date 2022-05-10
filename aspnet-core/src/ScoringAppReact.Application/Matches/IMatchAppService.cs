@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using ScoringAppReact.Matches.Dto;
+using ScoringAppReact.Models;
 
 namespace ScoringAppReact.Matches
 {
@@ -26,5 +27,11 @@ namespace ScoringAppReact.Matches
         List<EventMatches> GetAllStagedMatchesByEventId(long eventId);
 
         Task<EventMatch> EditEventMatch(long id);
+
+        Task<List<PlayerMatches>> GetMatchesByPlayerId(long id);
+
+        Task<List<PlayerMatches>> GetMOMByPlayerId(long id);
+
+        Task<List<PlayerMatches>> GetMatchesByTeamId(long id);
     }
 }

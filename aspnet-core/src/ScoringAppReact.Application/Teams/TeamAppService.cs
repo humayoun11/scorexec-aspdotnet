@@ -281,6 +281,94 @@ namespace ScoringAppReact.Teams
             }
 
         }
+
+
+        public async Task<List<TeamDto>> GetAllTeamsByPlayerId(long id)
+        {
+            try
+            {
+                return await _repository.GetAll()
+               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.TeamPlayers.Any(i => i.PlayerId == id))
+               .Select(i => new TeamDto()
+               {
+                   Id = i.Id,
+                   Name = i.Name,
+
+               }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
+        }
+
+
+        public async Task<TeamStatsDto> GetTeamStats(long id)
+        {
+            try
+            {
+                var matches = await _matchRepository.GetAll()
+                    .Include(i => i.TeamScores)
+                    .Include(i => i.HomeTeam)
+                    .Where(i => i.HomeTeamId == id || i.OppponentTeamId == id).ToListAsync();
+
+                var winningMatch = new List<Match>();
+                var loosingMatch = new List<Match>();
+                var tieMatch = new List<Match>();
+                var noResult = new List<Match>();
+                foreach (var item in matches)
+                {
+                    var t1 = item.TeamScores.Where(i => i.TeamId == id).SingleOrDefault();
+                    var t2 = item.TeamScores.Where(i => i.TeamId != id).SingleOrDefault();
+                    if (t1 is null || t2 is null)
+                    {
+                        noResult.Add(item);
+                    }
+                    else if (t1.TotalScore > t2.TotalScore)
+                    {
+                        winningMatch.Add(item);
+                    }
+                    else if (t1.TotalScore < t2.TotalScore)
+                    {
+                        loosingMatch.Add(item);
+                    }
+                    else if (t1.TotalScore == t2.TotalScore)
+                    {
+                        tieMatch.Add(item);
+                    }
+                    else
+                    {
+                        noResult.Add(item);
+                    }
+                }
+                var teamDetails = matches.Where(i => i.HomeTeamId == id).Select(i => i.HomeTeam).FirstOrDefault();
+                var stats = new TeamStatsDto
+                {
+                    Matches = matches.Count(),
+                    Won = winningMatch.Count(),
+                    Lost = loosingMatch.Count(),
+                    Tie = tieMatch.Count(),
+                    NoResult = noResult.Count(),
+                    TossWon = matches.Count(i => i.TossWinningTeam == id),
+                    BatFirst = matches.Count(i => i.HomeTeamId == id),
+                    FieldFirst = matches.Count(i => i.OppponentTeamId == id),
+                    Name = teamDetails.Name,
+                    Location = teamDetails.Place,
+                    Type = teamDetails.Type
+
+                };
+                return stats;
+
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
+        }
     }
 }
 

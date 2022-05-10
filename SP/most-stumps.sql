@@ -1,12 +1,10 @@
-Create PROCEDURE [usp_GetMostStumps]
+Alter PROCEDURE [usp_GetMostStumps]
 @paramTeamId AS INT,
 @paramSeason As Int,
 @paramOvers As Int,
 @paramMatchType As Int,
 @paramTournamentId As Int,
-@paramMatchseriesId As Int,
-@paramPlayerRoleId As Int,
-@paramUserId AS int
+@paramPlayerRoleId As Int
 AS
 BEGIN
 	SELECT  top 10
@@ -26,6 +24,8 @@ BEGIN
 	WHERE (@paramSeason IS NUll OR Matches.Season = @paramSeason)	And
 		  (@paramOvers IS NUll OR Matches.MatchOvers = @paramOvers)	And 
 		  (@paramPlayerRoleId IS NUll OR Players.PlayerRoleId = @paramPlayerRoleId) And
+		  (@paramMatchType IS NUll OR Matches.MatchTypeId = @paramMatchType) And
+		  (@paramTournamentId IS NUll OR [Events].Id = @paramTournamentId) And
 		    (Players.IsDeactivated != 1) and 
 			(Players.IsGuestorRegistered != 'Guest' or Players.IsGuestorRegistered is null)
 	

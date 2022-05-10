@@ -1,13 +1,11 @@
-Create PROCEDURE [usp_GetMostFours]
+Alter PROCEDURE [usp_GetMostFours]
 @paramTeamId AS INT,
 @paramSeason As Int,
 @paramOvers As Int,
 @paramPosition As Int, 
 @paramMatchType As Int,
 @paramTournamentId As Int,
-@paramMatchseriesId As Int,
-@paramPlayerRoleId As Int,
-@paramUserId AS int
+@paramPlayerRoleId As Int
 
 AS
 BEGIN
@@ -31,6 +29,7 @@ BEGIN
 		  (@paramPosition IS NULL OR PlayerScores.Position = @paramPosition) And 
 		  (@paramMatchType IS NULL OR Matches.MatchTypeId = @paramMatchType) And 
 		  (@paramPlayerRoleId IS NUll OR Players.PlayerRoleId = @paramPlayerRoleId) And
+		  (@paramTournamentId IS NUll OR [Events].Id = @paramTournamentId) And
 		 (Players.IsDeactivated != 1) and 
 		 (Players.IsGuestorRegistered != 'Guest' or Players.IsGuestorRegistered is null)
 	

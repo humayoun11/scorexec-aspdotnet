@@ -1,12 +1,10 @@
-Create PROCEDURE [usp_GetMostWickets]
+Alter PROCEDURE [usp_GetMostWickets]
 @paramTeamId AS INT,
 @paramSeason As Int,
 @paramOvers As Int,
 @paramMatchType As Int,
 @paramTournamentId As Int,
-@paramMatchseriesId As Int,
-@paramPlayerRoleId As Int,
-@paramUserId AS int
+@paramPlayerRoleId As Int
 AS
 BEGIN
 	SELECT  top 10
@@ -29,6 +27,7 @@ BEGIN
 		  (@paramOvers IS NUll OR Matches.MatchOvers = @paramOvers)	And 
 		  (@paramMatchType IS NULL OR Matches.MatchTypeId = @paramMatchType) And 
 		  (@paramPlayerRoleId IS NUll OR Players.PlayerRoleId = @paramPlayerRoleId) ANd
+		  (@paramTournamentId IS NUll OR [Events].id = @paramTournamentId) ANd
 		    (Players.IsDeactivated != 1) and 
 			(Players.IsGuestorRegistered != 'Guest' or Players.IsGuestorRegistered is null)
 	

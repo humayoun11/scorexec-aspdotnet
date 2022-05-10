@@ -161,7 +161,7 @@ namespace ScoringAppReact.Grounds
         {
             var filteredPlayers = _repository.GetAll()
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name.ToLower()),
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
                     x => x.Name.ToLower().Contains(input.Name.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers

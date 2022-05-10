@@ -1,7 +1,8 @@
 Alter PROCEDURE [usp_GetSinglePlayerStatistics]
 @paramPlayerId AS INT,
 @paramSeason AS INT,
-@paramMatchTypeId AS INT
+@paramMatchTypeId AS INT,
+@paramTeamId as Int
 AS
 BEGIN
 		SELECT  * 
@@ -81,8 +82,8 @@ BEGIN
 				(COALESCE(PlayerPastRecords.OnFieldStump,0) + COALESCE(sum (Stump),0)) as 'OnFieldStump',
 				COALESCE(count (case when Overs != null and Overs != 0 then 1 else null end),0) as 'TotalBowlingInnings',
 				Players.[Name] AS 'PlayerName',
-				Teams.Id As 'TeamId',					
-				Teams.[Name] As 'TeamName',
+				--Teams.Id As 'TeamId',					
+				--Teams.[Name] As 'TeamName',
 				Case When Players.[FileName] is null then 'noImage.jpg' else Players.[FileName] end As 'FileName',
 				Players.DOB AS 'DOB',
 				--Convert(varchar(10), Players.DOB) as 'DOB',
@@ -96,11 +97,9 @@ BEGIN
 		left join Matches ON PlayerScores.MatchId = Matches.Id
 	
 		WHERE 
-				Players.Id = @paramPlayerId
+				Players.Id = @paramPlayerId And (@paramTeamId is null or Teams.Id = @paramTeamId)
 		GROUP BY Players.Id,
-				 Players.[Name],			 
-				 Teams.[Name],
-				 Teams.Id,
+				 Players.[Name],
                  Players.DOB,
 				 Players.[FileName],
 				 PlayerPastRecords.TotalMatch,

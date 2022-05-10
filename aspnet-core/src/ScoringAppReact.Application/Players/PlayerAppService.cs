@@ -294,7 +294,7 @@ namespace ScoringAppReact.Players
 
         [AbpAllowAnonymous]
         [UnitOfWork(isTransactional: false)]
-        public async Task<PlayerStatisticsDto> PlayerStatistics(long playerId, long matchType, long season)
+        public async Task<PlayerStatisticsDto> PlayerStatistics(long playerId, int? matchType, int? season, long? teamId)
         {
 
             try
@@ -305,8 +305,9 @@ namespace ScoringAppReact.Players
                 var paramPlayerId = playerId;
                 var paramSeason = matchType;
                 var paramMatchTypeId = season;
+                var paramTeamId = teamId;
                 var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
-                    new { paramPlayerId, paramSeason, paramMatchTypeId },
+                    new { paramPlayerId, paramSeason, paramMatchTypeId, paramTeamId },
                     commandType: CommandType.StoredProcedure);
 
                 return result;
@@ -342,6 +343,8 @@ namespace ScoringAppReact.Players
                 }).ToListAsync();
             return result;
         }
+
+
 
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {

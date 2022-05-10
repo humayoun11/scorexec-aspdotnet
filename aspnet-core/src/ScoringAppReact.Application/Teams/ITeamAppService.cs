@@ -22,5 +22,9 @@ namespace ScoringAppReact.Teams
         Task<List<TeamDto>> GetAllTeamsByEventId(long id);
 
         Task<List<TeamDto>> GetAllTeamsByMatchId(long id);
+
+        Task<List<TeamDto>> GetAllTeamsByPlayerId(long id);
+
+        Task<TeamStatsDto> GetTeamStats(long id);
     }
 }

@@ -19,5 +19,7 @@ namespace ScoringAppReact.Events
         Task<PagedResultDto<EventDto>> GetPaginatedAllAsync(PagedEventResultRequestDto input);
 
         Task<ResponseMessageDto> CreateOrUpdateEventTeamsAsync(EventTeamDto model);
+
+        Task<List<EventDto>> GetAllEventsByTeamId(long id);
     }
 }

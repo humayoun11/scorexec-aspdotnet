@@ -9,6 +9,6 @@ namespace ScoringAppReact.Statistics
 {
     public interface IStatisticsAppService : IApplicationService
     {
-        Task<List<MostRunsdto>> MostRuns(MostRunsInput input);
+        Task<List<MostRunsdto>> MostRuns(BattingInput input);
     }
 }
