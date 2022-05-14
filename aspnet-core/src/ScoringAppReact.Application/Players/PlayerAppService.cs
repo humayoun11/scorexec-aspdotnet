@@ -294,7 +294,7 @@ namespace ScoringAppReact.Players
 
         [AbpAllowAnonymous]
         [UnitOfWork(isTransactional: false)]
-        public async Task<PlayerStatisticsDto> PlayerStatistics(long playerId, int? matchType, int? season, long? teamId)
+        public async Task<PlayerStatisticsDto> GetPlayerStatistics(long playerId, int? matchType, int? season, long? teamId)
         {
 
             try
@@ -306,6 +306,32 @@ namespace ScoringAppReact.Players
                 var paramSeason = matchType;
                 var paramMatchTypeId = season;
                 var paramTeamId = teamId;
+                var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
+                    new { paramPlayerId, paramSeason, paramMatchTypeId, paramTeamId },
+                    commandType: CommandType.StoredProcedure);
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
+        public async Task<PlayerStatisticsDto> PlayerStatistics(PlayerStatsInput input)
+        {
+
+            try
+            {
+                var dbContext = _context.GetDbContext();
+
+                var connection = dbContext.Database.GetDbConnection();
+                var paramPlayerId = input.PlayerId;
+                var paramSeason = input.MatchType;
+                var paramMatchTypeId = input.Season;
+                var paramTeamId = input.TeamId;
                 var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
                     new { paramPlayerId, paramSeason, paramMatchTypeId, paramTeamId },
                     commandType: CommandType.StoredProcedure);

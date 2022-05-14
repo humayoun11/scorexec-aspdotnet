@@ -13,6 +13,7 @@ using Abp.Runtime.Session;
 using ScoringAppReact.Events.Dto;
 using System;
 using Abp.EntityFrameworkCore.Repositories;
+using Abp.Domain.Uow;
 
 namespace ScoringAppReact.Events
 {
@@ -167,7 +168,7 @@ namespace ScoringAppReact.Events
                     matchList.Add(new Match()
                     {
                         HomeTeamId = teams[i].TeamId,
-                        OppponentTeamId = teams[i+1].TeamId,
+                        OppponentTeamId = teams[i + 1].TeamId,
                         MatchTypeId = MatchTypeConsts.Tournament,
                         EventId = model.EventId,
                         EventStage = EventStageConsts.Group,
@@ -282,7 +283,7 @@ namespace ScoringAppReact.Events
         public async Task<List<EventDto>> GetAllEventsByTeamId(long id)
         {
             var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j=> j.TeamId == id))
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.TeamId == id))
                 .Select(i => new EventDto()
                 {
                     Id = i.Id,
@@ -295,6 +296,22 @@ namespace ScoringAppReact.Events
                     OrganizorContact = i.OrganizorContact
                 }).ToListAsync();
             return result;
+        }
+
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
+        public async Task<EventStats> GetEventStat(long id)
+        {
+            var model = await _matchRepository.GetAll()
+                .Include(i=> i.PlayerScores)
+                .Where(i => i.IsDeleted == false && i.EventId == id && i.TenantId == _abpSession.TenantId).ToListAsync();
+            var playersScore = model.Select(i => i.PlayerScores).ToList();
+            //var totalFours = playersScore.Count(i=> i.)
+            var stats = new EventStats
+            {
+                Matches = model.Count()
+            };
+            return stats;
         }
     }
 }
