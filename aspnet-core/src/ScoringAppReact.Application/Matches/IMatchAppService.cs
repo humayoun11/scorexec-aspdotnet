@@ -28,11 +28,11 @@ namespace ScoringAppReact.Matches
 
         Task<EventMatch> EditEventMatch(long id);
 
-        Task<List<ViewMatch>> GetMatchesByPlayerId(long id);
+        Task<List<ViewMatch>> GetMatchesByPlayerId(long id, int matchResultFilter);
 
         Task<List<ViewMatch>> GetMOMByPlayerId(long id);
 
-        Task<List<ViewMatch>> GetMatchesByTeamId(long id);
+        Task<List<ViewMatch>> GetMatchesByTeamId(long id, int matchResultFilter);
 
         Task<List<ViewMatch>> GetMatchesByEventId(long id);
     }

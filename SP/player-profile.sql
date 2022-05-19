@@ -97,7 +97,10 @@ BEGIN
 		left join Matches ON PlayerScores.MatchId = Matches.Id
 	
 		WHERE 
-				Players.Id = @paramPlayerId And (@paramTeamId is null or Teams.Id = @paramTeamId)
+				Players.Id = @paramPlayerId And 
+				(@paramTeamId is null or Teams.Id = @paramTeamId) And
+				(@paramMatchTypeId is null or Matches.MatchTypeId = @paramMatchTypeId) And
+				(@paramSeason is null or Matches.Season = @paramSeason)
 		GROUP BY Players.Id,
 				 Players.[Name],
                  Players.DOB,

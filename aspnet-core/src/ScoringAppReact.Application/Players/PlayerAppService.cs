@@ -329,13 +329,22 @@ namespace ScoringAppReact.Players
 
                 var connection = dbContext.Database.GetDbConnection();
                 var paramPlayerId = input.PlayerId;
-                var paramSeason = input.MatchType;
-                var paramMatchTypeId = input.Season;
+                var paramSeason = input.Season;
+                var paramMatchTypeId = input.MatchType;
                 var paramTeamId = input.TeamId;
                 var result = await connection.QueryFirstOrDefaultAsync<PlayerStatisticsDto>("usp_GetSinglePlayerStatistics",
                     new { paramPlayerId, paramSeason, paramMatchTypeId, paramTeamId },
                     commandType: CommandType.StoredProcedure);
-
+                if (result == null)
+                {
+                    var stats = new PlayerStatisticsDto();
+                    var player = await _repository.GetAll().Where(i => i.Id == input.PlayerId).SingleOrDefaultAsync();
+                    stats.PlayerName = player.Name;
+                    stats.PlayerRole = player.PlayerRoleId ;
+                    stats.BattingStyle = player.BattingStyleId;
+                    stats.BowlingStyle = player.BowlingStyleId;
+                    return stats;
+                }
                 return result;
             }
             catch (Exception e)
@@ -362,6 +371,18 @@ namespace ScoringAppReact.Players
         {
             var result = await _playerScoreRepository.GetAll()
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == id)
+                .Select(i => new PlayerDto()
+                {
+                    Id = i.Id,
+                    Name = i.Player.Name,
+                }).ToListAsync();
+            return result;
+        }
+
+        public async Task<List<PlayerDto>> GetAllByEventId(long id)
+        {
+            var result = await _playerScoreRepository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Match.EventId == id)
                 .Select(i => new PlayerDto()
                 {
                     Id = i.Id,

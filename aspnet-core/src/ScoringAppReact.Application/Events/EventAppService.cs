@@ -14,6 +14,10 @@ using ScoringAppReact.Events.Dto;
 using System;
 using Abp.EntityFrameworkCore.Repositories;
 using Abp.Domain.Uow;
+using Abp.EntityFrameworkCore;
+using ScoringAppReact.EntityFrameworkCore;
+using Dapper;
+using System.Data;
 
 namespace ScoringAppReact.Events
 {
@@ -23,16 +27,21 @@ namespace ScoringAppReact.Events
         private readonly IRepository<Event, long> _repository;
         private readonly IRepository<Match, long> _matchRepository;
         private readonly IRepository<EventTeam, long> _eventTeamRepository;
+        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
         private readonly IAbpSession _abpSession;
+        private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         public EventAppService(IRepository<Event, long> repository,
             IRepository<EventTeam, long> eventTeamRepository,
             IRepository<Match, long> matchRepository,
-            IAbpSession abpSession)
+            IRepository<PlayerScore, long> playerScoreRepository,
+            IAbpSession abpSession, IDbContextProvider<ScoringAppReactDbContext> context)
         {
             _repository = repository;
             _abpSession = abpSession;
             _eventTeamRepository = eventTeamRepository;
             _matchRepository = matchRepository;
+            _context = context;
+            _playerScoreRepository = playerScoreRepository;
         }
 
 
@@ -280,10 +289,12 @@ namespace ScoringAppReact.Events
                 }).ToListAsync());
         }
 
-        public async Task<List<EventDto>> GetAllEventsByTeamId(long id)
+        public async Task<List<EventDto>> GetAllEventsByTeamId(long id,int? typeId)
         {
             var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.TeamId == id))
+                .Where(i => i.IsDeleted == false &&
+                i.TenantId == _abpSession.TenantId &&
+                i.EventTeams.Any(j => j.TeamId == id)    && (!typeId.HasValue || i.EventType == typeId))
                 .Select(i => new EventDto()
                 {
                     Id = i.Id,
@@ -302,16 +313,28 @@ namespace ScoringAppReact.Events
         [UnitOfWork(isTransactional: false)]
         public async Task<EventStats> GetEventStat(long id)
         {
-            var model = await _matchRepository.GetAll()
-                .Include(i=> i.PlayerScores)
-                .Where(i => i.IsDeleted == false && i.EventId == id && i.TenantId == _abpSession.TenantId).ToListAsync();
-            var playersScore = model.Select(i => i.PlayerScores).ToList();
-            //var totalFours = playersScore.Count(i=> i.)
-            var stats = new EventStats
+            try
             {
-                Matches = model.Count()
-            };
-            return stats;
+                var dbContext = _context.GetDbContext();
+                var connection = dbContext.Database.GetDbConnection();
+                var paramEventId = id;
+                var result = await connection.QueryFirstOrDefaultAsync<EventStats>("usp_GetEventStatistics",
+                    new { paramEventId },
+                    commandType: CommandType.StoredProcedure);
+
+                //var model = _playerScoreRepository.GetAll().Where(i => i.Match.EventId == id).ToList();
+                //var a = model.GroupBy(i => i.PlayerId).Select(i => new
+                //{
+                //    Runs  = i.Sum(a=> a.Bat_Runs)
+
+                //}).ToList();
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

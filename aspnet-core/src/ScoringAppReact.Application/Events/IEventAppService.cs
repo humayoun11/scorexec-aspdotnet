@@ -20,7 +20,7 @@ namespace ScoringAppReact.Events
 
         Task<ResponseMessageDto> CreateOrUpdateEventTeamsAsync(EventTeamDto model);
 
-        Task<List<EventDto>> GetAllEventsByTeamId(long id);
+        Task<List<EventDto>> GetAllEventsByTeamId(long id, int? typeId);
 
         Task<EventStats> GetEventStat(long id);
     }

@@ -22,6 +22,7 @@ BEGIN
 	
 	
 	WHERE (@paramSeason IS NUll OR Matches.Season = @paramSeason)	And
+	(@paramTeamId IS NUll OR PlayerScores.TeamId = @paramTeamId )	And
 		  (@paramOvers IS NUll OR Matches.MatchOvers = @paramOvers)	And 
 		  (@paramPlayerRoleId IS NUll OR Players.PlayerRoleId = @paramPlayerRoleId) And
 		  (@paramMatchType IS NUll OR Matches.MatchTypeId = @paramMatchType) And

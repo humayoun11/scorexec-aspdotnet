@@ -19,12 +19,13 @@ BEGIN
 	FROM PlayerScores
 	Inner join Players ON PlayerScores.PlayerId = Players.Id
 	Inner join Matches ON PlayerScores.MatchId = Matches.Id
-	left join Events On Matches.EventId = Events.Id
+	left join [Events] On Matches.EventId = [Events].Id
 	
 	
 	
 	WHERE  
 		  (@paramSeason IS NUll OR Matches.Season = @paramSeason)	And
+		  (@paramTeamId IS NUll OR PlayerScores.TeamId = @paramTeamId )	And
 		  (@paramOvers IS NUll OR Matches.MatchOvers = @paramOvers)	And
 		  (@paramPosition IS NULL OR PlayerScores.Position = @paramPosition) And 
 		  (@paramMatchType IS NULL OR Matches.MatchTypeId = @paramMatchType) And 

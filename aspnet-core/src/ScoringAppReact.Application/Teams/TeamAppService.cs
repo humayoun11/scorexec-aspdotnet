@@ -16,6 +16,7 @@ using Abp.UI;
 using System;
 using ScoringAppReact.Events.Dto;
 using ScoringAppReact.Matches.Dto;
+using ScoringAppReact.Teams.InputDto;
 
 namespace ScoringAppReact.Teams
 {
@@ -305,14 +306,18 @@ namespace ScoringAppReact.Teams
         }
 
 
-        public async Task<TeamStatsDto> GetTeamStats(long id)
+        public async Task<TeamStatsDto> TeamStats(StatsInput input)
         {
             try
             {
                 var matches = await _matchRepository.GetAll()
                     .Include(i => i.TeamScores)
                     .Include(i => i.HomeTeam)
-                    .Where(i => i.HomeTeamId == id || i.OppponentTeamId == id).ToListAsync();
+                    .Where(i => (i.HomeTeamId == input.TeamId || i.OppponentTeamId == input.TeamId) &&
+                    (!input.MatchTypeId.HasValue || i.MatchTypeId == input.MatchTypeId) &&
+                    (!input.Season.HasValue || i.Season == input.Season) &&
+                    (!input.EventId.HasValue || i.EventId == input.EventId))
+                    .ToListAsync();
 
                 var winningMatch = new List<Match>();
                 var loosingMatch = new List<Match>();
@@ -320,8 +325,8 @@ namespace ScoringAppReact.Teams
                 var noResult = new List<Match>();
                 foreach (var item in matches)
                 {
-                    var t1 = item.TeamScores.Where(i => i.TeamId == id).SingleOrDefault();
-                    var t2 = item.TeamScores.Where(i => i.TeamId != id).SingleOrDefault();
+                    var t1 = item.TeamScores.Where(i => i.TeamId == input.TeamId).SingleOrDefault();
+                    var t2 = item.TeamScores.Where(i => i.TeamId != input.TeamId).SingleOrDefault();
                     if (t1 is null || t2 is null)
                     {
                         noResult.Add(item);
@@ -343,7 +348,21 @@ namespace ScoringAppReact.Teams
                         noResult.Add(item);
                     }
                 }
-                var teamDetails = matches.Where(i => i.HomeTeamId == id).Select(i => i.HomeTeam).FirstOrDefault();
+                var teamDetails = matches.Where(i => i.HomeTeamId == input.TeamId).Select(i => i.HomeTeam).FirstOrDefault();
+                if (!matches.Any())
+                {
+                    var team = await _repository.GetAll().Where(i => i.IsDeleted == false && i.Id == input.TeamId).SingleOrDefaultAsync();
+
+                    return new TeamStatsDto
+                    {
+                        Name = team.Name,
+                        Location = team.Place,
+                        Type = team.Type
+                    };
+
+                }
+
+
                 var stats = new TeamStatsDto
                 {
                     Matches = matches.Count(),
@@ -351,14 +370,15 @@ namespace ScoringAppReact.Teams
                     Lost = loosingMatch.Count(),
                     Tie = tieMatch.Count(),
                     NoResult = noResult.Count(),
-                    TossWon = matches.Count(i => i.TossWinningTeam == id),
-                    BatFirst = matches.Count(i => i.HomeTeamId == id),
-                    FieldFirst = matches.Count(i => i.OppponentTeamId == id),
+                    TossWon = matches.Count(i => i.TossWinningTeam == input.TeamId),
+                    BatFirst = matches.Count(i => i.HomeTeamId == input.TeamId),
+                    FieldFirst = matches.Count(i => i.OppponentTeamId == input.TeamId),
                     Name = teamDetails.Name,
                     Location = teamDetails.Place,
                     Type = teamDetails.Type
 
                 };
+
                 return stats;
 
             }

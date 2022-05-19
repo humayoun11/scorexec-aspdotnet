@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using ScoringAppReact.Teams.Dto;
+using ScoringAppReact.Teams.InputDto;
 
 namespace ScoringAppReact.Teams
 {
@@ -25,6 +26,6 @@ namespace ScoringAppReact.Teams
 
         Task<List<TeamDto>> GetAllTeamsByPlayerId(long id);
 
-        Task<TeamStatsDto> GetTeamStats(long id);
+        Task<TeamStatsDto> TeamStats(StatsInput input);
     }
 }

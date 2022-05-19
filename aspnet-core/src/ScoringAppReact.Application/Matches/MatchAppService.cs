@@ -176,8 +176,7 @@ namespace ScoringAppReact.Matches
 
         public async Task<List<MatchDto>> GetAll()
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
+            var result = await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
                 .Select(i => new MatchDto()
                 {
                     Id = i.Id,
@@ -188,6 +187,11 @@ namespace ScoringAppReact.Matches
 
                 }).ToListAsync();
             return result;
+        }
+
+        private async Task<List<Match>> GetAllMatches()
+        {
+            return await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId).ToListAsync();
         }
 
         public async Task<List<MatchDto>> GetAllMatchesBYEventId(long eventId)
@@ -476,7 +480,7 @@ namespace ScoringAppReact.Matches
         }
 
 
-        public async Task<List<ViewMatch>> GetMatchesByPlayerId(long id)
+        public async Task<List<ViewMatch>> GetMatchesByPlayerId(long id, int matchResultFilter)
         {
             var result = await _repository.GetAll()
                 .Where(i => i.IsDeleted == false
@@ -498,11 +502,28 @@ namespace ScoringAppReact.Matches
                     Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? i.Event.Name : "Friendly / Individual",
+                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                    : "Friendly / Individual",
                     Mom = i.Player.Name ?? "N/A"
                 })
 
                 .ToListAsync();
+
+            if (matchResultFilter == 2)
+            {
+                return result.Where(i => i.Team1Id == id ? i.Team1Score > i.Team2Score : i.Team2Score > i.Team1Score).ToList();
+
+            }
+            else
+            if (matchResultFilter == 3)
+            {
+                return result.Where(i => i.Team1Id == id ? i.Team1Score < i.Team2Score : i.Team2Score < i.Team1Score).ToList();
+
+            }
+            else if (matchResultFilter == 4)
+            {
+                return result.Where(i => i.Team1Score == i.Team2Score).ToList();
+            }
             return result;
         }
 
@@ -528,7 +549,8 @@ namespace ScoringAppReact.Matches
                     Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? i.Event.Name : "Friendly / Individual",
+                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                    : "Friendly / Individual",
                     Mom = i.Player.Name ?? "N/A"
                 })
 
@@ -536,7 +558,7 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-        public async Task<List<ViewMatch>> GetMatchesByTeamId(long id)
+        public async Task<List<ViewMatch>> GetMatchesByTeamId(long id, int matchResultFilter)
         {
             var result = await _repository.GetAll()
                 .Where(i => i.IsDeleted == false
@@ -558,11 +580,29 @@ namespace ScoringAppReact.Matches
                     Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? i.Event.Name : "Friendly / Individual",
+                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                    : "Friendly / Individual",
                     Mom = i.Player.Name ?? "N/A"
                 })
 
                 .ToListAsync();
+
+
+            if (matchResultFilter == 2)
+            {
+                return result.Where(i => i.Team1Id == id ? i.Team1Score > i.Team2Score : i.Team2Score > i.Team1Score).ToList();
+
+            }
+            else
+            if (matchResultFilter == 3)
+            {
+                return result.Where(i => i.Team1Id == id ? i.Team1Score < i.Team2Score : i.Team2Score < i.Team1Score).ToList();
+
+            }
+            else if (matchResultFilter == 4)
+            {
+                return result.Where(i => i.Team1Score == i.Team2Score).ToList();
+            }
             return result;
         }
         public async Task<List<ViewMatch>> GetMatchesByEventId(long id)
@@ -587,11 +627,12 @@ namespace ScoringAppReact.Matches
                     Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
                     MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? i.Event.Name : "Friendly / Individual",
+                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                    : "Friendly / Individual",
                     Mom = i.Player.Name ?? "N/A"
                 }).ToListAsync();
             return result;
         }
     }
 }
- 
+

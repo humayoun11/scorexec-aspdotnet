@@ -27,5 +27,7 @@ namespace ScoringAppReact.Players
         Task<PlayerStatisticsDto> GetPlayerStatistics(long playerId, int? matchType, int? season, long? teamId);
 
         Task<List<PlayerDto>> GetAllByMatchId(long id);
+
+        Task<List<PlayerDto>> GetAllByEventId(long id);
     }
 }
