@@ -419,10 +419,9 @@ namespace ScoringAppReact.Matches
         public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)
         {
             var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId))
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) &&
+                   (!input.Team1Id.HasValue || i.HomeTeamId == input.Team1Id || i.OppponentTeamId == input.Team1Id) && (!input.Team2Id.HasValue || i.HomeTeamId == input.Team2Id || i.OppponentTeamId == input.Team2Id))
                 .WhereIf(input.Overs.HasValue, i => i.MatchOvers == input.Overs)
-                .WhereIf(input.Team1Id.HasValue, i => i.HomeTeamId == input.Team1Id)
-                .WhereIf(input.Team2Id.HasValue, i => i.OppponentTeamId == input.Team2Id)
                 .WhereIf(input.Type.HasValue, i => i.MatchTypeId == input.Type)
                 .WhereIf(input.Date.HasValue, i => i.DateOfMatch == input.Date)
                 .WhereIf(input.GroundId.HasValue, i => i.GroundId == input.GroundId);
