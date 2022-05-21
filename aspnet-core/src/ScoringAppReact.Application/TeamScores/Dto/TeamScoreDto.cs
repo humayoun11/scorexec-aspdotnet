@@ -9,7 +9,7 @@ namespace ScoringAppReact.TeamScores.Dto
     {
         public long Id { get; set; }
         public int TotalScore { get; set; }
-        public float Overs { get; set; }
+        public float? Overs { get; set; }
         public int Wickets { get; set; }
         public int? Wideballs { get; set; }
         public int? NoBalls { get; set; }

@@ -13,10 +13,10 @@ namespace ScoringAppReact.Matches.Dto
         public long Team1Id { get; set; }
         public long Team2Id { get; set; }
         public long Team1Score { get; set; }
-        public float Team1Overs { get; set; }
+        public float? Team1Overs { get; set; }
         public long Team1Wickets { get; set; }
         public long Team2Wickets { get; set; }
-        public float Team2Overs { get; set; }
+        public float? Team2Overs { get; set; }
         public long Team2Score { get; set; }       
         public string MatchType { get; set; }       
         public string Tournament { get; set; }       

@@ -12818,3 +12818,193 @@ INFO  2022-05-20 11:57:50,962 [24   ] ft.AspNetCore.Routing.EndpointMiddleware -
 INFO  2022-05-20 11:57:50,966 [28   ] ft.AspNetCore.Routing.EndpointMiddleware - Executed endpoint 'ScoringAppReact.TeamScores.TeamScoresAppService.GetByTeamIdAndMatchId (ScoringAppReact.Application)'
 INFO  2022-05-20 11:57:50,969 [24   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 1086.4332ms 200 application/json; charset=utf-8
 INFO  2022-05-20 11:57:50,972 [28   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 1089.7462ms 200 application/json; charset=utf-8
+DEBUG 2022-05-20 20:11:38,452 [1    ] Abp.Modules.AbpModuleManager             - Loading Abp modules...
+DEBUG 2022-05-20 20:11:39,100 [1    ] Abp.Modules.AbpModuleManager             - Found 15 ABP modules in total.
+DEBUG 2022-05-20 20:11:39,116 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.Web.Host.Startup.ScoringAppReactWebHostModule, ScoringAppReact.Web.Host, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,118 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactWebCoreModule, ScoringAppReact.Web.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,119 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactApplicationModule, ScoringAppReact.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,119 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactCoreModule, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,120 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.AbpZeroCoreModule, Abp.ZeroCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,120 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.AbpZeroCommonModule, Abp.Zero.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,120 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AbpKernelModule, Abp, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,120 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AutoMapper.AbpAutoMapperModule, Abp.AutoMapper, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,122 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.EntityFrameworkCore.ScoringAppReactEntityFrameworkModule, ScoringAppReact.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,122 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.EntityFrameworkCore.AbpZeroCoreEntityFrameworkCoreModule, Abp.ZeroCore.EntityFrameworkCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,122 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.EntityFrameworkCore.AbpEntityFrameworkCoreModule, Abp.EntityFrameworkCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,123 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.EntityFramework.AbpEntityFrameworkCommonModule, Abp.EntityFramework.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,123 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AspNetCore.AbpAspNetCoreModule, Abp.AspNetCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,123 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Web.AbpWebCommonModule, Abp.Web.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,124 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AspNetCore.SignalR.AbpAspNetCoreSignalRModule, Abp.AspNetCore.SignalR, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:39,126 [1    ] Abp.Modules.AbpModuleManager             - 15 modules loaded.
+DEBUG 2022-05-20 20:11:39,531 [1    ] o.Configuration.LanguageManagementConfig - Converted Abp (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-20 20:11:39,532 [1    ] o.Configuration.LanguageManagementConfig - Converted AbpZero (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-20 20:11:39,532 [1    ] o.Configuration.LanguageManagementConfig - Converted ScoringAppReact (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-20 20:11:39,532 [1    ] o.Configuration.LanguageManagementConfig - Converted AbpWeb (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-20 20:11:40,470 [1    ] ameworkCore.AbpEntityFrameworkCoreModule - Registering DbContext: ScoringAppReact.EntityFrameworkCore.ScoringAppReactDbContext, ScoringAppReact.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-20 20:11:42,027 [1    ] Abp.Localization.LocalizationManager     - Initializing 4 localization sources.
+DEBUG 2022-05-20 20:11:42,091 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: Abp
+DEBUG 2022-05-20 20:11:42,107 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: AbpZero
+DEBUG 2022-05-20 20:11:42,147 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: ScoringAppReact
+DEBUG 2022-05-20 20:11:42,155 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: AbpWeb
+DEBUG 2022-05-20 20:11:42,477 [1    ] Abp.BackgroundJobs.BackgroundJobManager  - Start background worker: Castle.Proxies.BackgroundJobManagerProxy
+DEBUG 2022-05-20 20:11:42,650 [1    ] , Culture=neutral, PublicKeyToken=null]] - Start background worker: Abp.Authorization.Users.UserTokenExpirationWorker`2[[ScoringAppReact.MultiTenancy.Tenant, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[ScoringAppReact.Authorization.Users.User, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+DEBUG 2022-05-20 20:11:42,731 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - Found 8 classes define auto mapping attributes
+DEBUG 2022-05-20 20:11:42,731 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Models.TokenAuth.ExternalLoginProviderInfoModel
+DEBUG 2022-05-20 20:11:42,739 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Users.Dto.CreateUserDto
+DEBUG 2022-05-20 20:11:42,739 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Users.Dto.UserDto
+DEBUG 2022-05-20 20:11:42,740 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Sessions.Dto.TenantLoginInfoDto
+DEBUG 2022-05-20 20:11:42,740 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Sessions.Dto.UserLoginInfoDto
+DEBUG 2022-05-20 20:11:42,740 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Roles.Dto.PermissionDto
+DEBUG 2022-05-20 20:11:42,740 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.MultiTenancy.Dto.CreateTenantDto
+DEBUG 2022-05-20 20:11:42,740 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.MultiTenancy.Dto.TenantDto
+INFO  2022-05-20 20:11:47,035 [1    ] tCore.Builder.RequestLocalizationOptions - Supported Request Localization Cultures: en,es-MX,fr,de,it,nl,pt-BR,tr,ru,ar,ja,zh-Hans
+INFO  2022-05-20 20:11:47,655 [1    ] taProtection.KeyManagement.XmlKeyManager - User profile is available. Using 'C:\Users\faraz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+WARN  2022-05-20 20:11:47,808 [1    ] Microsoft.AspNetCore.Server.Kestrel      - Overriding address(es) 'http://localhost:21021/'. Binding to endpoints defined in UseKestrel() instead.
+INFO  2022-05-20 20:11:49,408 [7    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/  
+INFO  2022-05-20 20:11:50,046 [7    ] ft.AspNetCore.Routing.EndpointMiddleware - Executing endpoint 'ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host)'
+INFO  2022-05-20 20:11:54,843 [7    ] c.Infrastructure.ControllerActionInvoker - Route matched with {action = "Index", controller = "Home", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller ScoringAppReact.Web.Host.Controllers.HomeController (ScoringAppReact.Web.Host).
+INFO  2022-05-20 20:11:56,431 [4    ] vc.Infrastructure.RedirectResultExecutor - Executing RedirectResult, redirecting to /swagger.
+INFO  2022-05-20 20:11:56,442 [4    ] c.Infrastructure.ControllerActionInvoker - Executed action ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host) in 1592.1653ms
+INFO  2022-05-20 20:11:56,445 [4    ] ft.AspNetCore.Routing.EndpointMiddleware - Executed endpoint 'ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host)'
+INFO  2022-05-20 20:11:56,475 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 7102.2229ms 302 
+INFO  2022-05-20 20:11:56,544 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/swagger/index.html  
+INFO  2022-05-20 20:11:56,866 [12   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 321.1325ms 200 text/html;charset=utf-8
+INFO  2022-05-20 20:11:57,048 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/_framework/aspnetcore-browser-refresh.js  
+INFO  2022-05-20 20:11:57,104 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 24.4806ms 200 application/javascript; charset=utf-8
+INFO  2022-05-20 20:11:58,835 [7    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/AntiForgery/SetCookie  
+INFO  2022-05-20 20:11:58,902 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/swagger/v1/swagger.json  
+INFO  2022-05-20 20:11:59,357 [7    ] uthentication.JwtBearer.JwtBearerHandler - Successfully validated the token.
+INFO  2022-05-20 20:11:59,357 [9    ] uthentication.JwtBearer.JwtBearerHandler - Successfully validated the token.
+INFO  2022-05-20 20:11:59,464 [9    ] ft.AspNetCore.Routing.EndpointMiddleware - Executing endpoint 'ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host)'
+INFO  2022-05-20 20:11:59,476 [9    ] c.Infrastructure.ControllerActionInvoker - Route matched with {action = "SetCookie", controller = "AntiForgery", area = ""}. Executing controller action with signature Void SetCookie() on controller ScoringAppReact.Web.Host.Controllers.AntiForgeryController (ScoringAppReact.Web.Host).
+INFO  2022-05-20 20:11:59,512 [9    ] .Mvc.Infrastructure.ObjectResultExecutor - Executing ObjectResult, writing value of type 'Abp.Web.Models.AjaxResponse'.
+INFO  2022-05-20 20:11:59,564 [9    ] c.Infrastructure.ControllerActionInvoker - Executed action ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host) in 85.2188ms
+INFO  2022-05-20 20:11:59,566 [9    ] ft.AspNetCore.Routing.EndpointMiddleware - Executed endpoint 'ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host)'
+INFO  2022-05-20 20:11:59,571 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 737.4212ms 200 application/json; charset=utf-8
+ERROR 2022-05-20 20:11:59,896 [4    ] Microsoft.AspNetCore.Server.Kestrel      - Connection id "0HMHQEC7LSJH1", Request id "0HMHQEC7LSJH1:00000001": An unhandled exception was thrown by the application.
+System.InvalidOperationException: Can't use schemaId "$TeamScoreDto" for type "$ScoringAppReact.TeamScores.Dto.TeamScoreDto". The same schemaId is already used for type "$ScoringAppReact.MatchSummary.Dto.TeamScoreDto"
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaRepository.ReserveIdFor(Type type, String schemaId)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaRepository.GetOrAdd(Type type, String schemaId, Func`1 factoryMethod)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateReferencedSchema(DataContract dataContract, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateSchemaForType(Type type, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateSchema(Type type, SchemaRepository schemaRepository, MemberInfo memberInfo, ParameterInfo parameterInfo)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.CreateResponseMediaType(ModelMetadata modelMetadata, SchemaRepository schemaRespository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.<>c__DisplayClass18_0.<GenerateResponse>b__2(String contentType)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateResponse(ApiDescription apiDescription, SchemaRepository schemaRepository, String statusCode, ApiResponseType apiResponseType)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateResponses(ApiDescription apiDescription, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateOperation(ApiDescription apiDescription, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateOperations(IEnumerable`1 apiDescriptions, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GeneratePaths(IEnumerable`1 apiDescriptions, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GetSwagger(String documentName, String host, String basePath)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Abp.AspNetCore.Security.AbpSecurityHeadersMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware.InvokeAsync(HttpContext context)
+   at Microsoft.AspNetCore.Builder.Extensions.MapWhenMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)
+INFO  2022-05-20 20:11:59,903 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 1009.7133ms 500 
+DEBUG 2022-05-21 19:41:41,614 [1    ] Abp.Modules.AbpModuleManager             - Loading Abp modules...
+DEBUG 2022-05-21 19:41:42,215 [1    ] Abp.Modules.AbpModuleManager             - Found 15 ABP modules in total.
+DEBUG 2022-05-21 19:41:42,229 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.Web.Host.Startup.ScoringAppReactWebHostModule, ScoringAppReact.Web.Host, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,231 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactWebCoreModule, ScoringAppReact.Web.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,231 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactApplicationModule, ScoringAppReact.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,232 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.ScoringAppReactCoreModule, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,232 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.AbpZeroCoreModule, Abp.ZeroCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,232 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.AbpZeroCommonModule, Abp.Zero.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,232 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AbpKernelModule, Abp, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,233 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AutoMapper.AbpAutoMapperModule, Abp.AutoMapper, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,234 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: ScoringAppReact.EntityFrameworkCore.ScoringAppReactEntityFrameworkModule, ScoringAppReact.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,234 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Zero.EntityFrameworkCore.AbpZeroCoreEntityFrameworkCoreModule, Abp.ZeroCore.EntityFrameworkCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,234 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.EntityFrameworkCore.AbpEntityFrameworkCoreModule, Abp.EntityFrameworkCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,235 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.EntityFramework.AbpEntityFrameworkCommonModule, Abp.EntityFramework.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,235 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AspNetCore.AbpAspNetCoreModule, Abp.AspNetCore, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,235 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.Web.AbpWebCommonModule, Abp.Web.Common, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,235 [1    ] Abp.Modules.AbpModuleManager             - Loaded module: Abp.AspNetCore.SignalR.AbpAspNetCoreSignalRModule, Abp.AspNetCore.SignalR, Version=5.13.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:42,237 [1    ] Abp.Modules.AbpModuleManager             - 15 modules loaded.
+DEBUG 2022-05-21 19:41:42,649 [1    ] o.Configuration.LanguageManagementConfig - Converted Abp (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-21 19:41:42,649 [1    ] o.Configuration.LanguageManagementConfig - Converted AbpZero (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-21 19:41:42,649 [1    ] o.Configuration.LanguageManagementConfig - Converted ScoringAppReact (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-21 19:41:42,649 [1    ] o.Configuration.LanguageManagementConfig - Converted AbpWeb (Abp.Localization.Dictionaries.DictionaryBasedLocalizationSource) to MultiTenantLocalizationSource
+DEBUG 2022-05-21 19:41:43,544 [1    ] ameworkCore.AbpEntityFrameworkCoreModule - Registering DbContext: ScoringAppReact.EntityFrameworkCore.ScoringAppReactDbContext, ScoringAppReact.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+DEBUG 2022-05-21 19:41:44,851 [1    ] Abp.Localization.LocalizationManager     - Initializing 4 localization sources.
+DEBUG 2022-05-21 19:41:44,910 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: Abp
+DEBUG 2022-05-21 19:41:44,925 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: AbpZero
+DEBUG 2022-05-21 19:41:44,932 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: ScoringAppReact
+DEBUG 2022-05-21 19:41:44,938 [1    ] Abp.Localization.LocalizationManager     - Initialized localization source: AbpWeb
+DEBUG 2022-05-21 19:41:45,196 [1    ] Abp.BackgroundJobs.BackgroundJobManager  - Start background worker: Castle.Proxies.BackgroundJobManagerProxy
+DEBUG 2022-05-21 19:41:45,381 [1    ] , Culture=neutral, PublicKeyToken=null]] - Start background worker: Abp.Authorization.Users.UserTokenExpirationWorker`2[[ScoringAppReact.MultiTenancy.Tenant, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[ScoringAppReact.Authorization.Users.User, ScoringAppReact.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+DEBUG 2022-05-21 19:41:45,443 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - Found 8 classes define auto mapping attributes
+DEBUG 2022-05-21 19:41:45,443 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Models.TokenAuth.ExternalLoginProviderInfoModel
+DEBUG 2022-05-21 19:41:45,449 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Users.Dto.CreateUserDto
+DEBUG 2022-05-21 19:41:45,449 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Users.Dto.UserDto
+DEBUG 2022-05-21 19:41:45,450 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Sessions.Dto.TenantLoginInfoDto
+DEBUG 2022-05-21 19:41:45,450 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Sessions.Dto.UserLoginInfoDto
+DEBUG 2022-05-21 19:41:45,450 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.Roles.Dto.PermissionDto
+DEBUG 2022-05-21 19:41:45,450 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.MultiTenancy.Dto.CreateTenantDto
+DEBUG 2022-05-21 19:41:45,450 [1    ] Abp.AutoMapper.AbpAutoMapperModule       - ScoringAppReact.MultiTenancy.Dto.TenantDto
+INFO  2022-05-21 19:41:49,240 [1    ] tCore.Builder.RequestLocalizationOptions - Supported Request Localization Cultures: en,es-MX,fr,de,it,nl,pt-BR,tr,ru,ar,ja,zh-Hans
+INFO  2022-05-21 19:41:49,827 [1    ] taProtection.KeyManagement.XmlKeyManager - User profile is available. Using 'C:\Users\faraz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+WARN  2022-05-21 19:41:49,940 [1    ] Microsoft.AspNetCore.Server.Kestrel      - Overriding address(es) 'http://localhost:21021/'. Binding to endpoints defined in UseKestrel() instead.
+INFO  2022-05-21 19:41:51,050 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/  
+INFO  2022-05-21 19:41:51,937 [9    ] ft.AspNetCore.Routing.EndpointMiddleware - Executing endpoint 'ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host)'
+INFO  2022-05-21 19:41:56,751 [9    ] c.Infrastructure.ControllerActionInvoker - Route matched with {action = "Index", controller = "Home", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller ScoringAppReact.Web.Host.Controllers.HomeController (ScoringAppReact.Web.Host).
+INFO  2022-05-21 19:41:58,382 [4    ] vc.Infrastructure.RedirectResultExecutor - Executing RedirectResult, redirecting to /swagger.
+INFO  2022-05-21 19:41:58,390 [4    ] c.Infrastructure.ControllerActionInvoker - Executed action ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host) in 1633.0028ms
+INFO  2022-05-21 19:41:58,392 [4    ] ft.AspNetCore.Routing.EndpointMiddleware - Executed endpoint 'ScoringAppReact.Web.Host.Controllers.HomeController.Index (ScoringAppReact.Web.Host)'
+INFO  2022-05-21 19:41:58,413 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 7377.4006ms 302 
+INFO  2022-05-21 19:41:58,463 [4    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/swagger/index.html  
+INFO  2022-05-21 19:41:58,690 [5    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 226.0591ms 200 text/html;charset=utf-8
+INFO  2022-05-21 19:41:58,876 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/_framework/aspnetcore-browser-refresh.js  
+INFO  2022-05-21 19:41:58,895 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 22.1864ms 200 application/javascript; charset=utf-8
+INFO  2022-05-21 19:42:00,559 [9    ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/AntiForgery/SetCookie  
+INFO  2022-05-21 19:42:00,624 [11   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request starting HTTP/1.1 GET http://localhost:21021/swagger/v1/swagger.json  
+INFO  2022-05-21 19:42:01,150 [9    ] uthentication.JwtBearer.JwtBearerHandler - Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]', Current time: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, JwtSecurityToken jwtToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateTokenPayload(JwtSecurityToken jwtToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateToken(String token, TokenValidationParameters validationParameters, SecurityToken& validatedToken)
+   at Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.HandleAuthenticateAsync()
+INFO  2022-05-21 19:42:01,150 [11   ] uthentication.JwtBearer.JwtBearerHandler - Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]', Current time: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, JwtSecurityToken jwtToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateTokenPayload(JwtSecurityToken jwtToken, TokenValidationParameters validationParameters)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.ValidateToken(String token, TokenValidationParameters validationParameters, SecurityToken& validatedToken)
+   at Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.HandleAuthenticateAsync()
+INFO  2022-05-21 19:42:01,158 [9    ] uthentication.JwtBearer.JwtBearerHandler - JwtBearer was not authenticated. Failure message: IDX10223: Lifetime validation failed. The token is expired. ValidTo: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]', Current time: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+INFO  2022-05-21 19:42:01,159 [11   ] uthentication.JwtBearer.JwtBearerHandler - JwtBearer was not authenticated. Failure message: IDX10223: Lifetime validation failed. The token is expired. ValidTo: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]', Current time: '[PII is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+INFO  2022-05-21 19:42:01,187 [9    ] ft.AspNetCore.Routing.EndpointMiddleware - Executing endpoint 'ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host)'
+INFO  2022-05-21 19:42:01,209 [9    ] c.Infrastructure.ControllerActionInvoker - Route matched with {action = "SetCookie", controller = "AntiForgery", area = ""}. Executing controller action with signature Void SetCookie() on controller ScoringAppReact.Web.Host.Controllers.AntiForgeryController (ScoringAppReact.Web.Host).
+INFO  2022-05-21 19:42:01,250 [10   ] .Mvc.Infrastructure.ObjectResultExecutor - Executing ObjectResult, writing value of type 'Abp.Web.Models.AjaxResponse'.
+INFO  2022-05-21 19:42:01,540 [10   ] c.Infrastructure.ControllerActionInvoker - Executed action ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host) in 274.559ms
+INFO  2022-05-21 19:42:01,544 [10   ] ft.AspNetCore.Routing.EndpointMiddleware - Executed endpoint 'ScoringAppReact.Web.Host.Controllers.AntiForgeryController.SetCookie (ScoringAppReact.Web.Host)'
+INFO  2022-05-21 19:42:01,547 [10   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 988.9548ms 200 application/json; charset=utf-8
+ERROR 2022-05-21 19:42:01,617 [11   ] Microsoft.AspNetCore.Server.Kestrel      - Connection id "0HMHR70520V3G", Request id "0HMHR70520V3G:00000001": An unhandled exception was thrown by the application.
+System.InvalidOperationException: Can't use schemaId "$TeamScoreDto" for type "$ScoringAppReact.TeamScores.Dto.TeamScoreDto". The same schemaId is already used for type "$ScoringAppReact.MatchSummary.Dto.TeamScoreDto"
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaRepository.ReserveIdFor(Type type, String schemaId)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaRepository.GetOrAdd(Type type, String schemaId, Func`1 factoryMethod)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateReferencedSchema(DataContract dataContract, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateSchemaForType(Type type, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SchemaGenerator.GenerateSchema(Type type, SchemaRepository schemaRepository, MemberInfo memberInfo, ParameterInfo parameterInfo)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.CreateResponseMediaType(ModelMetadata modelMetadata, SchemaRepository schemaRespository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.<>c__DisplayClass18_0.<GenerateResponse>b__2(String contentType)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateResponse(ApiDescription apiDescription, SchemaRepository schemaRepository, String statusCode, ApiResponseType apiResponseType)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateResponses(ApiDescription apiDescription, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateOperation(ApiDescription apiDescription, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GenerateOperations(IEnumerable`1 apiDescriptions, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GeneratePaths(IEnumerable`1 apiDescriptions, SchemaRepository schemaRepository)
+   at Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenerator.GetSwagger(String documentName, String host, String basePath)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Abp.AspNetCore.Security.AbpSecurityHeadersMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware.InvokeAsync(HttpContext context)
+   at Microsoft.AspNetCore.Builder.Extensions.MapWhenMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)
+INFO  2022-05-21 19:42:01,624 [11   ] Microsoft.AspNetCore.Hosting.Diagnostics - Request finished in 999.387ms 500 
