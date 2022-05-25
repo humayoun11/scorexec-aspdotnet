@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
+using ScoringAppReact.MatchSummary.Dto;
 using ScoringAppReact.Players.Dto;
 using ScoringAppReact.TeamScores.Dto;
 
@@ -17,6 +18,8 @@ namespace ScoringAppReact.TeamScores
         Task<ResponseMessageDto> DeleteAsync(long id);
 
         Task<TeamScoreDto> GetByTeamIdAndMatchId(long teamId, long matchId);
+
+        Task<MatchDetails> GetTeamScorecard(long team1Id, long team2Id, long matchId);
     }
 }
 

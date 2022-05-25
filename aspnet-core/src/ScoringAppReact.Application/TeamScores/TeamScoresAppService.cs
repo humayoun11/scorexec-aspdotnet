@@ -13,6 +13,7 @@ using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.TeamScores.Dto;
 using ScoringAppReact.Players.Dto;
+using ScoringAppReact.MatchSummary.Dto;
 
 namespace ScoringAppReact.TeamScores
 {
@@ -21,11 +22,15 @@ namespace ScoringAppReact.TeamScores
     {
         private readonly IRepository<TeamScore, long> _repository;
         private readonly IAbpSession _abpSession;
+        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
+        private readonly IRepository<Match, long> _matchRepository;
 
-        public TeamScoresAppService(IRepository<TeamScore, long> repository, IAbpSession abpSession)
+        public TeamScoresAppService(IRepository<TeamScore, long> repository, IRepository<Match, long> matchRepository, IAbpSession abpSession, IRepository<PlayerScore, long> playerScoreRepository)
         {
             _repository = repository;
             _abpSession = abpSession;
+            _playerScoreRepository = playerScoreRepository;
+            _matchRepository = matchRepository;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateTeamScoreDto model)
@@ -176,6 +181,144 @@ namespace ScoringAppReact.TeamScores
             }).FirstOrDefaultAsync(i => i.TeamId == teamId && i.MatchId == matchId && i.TenantId == _abpSession.TenantId);
 
             return result;
+        }
+        public async Task<MatchDetails> GetTeamScorecard(long team1Id, long team2Id, long matchId)
+        {
+            var playerScore = await _playerScoreRepository.GetAll()
+                .Include(i => i.Player)
+                .Include(i => i.Bowler)
+                .Where(i => i.MatchId == matchId && i.IsDeleted == false).ToListAsync();
+            var teamScores = await _repository.GetAll()
+                .Include(i => i.Team)
+                .Where(i => i.MatchId == matchId && i.IsDeleted == false).ToListAsync();
+            var match = await _matchRepository.GetAll()
+                .Include(i=> i.Ground)
+                .Include(i=> i.Event)
+                .Where(i => i.Id == matchId).FirstOrDefaultAsync();
+
+            var team1Players = playerScore.Where(i => i.TeamId == team1Id).OrderBy(i => i.Position).ToList();
+            var team2Players = playerScore.Where(i => i.TeamId == team2Id).OrderBy(i => i.Position).ToList();
+
+            var team1Bowler = team1Players.Where(i => i.Overs.HasValue);
+            var team2Bowler = team2Players.Where(i => i.Overs.HasValue);
+
+            var FirstInningBatsman = team1Players.Select(i => new MatchBatsman()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Bowler = i.Bowler != null ? i.Bowler.Name : "N/A",
+                Fielder = i.Fielder,
+                Runs = i.Bat_Runs,
+                Balls = i.Bat_Balls,
+                Four = i.Four,
+                Six = i.Six,
+                HowOut = i.HowOutId
+
+            }).ToList() ?? new List<MatchBatsman>();
+
+            var SecondInningBatsman = team2Players.Select(i => new MatchBatsman()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Bowler = i.Bowler != null ? i.Bowler.Name : "N/A",
+                Fielder = i.Fielder,
+                Runs = i.Bat_Runs,
+                Balls = i.Bat_Balls,
+                Four = i.Four,
+                Six = i.Six,
+                HowOut = i.HowOutId
+
+            }).ToList() ?? new List<MatchBatsman>();
+
+            var FirstInningBowler = team2Bowler.Select(i => new MatchBowler()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Overs = i.Overs,
+                Runs = i.Ball_Runs,
+                Wickets = i.Wickets
+
+            }).ToList() ?? new List<MatchBowler>();
+
+            var SecondInningBowler = team1Bowler.Select(i => new MatchBowler()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Overs = i.Overs,
+                Runs = i.Ball_Runs,
+                Wickets = i.Wickets
+
+            }).ToList() ?? new List<MatchBowler>();
+
+            var Team1Score = teamScores.Where(i => i.TeamId == team1Id).Select(i => new TeamsScoreDto()
+            {
+                Score = i.TotalScore,
+                Name = i.Team.Name,
+                Overs = i.Overs,
+                Wickets = i.Wickets,
+                Wide = i.Wideballs,
+                Bye = i.Byes,
+                LegBye = i.LegByes,
+                NoBall = i.NoBalls,
+                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes
+
+            }).FirstOrDefault() ?? new TeamsScoreDto();
+
+            var Team2Score = teamScores.Where(i => i.TeamId == team2Id).Select(i => new TeamsScoreDto()
+            {
+                Score = i.TotalScore,
+                Name = i.Team.Name,
+                Overs = i.Overs,
+                Wickets = i.Wickets,
+                Wide = i.Wideballs,
+                Bye = i.Byes,
+                LegBye = i.LegByes,
+                NoBall = i.NoBalls,
+                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes
+
+            }).FirstOrDefault() ?? new TeamsScoreDto();
+            var matchDetail = new MatchDetails
+            {
+                FirstInningBatsman = FirstInningBatsman,
+                SecondInningBatsman = SecondInningBatsman,
+                FirstInningBowler = FirstInningBowler,
+                SecondInningBowler = SecondInningBowler,
+                Team1Score = Team1Score,
+                Team2Score = Team2Score,
+                MatchResult = MatchResult(Team1Score, Team2Score),
+                Ground = match.GroundId.HasValue ? match.Ground.Name : "N/A",
+                Date = match.DateOfMatch,
+                Toss = TossDecide(match, Team1Score, Team2Score),
+                MatchType = match.EventId.HasValue ? match.Event.Name : "Individual/Friendly"
+            };
+            return matchDetail;
+        }
+
+        private string MatchResult(TeamsScoreDto team1Score, TeamsScoreDto team2Score)
+        {
+            if (team1Score == null || team2Score == null || team1Score.Score == 0 || team2Score.Score == 0 || team1Score.Score == null || team2Score.Score == null)
+                return "No Result";
+
+            if (team1Score.Score > team2Score.Score)
+            {
+                return $"{team1Score.Name} won the match by {team1Score.Score - team2Score.Score}";
+            }
+            if (team1Score.Score < team2Score.Score)
+            {
+                return $"{team2Score.Name} won the match by {10 - team2Score.Wickets}";
+            }
+            return "Match Tie";
+        }
+
+
+        private string TossDecide(Match match, TeamsScoreDto team1Score, TeamsScoreDto team2Score)
+        {
+            if (!match.TossWinningTeam.HasValue)
+                return null;
+
+            var tossWinningTeam = match.TossWinningTeam == match.HomeTeamId ? team1Score.Name : team2Score.Name;
+
+            return match.TossWinningTeam == match.HomeTeamId ? $"{tossWinningTeam} won the toss and decided to bat first" : $"{tossWinningTeam} won the toss and decided to ball first";
         }
     }
 }

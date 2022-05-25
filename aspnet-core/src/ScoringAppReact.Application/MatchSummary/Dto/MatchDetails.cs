@@ -14,8 +14,13 @@ namespace ScoringAppReact.MatchSummary.Dto
             SecondInningBowler = new List<MatchBowler>();
         }
 
-        public TeamScoreDto Team1Score { get; set; }
-        public TeamScoreDto Team2Score { get; set; }
+        public string MatchResult { get; set; }
+        public string Ground { get; set; }
+        public string Toss { get; set; }
+        public long? Date { get; set; }
+        public string MatchType { get; set; }
+        public TeamsScoreDto Team1Score { get; set; }
+        public TeamsScoreDto Team2Score { get; set; }
         public List<MatchBatsman> FirstInningBatsman { get; set; }
         public List<MatchBowler> FirstInningBowler { get; set; }
         public List<MatchBatsman> SecondInningBatsman { get; set; }

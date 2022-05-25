@@ -4,9 +4,11 @@ using Abp.Domain.Entities.Auditing;
 
 namespace ScoringAppReact.Players.Dto
 {
-    public class PlayerListDto : EntityDto, IHasCreationTime
+    public class PlayerListDto
     {
+        public long Id { get; set; }
         public string Name { get; set; }
+        public long TeamId { get; set; }
         public DateTime CreationTime { get; set; }
     }
 }

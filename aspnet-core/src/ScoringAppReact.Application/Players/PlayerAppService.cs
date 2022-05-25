@@ -391,7 +391,18 @@ namespace ScoringAppReact.Players
             return result;
         }
 
-
+        public async Task<List<PlayerListDto>> GetTeamPlayersByMatchId(long matchId)
+        {
+            var result = await _playerScoreRepository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == matchId)
+                .Select(i => new PlayerListDto()
+                {
+                    Id = i.Id,
+                    Name = i.Player.Name,
+                    TeamId = i.TeamId
+                }).ToListAsync();
+            return result;
+        }
 
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {
