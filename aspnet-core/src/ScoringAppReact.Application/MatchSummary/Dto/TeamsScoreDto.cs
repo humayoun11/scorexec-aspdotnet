@@ -7,6 +7,7 @@ namespace ScoringAppReact.MatchSummary.Dto
 {
     public class TeamsScoreDto
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public string Logo { get; set; }
         public int? Score { get; set; }

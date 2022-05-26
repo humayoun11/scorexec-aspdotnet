@@ -313,6 +313,7 @@ namespace ScoringAppReact.Teams
                 var matches = await _matchRepository.GetAll()
                     .Include(i => i.TeamScores)
                     .Include(i => i.HomeTeam)
+                    .Include(i => i.OppponentTeam)
                     .Where(i => (i.HomeTeamId == input.TeamId || i.OppponentTeamId == input.TeamId) &&
                     (!input.MatchTypeId.HasValue || i.MatchTypeId == input.MatchTypeId) &&
                     (!input.Season.HasValue || i.Season == input.Season) &&
@@ -348,7 +349,13 @@ namespace ScoringAppReact.Teams
                         noResult.Add(item);
                     }
                 }
-                var teamDetails = matches.Where(i => i.HomeTeamId == input.TeamId).Select(i => i.HomeTeam).FirstOrDefault();
+                //var teamDetails = matches
+                //    .Where(i => i.HomeTeamId == input.TeamId || i.OppponentTeamId == input.TeamId).Select(i => i.HomeTeam).FirstOrDefault();
+
+                var teamDetails = matches
+                 .Where(i => i.HomeTeamId == input.TeamId).Select(i => i.HomeTeam).FirstOrDefault() ??
+                 matches.Where(i => i.OppponentTeamId == input.TeamId).Select(i => i.OppponentTeam).FirstOrDefault();
+                 ;
                 if (!matches.Any())
                 {
                     var team = await _repository.GetAll().Where(i => i.IsDeleted == false && i.Id == input.TeamId).SingleOrDefaultAsync();
@@ -373,9 +380,9 @@ namespace ScoringAppReact.Teams
                     TossWon = matches.Count(i => i.TossWinningTeam == input.TeamId),
                     BatFirst = matches.Count(i => i.HomeTeamId == input.TeamId),
                     FieldFirst = matches.Count(i => i.OppponentTeamId == input.TeamId),
-                    Name = teamDetails.Name,
-                    Location = teamDetails.Place,
-                    Type = teamDetails.Type
+                    Name = teamDetails != null ? teamDetails.Name : "N/A",
+                    Location = teamDetails != null ? teamDetails.Place : "N/A",
+                    Type = teamDetails != null ? teamDetails.Type : 0
 
                 };
 

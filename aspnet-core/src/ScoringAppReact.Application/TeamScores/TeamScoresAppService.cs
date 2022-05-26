@@ -192,8 +192,8 @@ namespace ScoringAppReact.TeamScores
                 .Include(i => i.Team)
                 .Where(i => i.MatchId == matchId && i.IsDeleted == false).ToListAsync();
             var match = await _matchRepository.GetAll()
-                .Include(i=> i.Ground)
-                .Include(i=> i.Event)
+                .Include(i => i.Ground)
+                .Include(i => i.Event)
                 .Where(i => i.Id == matchId).FirstOrDefaultAsync();
 
             var team1Players = playerScore.Where(i => i.TeamId == team1Id).OrderBy(i => i.Position).ToList();
@@ -252,6 +252,7 @@ namespace ScoringAppReact.TeamScores
 
             var Team1Score = teamScores.Where(i => i.TeamId == team1Id).Select(i => new TeamsScoreDto()
             {
+                Id = i.TeamId,
                 Score = i.TotalScore,
                 Name = i.Team.Name,
                 Overs = i.Overs,
@@ -266,6 +267,7 @@ namespace ScoringAppReact.TeamScores
 
             var Team2Score = teamScores.Where(i => i.TeamId == team2Id).Select(i => new TeamsScoreDto()
             {
+                Id = i.TeamId,
                 Score = i.TotalScore,
                 Name = i.Team.Name,
                 Overs = i.Overs,
@@ -277,6 +279,13 @@ namespace ScoringAppReact.TeamScores
                 Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes
 
             }).FirstOrDefault() ?? new TeamsScoreDto();
+
+            var firstInningTop3Batsman = FirstInningBatsman.Where(i=> i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
+            var firstInningTop3Bowler = FirstInningBowler.Where(i => i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
+
+            var secondInningTop3Batsman = SecondInningBatsman.Where(i => i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
+            var secondInningTop3Bowler = SecondInningBowler.Where(i=> i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
+
             var matchDetail = new MatchDetails
             {
                 FirstInningBatsman = FirstInningBatsman,
@@ -289,8 +298,17 @@ namespace ScoringAppReact.TeamScores
                 Ground = match.GroundId.HasValue ? match.Ground.Name : "N/A",
                 Date = match.DateOfMatch,
                 Toss = TossDecide(match, Team1Score, Team2Score),
-                MatchType = match.EventId.HasValue ? match.Event.Name : "Individual/Friendly"
+                MatchType = match.EventId.HasValue ? match.Event.Name : "Individual/Friendly",
+                FirstInningTop3Batsman = firstInningTop3Batsman.ToList(),
+                SecondInningTop3Batsman = secondInningTop3Batsman.ToList(),
+                FirstInningTop3Bowler = firstInningTop3Bowler.ToList(),
+                SecondInningTop3Bowler = secondInningTop3Bowler.ToList()
+
+
             };
+
+
+         
             return matchDetail;
         }
 

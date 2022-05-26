@@ -12,6 +12,11 @@ namespace ScoringAppReact.MatchSummary.Dto
             FirstInningBowler = new List<MatchBowler>();
             SecondInningBatsman = new List<MatchBatsman>();
             SecondInningBowler = new List<MatchBowler>();
+
+            FirstInningTop3Batsman = new List<MatchBatsman>();
+            FirstInningTop3Bowler = new List<MatchBowler>();
+            SecondInningTop3Batsman = new List<MatchBatsman>();
+            SecondInningTop3Bowler = new List<MatchBowler>();
         }
 
         public string MatchResult { get; set; }
@@ -25,6 +30,11 @@ namespace ScoringAppReact.MatchSummary.Dto
         public List<MatchBowler> FirstInningBowler { get; set; }
         public List<MatchBatsman> SecondInningBatsman { get; set; }
         public List<MatchBowler> SecondInningBowler { get; set; }
+
+        public List<MatchBatsman> FirstInningTop3Batsman { get; set; }
+        public List<MatchBowler> FirstInningTop3Bowler { get; set; }
+        public List<MatchBatsman> SecondInningTop3Batsman { get; set; }
+        public List<MatchBowler> SecondInningTop3Bowler { get; set; }
 
     }
 }

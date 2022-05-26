@@ -9,6 +9,7 @@ namespace ScoringAppReact.Players.Dto
         public int? BattingStyle { get; set; }
         public int? BowlingStyle { get; set; }
         public int? PlayingRole { get; set; }
+        public string? Contact { get; set; }
     }
 }
 

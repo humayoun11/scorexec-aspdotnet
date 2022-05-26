@@ -287,7 +287,8 @@ namespace ScoringAppReact.Players
             {
                 Id = i.Id,
                 Name = i.Name,
-                FileName = i.FileName
+                FileName = i.FileName,
+                Contact = i.Contact
             }).ToListAsync();
             return result;
         }
@@ -340,7 +341,7 @@ namespace ScoringAppReact.Players
                     var stats = new PlayerStatisticsDto();
                     var player = await _repository.GetAll().Where(i => i.Id == input.PlayerId).SingleOrDefaultAsync();
                     stats.PlayerName = player.Name;
-                    stats.PlayerRole = player.PlayerRoleId ;
+                    stats.PlayerRole = player.PlayerRoleId;
                     stats.BattingStyle = player.BattingStyleId;
                     stats.BowlingStyle = player.BowlingStyleId;
                     return stats;
@@ -413,7 +414,9 @@ namespace ScoringAppReact.Players
                 .WhereIf(input.BattingStyle.HasValue, i => i.BattingStyleId == input.BattingStyle)
                 .WhereIf(input.BowlingStyle.HasValue, i => i.BowlingStyleId == input.BowlingStyle)
                 .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
+                    x => x.Name.ToLower().Contains(input.Name.ToLower()))
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Contact),
+                    x => x.Contact.ToLower().Contains(input.Contact.ToLower()));
 
             var pagedAndFilteredPlayers = filteredPlayers
                 .OrderByDescending(i => i.Id)

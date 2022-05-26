@@ -13,6 +13,7 @@ using Abp.Runtime.Session;
 using ScoringAppReact.Matches.Dto;
 using Abp.UI;
 using System;
+using ScoringAppReact.MatchSummary.Dto;
 
 namespace ScoringAppReact.Matches
 {
@@ -482,6 +483,7 @@ namespace ScoringAppReact.Matches
         public async Task<List<ViewMatch>> GetMatchesByPlayerId(long id, int matchResultFilter)
         {
             var result = await _repository.GetAll()
+                .Include(i => i.TeamScores)
                 .Where(i => i.IsDeleted == false
                     && i.TenantId == _abpSession.TenantId
                     && i.PlayerScores.Any(j => j.PlayerId == id))
@@ -504,6 +506,7 @@ namespace ScoringAppReact.Matches
                     Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
                     : "Friendly / Individual",
                     Mom = i.Player.Name ?? "N/A"
+
                 })
 
                 .ToListAsync();
@@ -526,66 +529,39 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-        public async Task<List<ViewMatch>> GetMOMByPlayerId(long id)
+        private string MatchResult(ViewMatch match)
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false
-                    && i.TenantId == _abpSession.TenantId
-                    && i.PlayerOTM == id)
-                .Select(i => new ViewMatch()
-                {
-                    Id = i.Id,
-                    Ground = i.Ground.Name,
-                    Date = i.DateOfMatch,
-                    Team1 = i.HomeTeam.Name,
-                    Team1Id = i.HomeTeamId,
-                    Team2 = i.OppponentTeam.Name,
-                    Team2Id = i.OppponentTeamId,
-                    Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
-                    : "Friendly / Individual",
-                    Mom = i.Player.Name ?? "N/A"
-                })
+            if (match == null || match.Team1Score == 0 || match.Team2Score == 0)
+                return "No Result";
 
-                .ToListAsync();
+            if (match.Team1Score > match.Team2Score)
+            {
+                return $"{match.Team1} won the match by {match.Team1Score - match.Team2Score}";
+            }
+            if (match.Team1Score < match.Team2Score)
+            {
+                return $"{match.Team2} won the match by {10 - match.Team2Wickets}";
+            }
+            return "Match Tie";
+        }
+
+        public List<ViewMatch> GetMOMByPlayerId(long id)
+        {
+            var result = GetALLMatches().Where(i => i.POM == id).ToList();
+            foreach (var item in result)
+            {
+                item.Result = MatchResult(item);
+            }
             return result;
         }
 
-        public async Task<List<ViewMatch>> GetMatchesByTeamId(long id, int matchResultFilter)
+        public List<ViewMatch> GetMatchesByTeamId(long id, int matchResultFilter)
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false
-                    && i.TenantId == _abpSession.TenantId
-                    && (i.HomeTeamId == id || i.OppponentTeamId == id))
-                .Select(i => new ViewMatch()
-                {
-                    Id = i.Id,
-                    Ground = i.Ground.Name,
-                    Date = i.DateOfMatch,
-                    Team1 = i.HomeTeam.Name,
-                    Team1Id = i.HomeTeamId,
-                    Team2 = i.OppponentTeam.Name,
-                    Team2Id = i.OppponentTeamId,
-                    Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
-                    : "Friendly / Individual",
-                    Mom = i.Player.Name ?? "N/A"
-                })
-
-                .ToListAsync();
-
+            var result = GetALLMatches().Where(i => (i.Team1Id == id || i.Team2Id == id)).ToList();
+            foreach (var item in result)
+            {
+                item.Result = MatchResult(item);
+            }
 
             if (matchResultFilter == 2)
             {
@@ -604,33 +580,42 @@ namespace ScoringAppReact.Matches
             }
             return result;
         }
-        public async Task<List<ViewMatch>> GetMatchesByEventId(long id)
+        public List<ViewMatch> GetMatchesByEventId(long id)
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false
-                && i.TenantId == _abpSession.TenantId
-                && i.EventId == id)
-                .Select(i => new ViewMatch()
-                {
-                    Id = i.Id,
-                    Ground = i.Ground.Name,
-                    Date = i.DateOfMatch,
-                    Team1 = i.HomeTeam.Name,
-                    Team1Id = i.HomeTeamId,
-                    Team2 = i.OppponentTeam.Name,
-                    Team2Id = i.OppponentTeamId,
-                    Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                    Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
-                    Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                    MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                    Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
-                    : "Friendly / Individual",
-                    Mom = i.Player.Name ?? "N/A"
-                }).ToListAsync();
+            var result = GetALLMatches().Where(i => i.EventId == id).ToList();
+            foreach (var item in result)
+            {
+                item.Result = MatchResult(item);
+            }
             return result;
+        }
+
+
+        private List<ViewMatch> GetALLMatches()
+        {
+            return _repository.GetAll().Where(i => i.IsDeleted == false
+               && i.TenantId == _abpSession.TenantId).Select(i => new ViewMatch()
+               {
+                   Id = i.Id,
+                   Ground = i.Ground.Name,
+                   Date = i.DateOfMatch,
+                   Team1 = i.HomeTeam.Name,
+                   Team1Id = i.HomeTeamId,
+                   Team2 = i.OppponentTeam.Name,
+                   Team2Id = i.OppponentTeamId,
+                   Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
+                   Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
+                   Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
+                   Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
+                   Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
+                   Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
+                   MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
+                   Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                   : "Friendly / Individual",
+                   Mom = i.Player.Name ?? "N/A",
+                   EventId = i.EventId,
+                   POM = i.PlayerOTM
+               }).ToList();
         }
     }
 }
