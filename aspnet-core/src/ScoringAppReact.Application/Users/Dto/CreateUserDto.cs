@@ -29,6 +29,8 @@ namespace ScoringAppReact.Users.Dto
 
         public bool IsActive { get; set; }
 
+        public string PhoneNumber { get; set; }
+
         public string[] RoleNames { get; set; }
 
         [Required]

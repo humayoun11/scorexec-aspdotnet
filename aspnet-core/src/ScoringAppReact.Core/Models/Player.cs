@@ -25,6 +25,7 @@ namespace ScoringAppReact.Models
         public bool IsDeactivated { get; set; }
         public string FileName { get; set; }
         public List<TeamPlayer> Teams { get; set; }
+        public bool? IsVerified { get; set; }
         public int? TenantId { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace ScoringAppReact.Authorization.Users
                 Name = AdminUserName,
                 Surname = AdminUserName,
                 EmailAddress = emailAddress,
-                Roles = new List<UserRole>()
+                Roles = new List<UserRole>(),
             };
 
             user.SetNormalizedNames();

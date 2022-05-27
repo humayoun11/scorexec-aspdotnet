@@ -35,6 +35,7 @@ namespace ScoringAppReact.Models
         public List<MatchSchedule> MatchSchedules { get; set; }
         public List<EventTeam> EventTeams { get; set; }
         public List<TeamPlayer> TeamPlayers { get; set; }
+        public bool? IsVerified { get; set; }
         public int? TenantId { get; set; }
     }
 }

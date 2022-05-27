@@ -2072,6 +2072,9 @@ namespace ScoringAppReact.Migrations
                     b.Property<string>("IsGuestorRegistered")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2");
 
@@ -2363,6 +2366,9 @@ namespace ScoringAppReact.Migrations
                     b.Property<bool>("IsRegistered")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2");
 
@@ -2483,7 +2489,7 @@ namespace ScoringAppReact.Migrations
                     b.Property<int?>("NoBalls")
                         .HasColumnType("int");
 
-                    b.Property<float>("Overs")
+                    b.Property<float?>("Overs")
                         .HasColumnType("real");
 
                     b.Property<long>("TeamId")

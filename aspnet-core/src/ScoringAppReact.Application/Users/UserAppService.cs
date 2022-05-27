@@ -21,6 +21,9 @@ using ScoringAppReact.Roles.Dto;
 using ScoringAppReact.Users.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScoringAppReact.Models;
+using System;
+using Abp.Domain.Uow;
 
 namespace ScoringAppReact.Users
 {
@@ -30,12 +33,17 @@ namespace ScoringAppReact.Users
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
         private readonly IRepository<Role> _roleRepository;
+        private readonly IRepository<User, long> _repository;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IAbpSession _abpSession;
         private readonly LogInManager _logInManager;
+        private readonly IRepository<Player, long> _playerRespository;
+        private readonly IRepository<Team, long> _teamRespository;
 
         public UserAppService(
             IRepository<User, long> repository,
+            IRepository<Player, long> playerRespository,
+            IRepository<Team, long> teamRespository,
             UserManager userManager,
             RoleManager roleManager,
             IRepository<Role> roleRepository,
@@ -50,8 +58,13 @@ namespace ScoringAppReact.Users
             _passwordHasher = passwordHasher;
             _abpSession = abpSession;
             _logInManager = logInManager;
+            _playerRespository = playerRespository;
+            _teamRespository = teamRespository;
+            _repository = repository;
         }
 
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
         public override async Task<UserDto> CreateAsync(CreateUserDto input)
         {
             CheckCreatePermission();
@@ -70,9 +83,22 @@ namespace ScoringAppReact.Users
                 CheckErrors(await _userManager.SetRolesAsync(user, input.RoleNames));
             }
 
+            VerifiedPlayer(input.PhoneNumber);
+
             CurrentUnitOfWork.SaveChanges();
 
             return MapToEntityDto(user);
+        }
+
+        public void VerifiedPlayer(string contact)
+        {
+            var player = _playerRespository.GetAll().Where(i => i.Contact == contact && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).FirstOrDefault();
+            if (player == null)
+            {
+                throw new UserFriendlyException("Something went wrong");
+            }
+            player.IsVerified = true;
+            _playerRespository.UpdateAsync(player);
         }
 
         public override async Task<UserDto> UpdateAsync(UserDto input)
@@ -99,6 +125,8 @@ namespace ScoringAppReact.Users
             await _userManager.DeleteAsync(user);
         }
 
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
         public async Task<ListResultDto<RoleDto>> GetRoles()
         {
             var roles = await _roleRepository.GetAllListAsync();
@@ -221,6 +249,35 @@ namespace ScoringAppReact.Users
             }
 
             return true;
+        }
+
+
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
+        public async Task<UserDetail> UserDetails(string contact)
+        {
+            var user = await _repository.GetAll().Where(i => i.PhoneNumber == contact).FirstOrDefaultAsync();
+            if (user != null)
+            {
+                throw new UserFriendlyException("This Phone already associated with another account ");
+            }
+            var obj = new UserDetail();
+            var player = await _playerRespository.GetAll().Where(i => i.Contact == contact && i.TenantId == _abpSession.TenantId).FirstOrDefaultAsync();
+            if (player != null)
+            {
+                obj.User = player;
+                obj.RoleId = _roleRepository.GetAll().Where(i => i.Name.ToLower() == "player").Select(i => i.Id).FirstOrDefault();
+                obj.Role = "Player";
+            }
+
+            var team = await _teamRespository.GetAll().Where(i => i.Contact == contact && i.TenantId == _abpSession.TenantId).FirstOrDefaultAsync();
+            if (team != null)
+            {
+                obj.User = team;
+                obj.RoleId = _roleRepository.GetAll().Where(i => i.Name.ToLower() == "player").Select(i => i.Id).FirstOrDefault();
+                obj.Role = "Team";
+            }
+            return obj;
         }
     }
 }
