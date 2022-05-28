@@ -340,6 +340,8 @@ namespace ScoringAppReact.Players
                 {
                     var stats = new PlayerStatisticsDto();
                     var player = await _repository.GetAll().Where(i => i.Id == input.PlayerId).SingleOrDefaultAsync();
+                    if (player == null)
+                        return null;
                     stats.PlayerName = player.Name;
                     stats.PlayerRole = player.PlayerRoleId;
                     stats.BattingStyle = player.BattingStyleId;

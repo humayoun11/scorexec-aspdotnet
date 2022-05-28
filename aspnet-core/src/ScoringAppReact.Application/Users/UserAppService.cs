@@ -93,12 +93,12 @@ namespace ScoringAppReact.Users
         public void VerifiedPlayer(string contact)
         {
             var player = _playerRespository.GetAll().Where(i => i.Contact == contact && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).FirstOrDefault();
-            if (player == null)
+            if (player != null)
             {
-                throw new UserFriendlyException("Something went wrong");
+                player.IsVerified = true;
+                _playerRespository.UpdateAsync(player);
             }
-            player.IsVerified = true;
-            _playerRespository.UpdateAsync(player);
+
         }
 
         public override async Task<UserDto> UpdateAsync(UserDto input)

@@ -235,7 +235,7 @@ namespace ScoringAppReact.Matches
                 var result = matches
                 .Where(i => i.EventStage == stages[outer])
                 .ToList();
-
+                //matches sequence out hai.
                 if (!result.Any())
                     continue;
                 var newMatch = new MatchDto[result.Count / 2];
@@ -243,7 +243,13 @@ namespace ScoringAppReact.Matches
                 for (var loop = 0; loop < result.Count; loop++)
                 {
                     if (!result[loop].TeamScores.Any())
+                    {
+                        if (loop % 2 == 1)
+                            matchIndex++;
+
                         continue;
+                    }
+
                     var team1Score = result[loop].TeamScores.Where(i => i.TeamId == result[loop].HomeTeamId).Select(i => i.TotalScore).FirstOrDefault();
                     var team2Score = result[loop].TeamScores.Where(i => i.TeamId == result[loop].OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
                     var winningTeam = team1Score > team2Score ? result[loop].HomeTeam : result[loop].OppponentTeam;
@@ -273,9 +279,8 @@ namespace ScoringAppReact.Matches
                 }
 
                 if (eventMatches[outer] == null)
-                {
                     eventMatches[outer] = new EventMatches();
-                }
+
 
                 if (eventMatches[outer].Matches == null)
                 {
@@ -318,9 +323,7 @@ namespace ScoringAppReact.Matches
 
 
                 if (eventMatches[outer + 1] == null)
-                {
                     eventMatches[outer + 1] = new EventMatches();
-                }
 
                 eventMatches[outer + 1].Matches = newMatch.ToList();
 
