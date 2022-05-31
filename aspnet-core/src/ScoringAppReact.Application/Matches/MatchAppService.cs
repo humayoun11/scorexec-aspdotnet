@@ -14,6 +14,7 @@ using ScoringAppReact.Matches.Dto;
 using Abp.UI;
 using System;
 using ScoringAppReact.MatchSummary.Dto;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Matches
 {
@@ -211,48 +212,78 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-
-        public List<EventMatches> GetAllStagedMatchesByEventId(long eventId)
+        public List<int> CalculateUnorderedStages(int teamCount)
         {
-            var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId).Count();
             var unOrderedstages = new List<int>();
             var x = teamCount;
+            var s = 0;
             while (x != 1)
             {
                 x /= 2;
-                unOrderedstages.Add(x);
+                s++;
+                unOrderedstages.Add(s);
             }
+
+            return unOrderedstages;
+        }
+
+
+        public BracketStages GetAllStagedMatchesByEventId(long eventId)
+        {
+            var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).Count();
+            var stages = CalculateUnorderedStages(teamCount).OrderBy(i => i).ToList(); ;
+
             var matches = _repository.GetAll()
                 .Include(i => i.HomeTeam)
                 .Include(i => i.OppponentTeam)
                 .Include(i => i.TeamScores)
                 .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventId == eventId);
 
-            var stages = unOrderedstages.OrderBy(i => i).ToList();
             var eventMatches = new EventMatches[stages.Count];
+            var winTeam = new TeamDto();
             for (var outer = 0; outer < stages.Count; outer++)
             {
                 var result = matches
-                .Where(i => i.EventStage == stages[outer])
+                .Where(i => i.EventStage == stages[outer]).OrderBy(i => i.Id)
                 .ToList();
-                //matches sequence out hai.
+
                 if (!result.Any())
                     continue;
-                var newMatch = new MatchDto[result.Count / 2];
-                var matchIndex = 0;
-                for (var loop = 0; loop < result.Count; loop++)
+
+                var matchLength = result.Count / 2;
+                if (result.Count <= 2)
                 {
-                    if (!result[loop].TeamScores.Any())
+                    matchLength = 1;
+                }
+                var newMatch = new MatchDto[matchLength];
+                var matchIndex = 0;
+                var loopLength = eventMatches[outer] != null && eventMatches[outer].Matches.Any() ? eventMatches[outer].Matches.Count : result.Count;
+
+                for (var loop = 0; loop < loopLength; loop++)
+                {
+                    var currentMatch = eventMatches[outer] != null && eventMatches[outer].Matches.Any() ? eventMatches[outer].Matches[loop] : null;
+                    var singleMatch = currentMatch == null ? result[loop] : result.Where(i => i.HomeTeamId == currentMatch.Team1Id &&
+                    i.OppponentTeamId == currentMatch.Team2Id).FirstOrDefault();
+
+                    if (singleMatch == null || !singleMatch.TeamScores.Any())
                     {
                         if (loop % 2 == 1)
                             matchIndex++;
-
                         continue;
                     }
 
-                    var team1Score = result[loop].TeamScores.Where(i => i.TeamId == result[loop].HomeTeamId).Select(i => i.TotalScore).FirstOrDefault();
-                    var team2Score = result[loop].TeamScores.Where(i => i.TeamId == result[loop].OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
-                    var winningTeam = team1Score > team2Score ? result[loop].HomeTeam : result[loop].OppponentTeam;
+                    var team1Score = singleMatch.TeamScores.Where(i => i.TeamId == singleMatch.HomeTeamId).Select(i => i.TotalScore).FirstOrDefault();
+                    var team2Score = singleMatch.TeamScores.Where(i => i.TeamId == singleMatch.OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
+                    var winningTeam = team1Score > team2Score ? singleMatch.HomeTeam : singleMatch.OppponentTeam;
+
+                    
+                    if (outer + 1 == eventMatches.Length)
+                    {
+                        winTeam.Name = winningTeam.Name;
+                        winTeam.Id = winningTeam.Id;
+                        continue;
+                    }
+
 
                     if (loop % 2 == 0)
                     {
@@ -321,6 +352,8 @@ namespace ScoringAppReact.Matches
                     }
                 }
 
+                if (outer + 1 == eventMatches.Length)
+                    continue;
 
                 if (eventMatches[outer + 1] == null)
                     eventMatches[outer + 1] = new EventMatches();
@@ -328,97 +361,13 @@ namespace ScoringAppReact.Matches
                 eventMatches[outer + 1].Matches = newMatch.ToList();
 
             }
-            return eventMatches.ToList();
-        }
-
-        public async Task<List<BracketStages>> GetTeamsOfStage(int eventId)
-        {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.EventId == eventId)
-                .Include(i => i.HomeTeam)
-                .Include(i => i.OppponentTeam)
-                .Include(i => i.TeamScores).OrderByDescending(i => i.Id).ToListAsync();
-
-            var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId).Count();
-
-            var stages = new List<int>();
-            var x = teamCount;
-            while (x != 1)
+            var data = new BracketStages
             {
-                x /= 2;
-                stages.Add(x);
-            }
-
-            stages.Sort();
-            var bracketStage = new List<BracketStages>();
-            foreach (var stage in stages)
-            {
-                var teams = new List<StageTeams>();
-                foreach (var item in result.Where(i => i.EventStage == stage))
-                {
-                    if (!item.TeamScores.Any())
-                        continue;
-                    var team1Score = item.TeamScores.Where(i => i.TeamId == item.HomeTeamId).Select(i => i.TotalScore).FirstOrDefault();
-                    var team2Score = item.TeamScores.Where(i => i.TeamId == item.OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
-                    teams.Add(new StageTeams
-                    {
-                        TeamId = team1Score > team2Score ? item.HomeTeamId : item.OppponentTeamId,
-                        TeamName = team1Score > team2Score ? item.HomeTeam.Name : item.OppponentTeam.Name,
-                        Date = item.DateOfMatch
-                    });
-                }
-                bracketStage.Add(new BracketStages
-                {
-                    StageTeams = teams
-                });
-            }
-            return bracketStage;
+                EventMatches = eventMatches.ToList(),
+                Winner = winTeam
+            };
+            return data;
         }
-
-
-        //public async Task<List<BracketStages>> GetStageMatches(int eventId)
-        //{
-        //    var result = await _repository.GetAll()
-        //        .Where(i => i.IsDeleted == false && i.EventId == eventId)
-        //        .Include(i => i.HomeTeam)
-        //        .Include(i => i.OppponentTeam)
-        //        .Include(i => i.TeamScores).ToListAsync();
-
-        //    var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId).Count();
-
-        //    var stages = new List<int>();
-        //    var x = teamCount;
-        //    while (x != 1)
-        //    {
-        //        x /= 2;
-        //        stages.Add(x);
-        //    }
-
-        //    stages.Sort();
-        //    var bracketStage = new List<BracketStages>();
-        //    foreach (var stage in stages)
-        //    {
-        //        var teams = new List<StageTeams>();
-        //        foreach (var item in result.Where(i => i.EventStage == stage))
-        //        {
-        //            if (!item.TeamScores.Any())
-        //                continue;
-        //            var team1Score = item.TeamScores.Where(i => i.TeamId == item.HomeTeamId).Select(i => i.TotalScore).FirstOrDefault();
-        //            var team2Score = item.TeamScores.Where(i => i.TeamId == item.OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
-        //            teams.Add(new StageTeams
-        //            {
-        //                Team1Id = team1Score > team2Score ? item.HomeTeamId : item.OppponentTeamId,
-        //                Team2Name = team1Score > team2Score ? item.HomeTeam.Name : item.OppponentTeam.Name,
-        //                Date = item.DateOfMatch
-        //            });
-        //        }
-        //        bracketStage.Add(new BracketStages
-        //        {
-        //            StageTeams = teams
-        //        });
-        //    }
-        //    return bracketStage;
-        //}
 
         public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)
         {

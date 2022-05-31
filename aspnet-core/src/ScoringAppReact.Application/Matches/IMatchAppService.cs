@@ -20,11 +20,9 @@ namespace ScoringAppReact.Matches
 
         Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input);
 
-        Task<List<BracketStages>> GetTeamsOfStage(int eventId);
-
         Task<List<MatchDto>> GetAllMatchesBYEventId(long eventId);
 
-        List<EventMatches> GetAllStagedMatchesByEventId(long eventId);
+        BracketStages GetAllStagedMatchesByEventId(long eventId);
 
         Task<EventMatch> EditEventMatch(long id);
 
