@@ -19,12 +19,12 @@ using System;
 namespace ScoringAppReact.FallOfWickets
 {
     [AbpAuthorize(PermissionNames.Pages_Roles)]
-    public class FallofWicket : AbpServiceBase, IFallofWicketAppService
+    public class FallofWicketAppService : AbpServiceBase, IFallofWicketAppService
     {
         private readonly IRepository<FallOfWicket, long> _repository;
         private readonly IAbpSession _abpSession;
 
-        public FallofWicket(IRepository<FallOfWicket, long> repository, IAbpSession abpSession)
+        public FallofWicketAppService(IRepository<FallOfWicket, long> repository, IAbpSession abpSession)
         {
             _repository = repository;
             _abpSession = abpSession;

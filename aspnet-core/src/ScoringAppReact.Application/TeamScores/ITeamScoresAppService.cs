@@ -20,6 +20,8 @@ namespace ScoringAppReact.TeamScores
         Task<TeamScoreDto> GetByTeamIdAndMatchId(long teamId, long matchId);
 
         Task<MatchDetails> GetTeamScorecard(long team1Id, long team2Id, long matchId);
+
+        Task<FullScoreccard> getFullScorecard(long team1Id, long team2Id, long matchId);
     }
 }
 

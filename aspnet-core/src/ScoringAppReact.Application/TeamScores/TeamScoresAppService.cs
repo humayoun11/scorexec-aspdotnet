@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
-using Abp.Linq.Extensions;
 using ScoringAppReact.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
@@ -12,8 +10,11 @@ using Abp;
 using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.TeamScores.Dto;
-using ScoringAppReact.Players.Dto;
 using ScoringAppReact.MatchSummary.Dto;
+using ScoringAppReact.PlayerScores;
+using ScoringAppReact.FallOfWickets;
+using System;
+using ScoringAppReact.Teams;
 
 namespace ScoringAppReact.TeamScores
 {
@@ -24,13 +25,25 @@ namespace ScoringAppReact.TeamScores
         private readonly IAbpSession _abpSession;
         private readonly IRepository<PlayerScore, long> _playerScoreRepository;
         private readonly IRepository<Match, long> _matchRepository;
+        private readonly PlayerScoreAppService _playerscoreAppService;
+        private readonly FallofWicketAppService _fallofWicketAppService;
+        private readonly TeamAppService _teamAppService;
 
-        public TeamScoresAppService(IRepository<TeamScore, long> repository, IRepository<Match, long> matchRepository, IAbpSession abpSession, IRepository<PlayerScore, long> playerScoreRepository)
+        public TeamScoresAppService(IRepository<TeamScore, long> repository,
+            IRepository<Match, long> matchRepository, IAbpSession abpSession,
+            IRepository<PlayerScore, long> playerScoreRepository,
+            PlayerScoreAppService playerscoreAppService,
+            FallofWicketAppService fallofWicketAppService,
+            TeamAppService teamAppService
+            )
         {
             _repository = repository;
             _abpSession = abpSession;
             _playerScoreRepository = playerScoreRepository;
             _matchRepository = matchRepository;
+            _playerscoreAppService = playerscoreAppService;
+            _fallofWicketAppService = fallofWicketAppService;
+            _teamAppService = teamAppService;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateTeamScoreDto model)
@@ -49,7 +62,7 @@ namespace ScoringAppReact.TeamScores
 
         private async Task<ResponseMessageDto> CreateTeamScoreAsync(CreateOrUpdateTeamScoreDto model)
         {
-            var alreadyAdded = await _repository.FirstOrDefaultAsync(i => i.MatchId == model.MatchId && i.TeamId == model.TeamId);
+            var alreadyAdded = await _repository.FirstOrDefaultAsync(i => i.MatchId == model.MatchId && i.TeamId == model.TeamId && i.IsDeleted == false);
             if (alreadyAdded != null)
             {
                 throw new UserFriendlyException("Already added with associated team and match");
@@ -280,11 +293,11 @@ namespace ScoringAppReact.TeamScores
 
             }).FirstOrDefault() ?? new TeamsScoreDto();
 
-            var firstInningTop3Batsman = FirstInningBatsman.Where(i=> i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
+            var firstInningTop3Batsman = FirstInningBatsman.Where(i => i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
             var firstInningTop3Bowler = FirstInningBowler.Where(i => i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
 
             var secondInningTop3Batsman = SecondInningBatsman.Where(i => i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
-            var secondInningTop3Bowler = SecondInningBowler.Where(i=> i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
+            var secondInningTop3Bowler = SecondInningBowler.Where(i => i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
 
             var matchDetail = new MatchDetails
             {
@@ -308,7 +321,7 @@ namespace ScoringAppReact.TeamScores
             };
 
 
-         
+
             return matchDetail;
         }
 
@@ -337,6 +350,45 @@ namespace ScoringAppReact.TeamScores
             var tossWinningTeam = match.TossWinningTeam == match.HomeTeamId ? team1Score.Name : team2Score.Name;
 
             return match.TossWinningTeam == match.HomeTeamId ? $"{tossWinningTeam} won the toss and decided to bat first" : $"{tossWinningTeam} won the toss and decided to ball first";
+        }
+
+        public async Task<FullScoreccard> getFullScorecard(long team1Id, long team2Id, long matchId)
+        {
+            try
+            {
+                var team1Playerscores = await _playerscoreAppService.GetAll(team1Id, matchId);
+                var team2Playerscores = await _playerscoreAppService.GetAll(team2Id, matchId);
+
+                var team1FallofWickets = await _fallofWicketAppService.GetByTeamIdAndMatchId(team1Id, matchId);
+                var team2FallofWickets = await _fallofWicketAppService.GetByTeamIdAndMatchId(team2Id, matchId);
+
+                var team1Score = await GetByTeamIdAndMatchId(team1Id, matchId);
+                var team2Score = await GetByTeamIdAndMatchId(team2Id, matchId);
+
+                var team1 = await _teamAppService.GetById(team1Id);
+                var team2 = await _teamAppService.GetById(team2Id);
+
+
+                var scorecard = new FullScoreccard()
+                {
+                    Team1FallofWicket = team1FallofWickets,
+                    Team2FallofWicket = team2FallofWickets,
+                    Team1Playerscore = team1Playerscores,
+                    Team2Playerscore = team2Playerscores,
+                    Team1Score = team1Score,
+                    Team2Score = team2Score,
+                    Team1 = team1.Name,
+                    Team2 = team2.Name,
+                };
+
+                return scorecard;
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
         }
     }
 }
