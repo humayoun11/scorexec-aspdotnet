@@ -240,7 +240,7 @@ namespace ScoringAppReact.Teams
                {
                    Id = i.Id,
                    Name = i.Name,
-                   Group = Int32.Parse(i.EventTeams.Where(j => j.EventId == id).Select(j => j.Group).FirstOrDefault())
+                   Group = i.EventTeams.Where(j => j.EventId == id).Select(j => j.Group).FirstOrDefault()
 
                }).ToListAsync();
 

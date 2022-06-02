@@ -7,7 +7,7 @@ namespace ScoringAppReact.Models
     public class EventTeam : FullAuditedEntity<long>, IMayHaveTenant
     {
 
-        public string Group { get; set; }
+        public int? Group { get; set; }
         public long EventId { get; set; }
         public long TeamId { get; set; }
         [ForeignKey("TeamId")]
