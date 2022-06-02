@@ -11,12 +11,12 @@ using ScoringAppReact.Models;
 using Abp;
 using ScoringAppReact.Teams.Dto;
 using Abp.Runtime.Session;
-using Microsoft.AspNetCore.Mvc;
 using Abp.UI;
 using System;
 using ScoringAppReact.Events.Dto;
 using ScoringAppReact.Matches.Dto;
 using ScoringAppReact.Teams.InputDto;
+using ScoringAppReact.Events;
 
 namespace ScoringAppReact.Teams
 {
@@ -26,11 +26,15 @@ namespace ScoringAppReact.Teams
         private readonly IRepository<Team, long> _repository;
         private readonly IRepository<Match, long> _matchRepository;
         private readonly IAbpSession _abpSession;
+        private readonly EventAppService _eventAppService;
         public TeamAppService(IRepository<Team, long> repository, IRepository<Match, long> matchRepository,
-            IAbpSession abpSession)
+            IAbpSession abpSession,
+            EventAppService eventAppService
+            )
         {
             _repository = repository;
             _abpSession = abpSession;
+            _eventAppService = eventAppService;
             _matchRepository = matchRepository;
         }
 
@@ -200,7 +204,8 @@ namespace ScoringAppReact.Teams
             try
             {
                 return await _repository.GetAll()
-               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
+               .Where(i => i.IsDeleted == false &&
+                i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,
@@ -208,6 +213,45 @@ namespace ScoringAppReact.Teams
                    Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList()
 
                }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
+        }
+
+        public async Task<List<GroupWiseTeamsDto>> GetAllTeamsByGroupWiseEventId(long id)
+        {
+            try
+            {
+                var result = new List<GroupWiseTeamsDto>();
+                var eventData = await _eventAppService.GetById(id);
+                if (eventData == null || eventData.NumberOfGroup == null || eventData.NumberOfGroup < 1)
+                {
+                    throw new UserFriendlyException("League Based Tournaments No of Group Must Required");
+                }
+
+                var allTeams = await _repository.GetAll()
+               .Where(i => i.IsDeleted == false &&
+                i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
+               .Select(i => new Dto.EventGroupWiseTeamDto()
+               {
+                   Id = i.Id,
+                   Name = i.Name,
+                   Group = Int32.Parse(i.EventTeams.Where(j => j.EventId == id).Select(j => j.Group).FirstOrDefault())
+
+               }).ToListAsync();
+
+                for (var index = 1; index <= eventData.NumberOfGroup; index++)
+                {
+                    var GroupWise = new GroupWiseTeamsDto();
+                    var team = allTeams.Where(i => i.Group == index).ToList();
+                    GroupWise.Teams = team;
+                    result.Add(GroupWise);
+                }
+                return result;
             }
             catch (Exception e)
             {
@@ -355,7 +399,7 @@ namespace ScoringAppReact.Teams
                 var teamDetails = matches
                  .Where(i => i.HomeTeamId == input.TeamId).Select(i => i.HomeTeam).FirstOrDefault() ??
                  matches.Where(i => i.OppponentTeamId == input.TeamId).Select(i => i.OppponentTeam).FirstOrDefault();
-                 ;
+                ;
                 if (!matches.Any())
                 {
                     var team = await _repository.GetAll().Where(i => i.IsDeleted == false && i.Id == input.TeamId).SingleOrDefaultAsync();

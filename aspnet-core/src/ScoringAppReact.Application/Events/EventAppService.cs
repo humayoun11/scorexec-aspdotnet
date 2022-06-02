@@ -226,7 +226,8 @@ namespace ScoringAppReact.Events
                     StartDate = i.StartDate,
                     EndDate = i.EndDate,
                     EventType = i.EventType,
-                    TournamentType = i.TournamentType
+                    TournamentType = i.TournamentType,
+                    NumberOfGroup = i.NumberOfGroup
                 })
                 .FirstOrDefaultAsync();
             return result;

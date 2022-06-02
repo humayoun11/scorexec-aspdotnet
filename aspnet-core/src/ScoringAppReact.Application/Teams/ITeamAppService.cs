@@ -27,5 +27,8 @@ namespace ScoringAppReact.Teams
         Task<List<TeamDto>> GetAllTeamsByPlayerId(long id);
 
         Task<TeamStatsDto> TeamStats(StatsInput input);
+
+        Task<List<GroupWiseTeamsDto>> GetAllTeamsByGroupWiseEventId(long id);
+
     }
 }
