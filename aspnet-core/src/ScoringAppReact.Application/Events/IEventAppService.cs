@@ -23,5 +23,9 @@ namespace ScoringAppReact.Events
         Task<List<EventDto>> GetAllEventsByTeamId(long id, int? typeId);
 
         Task<EventStats> GetEventStat(long id);
+
+        ResponseMessageDto AddGroupWiseEventTeam(CreateGroupWiseTeams model);
+
+        Task<List<PointsTableDto>> GetPointsTable(long id);
     }
 }

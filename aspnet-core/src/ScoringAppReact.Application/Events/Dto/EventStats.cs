@@ -12,8 +12,8 @@ namespace ScoringAppReact.Events.Dto
     {
         public string Event { get; set; }
         public string Organizor { get; set; }
-        public int? StartDate { get; set; }
-        public int? EndDate { get; set; }
+        public long? StartDate { get; set; }
+        public long? EndDate { get; set; }
         public int? Matches { get; set; }
         public string Batsman { get; set; }
         public string Bowler { get; set; }
@@ -24,5 +24,6 @@ namespace ScoringAppReact.Events.Dto
         public int? Wickets { get; set; }
         public int? Stumps { get; set; }
         public int? Runouts { get; set; }
+        public int? Groups { get; set; }
     }
 }

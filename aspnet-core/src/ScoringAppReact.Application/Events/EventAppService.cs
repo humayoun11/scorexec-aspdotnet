@@ -18,6 +18,9 @@ using Abp.EntityFrameworkCore;
 using ScoringAppReact.EntityFrameworkCore;
 using Dapper;
 using System.Data;
+using ScoringAppReact.Matches;
+using ScoringAppReact.Teams;
+using ScoringAppReact.Matches.Dto;
 
 namespace ScoringAppReact.Events
 {
@@ -25,23 +28,24 @@ namespace ScoringAppReact.Events
     public class EventAppService : AbpServiceBase, IEventAppService
     {
         private readonly IRepository<Event, long> _repository;
-        private readonly IRepository<Match, long> _matchRepository;
         private readonly IRepository<EventTeam, long> _eventTeamRepository;
-        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
+        private readonly IRepository<Team, long> _teamRepository;
         private readonly IAbpSession _abpSession;
+        private readonly MatchAppService _matchAppService;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         public EventAppService(IRepository<Event, long> repository,
             IRepository<EventTeam, long> eventTeamRepository,
-            IRepository<Match, long> matchRepository,
-            IRepository<PlayerScore, long> playerScoreRepository,
-            IAbpSession abpSession, IDbContextProvider<ScoringAppReactDbContext> context)
+            IRepository<Team, long> teamRepository,
+            IAbpSession abpSession,
+            MatchAppService matchAppService,
+            IDbContextProvider<ScoringAppReactDbContext> context)
         {
             _repository = repository;
             _abpSession = abpSession;
             _eventTeamRepository = eventTeamRepository;
-            _matchRepository = matchRepository;
             _context = context;
-            _playerScoreRepository = playerScoreRepository;
+            _matchAppService = matchAppService;
+            _teamRepository = teamRepository;
         }
 
 
@@ -168,26 +172,23 @@ namespace ScoringAppReact.Events
             }
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
-            if (model.IsCreateMatch)
-            {
-                var teams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
-                var matchList = new List<Match>();
-                for (var i = 0; i < teams.Count; i += 2)
-                {
-                    matchList.Add(new Match()
-                    {
-                        HomeTeamId = teams[i].TeamId,
-                        OppponentTeamId = teams[i + 1].TeamId,
-                        MatchTypeId = MatchTypeConsts.Tournament,
-                        EventId = model.EventId,
-                        EventStage = EventStageConsts.Group,
-                        TenantId = _abpSession.TenantId
-                    });
-                }
-                _matchRepository.GetDbContext().AddRange(matchList);
 
+            var teams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
+            var matchList = new List<Match>();
+            for (var i = 0; i < teams.Count; i += 2)
+            {
+                matchList.Add(new Match()
+                {
+                    HomeTeamId = teams[i].TeamId,
+                    OppponentTeamId = teams[i + 1].TeamId,
+                    MatchTypeId = MatchTypeConsts.Tournament,
+                    EventId = model.EventId,
+                    EventStage = EventStageConsts.Group,
+                    TenantId = _abpSession.TenantId
+                });
             }
 
+            _matchAppService.InsertDbRange(matchList);
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
@@ -256,7 +257,9 @@ namespace ScoringAppReact.Events
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    EventType = i.EventType
+                    EventType = i.EventType,
+                    TournamentType = i.TournamentType,
+                    NumberOfGroup = i.NumberOfGroup
                 }).ToListAsync();
             return result;
         }
@@ -286,16 +289,17 @@ namespace ScoringAppReact.Events
                     EventType = i.EventType,
                     TournamentType = i.TournamentType,
                     StartDate = i.StartDate,
-                    EndDate = i.EndDate
+                    EndDate = i.EndDate,
+                    NumberOfGroup = i.NumberOfGroup
                 }).ToListAsync());
         }
 
-        public async Task<List<EventDto>> GetAllEventsByTeamId(long id,int? typeId)
+        public async Task<List<EventDto>> GetAllEventsByTeamId(long id, int? typeId)
         {
             var result = await _repository.GetAll()
                 .Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId &&
-                i.EventTeams.Any(j => j.TeamId == id)    && (!typeId.HasValue || i.EventType == typeId))
+                i.EventTeams.Any(j => j.TeamId == id) && (!typeId.HasValue || i.EventType == typeId))
                 .Select(i => new EventDto()
                 {
                     Id = i.Id,
@@ -323,19 +327,160 @@ namespace ScoringAppReact.Events
                     new { paramEventId },
                     commandType: CommandType.StoredProcedure);
 
-                //var model = _playerScoreRepository.GetAll().Where(i => i.Match.EventId == id).ToList();
-                //var a = model.GroupBy(i => i.PlayerId).Select(i => new
-                //{
-                //    Runs  = i.Sum(a=> a.Bat_Runs)
-
-                //}).ToList();
-
+                if (result == null)
+                {
+                    var stats = new EventStats();
+                    var e = await GetById(id);
+                    stats.Event = e.Name;
+                    stats.Organizor = e.Organizor;
+                    stats.Groups = e.NumberOfGroup;
+                    return stats;
+                }
                 return result;
             }
             catch (Exception e)
             {
                 throw e;
             }
+        }
+
+
+        public ResponseMessageDto AddGroupWiseEventTeam(CreateGroupWiseTeams model)
+        {
+            var Allteams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).ToList();
+            var group = 1;
+            foreach (var selectedTeam in model.SelectedTeams)
+            {
+                var oldTeamIds = Allteams.Where(i => i.Group == group).Select(i => i.TeamId).ToList();
+                var toAddTeams = selectedTeam.Except(oldTeamIds).ToList();
+                var ToDelete = oldTeamIds.Except(selectedTeam).ToList();
+                var ListEventTeam = new List<EventTeam>();
+                if (toAddTeams.Any())
+                {
+                    foreach (var item in toAddTeams)
+                    {
+                        var EventTeam = new EventTeam
+                        {
+                            EventId = model.EventId,
+                            TeamId = item,
+                            Group = group,
+                            TenantId = _abpSession.TenantId
+                        };
+                        ListEventTeam.Add(EventTeam);
+                    }
+                    _eventTeamRepository.GetDbContext().UpdateRange(ListEventTeam);
+                }
+
+
+                if (ToDelete.Any())
+                {
+                    foreach (var item in ToDelete)
+                    {
+                        var deleteTeam = Allteams.Where(i => i.TeamId == item).SingleOrDefault();
+                        _eventTeamRepository.Delete(deleteTeam);
+
+                    }
+                }
+
+
+
+                CurrentUnitOfWork.SaveChanges();
+                group++;
+
+            }
+
+
+            if (--group == model.SelectedTeams.Count)
+            {
+                return new ResponseMessageDto()
+                {
+                    Id = group,
+                    SuccessMessage = AppConsts.SuccessfullyInserted,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            return new ResponseMessageDto()
+            {
+                Id = 0,
+                ErrorMessage = AppConsts.InsertFailure,
+                Success = false,
+                Error = true,
+            };
+        }
+
+
+
+        public async Task<List<PointsTableDto>> GetPointsTable(long id)
+        {
+            var matches = _matchAppService.GetMatchesByEventId(id);
+            var teams = await _teamRepository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id)).ToListAsync();
+            var pointsTable = new List<PointsTableDto>();
+            if (matches == null || matches.Count == 0 || teams == null || teams.Count == 0)
+            {
+                return pointsTable;
+            }
+
+            foreach (var team in teams)
+            {
+                var winningMatch = new List<ViewMatch>();
+                var loosingMatch = new List<ViewMatch>();
+                var tieMatch = new List<ViewMatch>();
+                var noResult = new List<ViewMatch>();
+
+                var myMatches = matches.Where(i => i.Team1Id == team.Id || i.Team2Id == team.Id).ToList();
+
+                var points = 0;
+                foreach (var match in myMatches)
+                {
+
+                    if (match.Team1Score is 0 || match.Team2Score is 0)
+                    {
+                        noResult.Add(match);
+                    }
+                    else if (match.Team1Id == team.Id && match.Team1Score > match.Team2Score)
+                    {
+                        winningMatch.Add(match);
+                        points += 2;
+                    }
+                    else if (match.Team2Id == team.Id && match.Team1Score > match.Team2Score)
+                    {
+                        loosingMatch.Add(match);
+                    }
+                    else if (match.Team1Id == team.Id && match.Team1Score < match.Team2Score)
+                    {
+                        loosingMatch.Add(match);
+                    }
+                    else if (match.Team2Id == team.Id && match.Team1Score < match.Team2Score)
+                    {
+                        winningMatch.Add(match);
+                        points += 2;
+                    }
+                    else if (match.Team1Score == match.Team2Score)
+                    {
+                        tieMatch.Add(match);
+                        points++;
+                    }
+                    else
+                    {
+                        noResult.Add(match);
+                    }
+                }
+
+                var item = new PointsTableDto
+                {
+                    Team = team.Name,
+                    Played = myMatches.Count(),
+                    Won = winningMatch.Count(),
+                    Lost = loosingMatch.Count(),
+                    Tie = tieMatch.Count(),
+                    Points = points,
+                    RunRate = 0
+                };
+                pointsTable.Add(item);
+            }
+
+            return pointsTable;
         }
     }
 }

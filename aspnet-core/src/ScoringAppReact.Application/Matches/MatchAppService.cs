@@ -15,6 +15,7 @@ using Abp.UI;
 using System;
 using ScoringAppReact.MatchSummary.Dto;
 using ScoringAppReact.Teams.Dto;
+using Abp.EntityFrameworkCore.Repositories;
 
 namespace ScoringAppReact.Matches
 {
@@ -231,6 +232,10 @@ namespace ScoringAppReact.Matches
         public BracketStages GetAllStagedMatchesByEventId(long eventId)
         {
             var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).Count();
+            if(teamCount == 0)
+            {
+                return null;
+            }
             var stages = CalculateUnorderedStages(teamCount).OrderBy(i => i).ToList(); ;
 
             var matches = _repository.GetAll()
@@ -568,6 +573,11 @@ namespace ScoringAppReact.Matches
                    EventId = i.EventId,
                    POM = i.PlayerOTM
                }).ToList();
+        }
+
+        public void InsertDbRange(List<Match> matches)
+        {
+            _repository.GetDbContext().AddRange(matches);
         }
     }
 }

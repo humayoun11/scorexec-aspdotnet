@@ -370,6 +370,20 @@ namespace ScoringAppReact.Players
         }
 
 
+        public async Task<List<PlayerDto>> AllPlayersByTeamIds(List<long> teamIds)
+        {
+            var result = await _repository.GetAll()
+                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Teams.Any(j => teamIds.Contains(j.TeamId)))
+                .Select(i => new PlayerDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    FileName = i.FileName
+                }).ToListAsync();
+            return result;
+        }
+
+
         public async Task<List<PlayerDto>> GetAllByMatchId(long id)
         {
             var result = await _playerScoreRepository.GetAll()

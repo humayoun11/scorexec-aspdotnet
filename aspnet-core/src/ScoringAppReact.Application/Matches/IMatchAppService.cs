@@ -33,5 +33,7 @@ namespace ScoringAppReact.Matches
         List<ViewMatch> GetMatchesByTeamId(long id, int matchResultFilter);
 
         List<ViewMatch> GetMatchesByEventId(long id);
+
+        void InsertDbRange(List<Match> matches);
     }
 }

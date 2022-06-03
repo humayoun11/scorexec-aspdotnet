@@ -199,13 +199,14 @@ namespace ScoringAppReact.Teams
 
         }
 
-        public async Task<List<TeamDto>> GetAllTeamsByEventId(long id)
+        public async Task<List<TeamDto>> GetAllTeamsByEventId(long id, int? group)
         {
             try
             {
                 return await _repository.GetAll()
                .Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
+               .WhereIf(group.HasValue, i=> i.EventTeams.Any(j=> j.Group == group))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,
