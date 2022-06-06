@@ -206,7 +206,7 @@ namespace ScoringAppReact.Teams
                 return await _repository.GetAll()
                .Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
-               .WhereIf(group.HasValue, i=> i.EventTeams.Any(j=> j.Group == group))
+               .WhereIf(group.HasValue, i=> i.EventTeams.Any(j=> j.Group == group && j.EventId == id))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,

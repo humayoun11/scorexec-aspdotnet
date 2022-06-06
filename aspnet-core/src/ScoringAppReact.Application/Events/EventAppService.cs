@@ -334,6 +334,7 @@ namespace ScoringAppReact.Events
                     stats.Event = e.Name;
                     stats.Organizor = e.Organizor;
                     stats.Groups = e.NumberOfGroup;
+                    stats.Type = e.TournamentType;
                     return stats;
                 }
                 return result;
@@ -411,76 +412,96 @@ namespace ScoringAppReact.Events
 
 
 
-        public async Task<List<PointsTableDto>> GetPointsTable(long id)
+        public async Task<GroupWisePointTable[]> GetPointsTable(long id)
         {
-            var matches = _matchAppService.GetMatchesByEventId(id);
-            var teams = await _teamRepository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id)).ToListAsync();
-            var pointsTable = new List<PointsTableDto>();
-            if (matches == null || matches.Count == 0 || teams == null || teams.Count == 0)
+            var thisEvent = await GetById(id);
+            if (thisEvent.NumberOfGroup.HasValue && thisEvent.NumberOfGroup > 0)
             {
-                return pointsTable;
-            }
-
-            foreach (var team in teams)
-            {
-                var winningMatch = new List<ViewMatch>();
-                var loosingMatch = new List<ViewMatch>();
-                var tieMatch = new List<ViewMatch>();
-                var noResult = new List<ViewMatch>();
-
-                var myMatches = matches.Where(i => i.Team1Id == team.Id || i.Team2Id == team.Id).ToList();
-
-                var points = 0;
-                foreach (var match in myMatches)
+                var GroupWisePointsTable = new GroupWisePointTable[thisEvent.NumberOfGroup.Value];
+                var matches = _matchAppService.GetMatchesByEventId(id);
+                var teams = await _teamRepository.GetAll().Include(i=> i.EventTeams).Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id)).ToListAsync();
+                if (matches == null || matches.Count == 0 || teams == null || teams.Count == 0)
                 {
-
-                    if (match.Team1Score is 0 || match.Team2Score is 0)
-                    {
-                        noResult.Add(match);
-                    }
-                    else if (match.Team1Id == team.Id && match.Team1Score > match.Team2Score)
-                    {
-                        winningMatch.Add(match);
-                        points += 2;
-                    }
-                    else if (match.Team2Id == team.Id && match.Team1Score > match.Team2Score)
-                    {
-                        loosingMatch.Add(match);
-                    }
-                    else if (match.Team1Id == team.Id && match.Team1Score < match.Team2Score)
-                    {
-                        loosingMatch.Add(match);
-                    }
-                    else if (match.Team2Id == team.Id && match.Team1Score < match.Team2Score)
-                    {
-                        winningMatch.Add(match);
-                        points += 2;
-                    }
-                    else if (match.Team1Score == match.Team2Score)
-                    {
-                        tieMatch.Add(match);
-                        points++;
-                    }
-                    else
-                    {
-                        noResult.Add(match);
-                    }
+                    return GroupWisePointsTable;
                 }
 
-                var item = new PointsTableDto
+                for (var index = 1; index <= thisEvent.NumberOfGroup; index++)
                 {
-                    Team = team.Name,
-                    Played = myMatches.Count(),
-                    Won = winningMatch.Count(),
-                    Lost = loosingMatch.Count(),
-                    Tie = tieMatch.Count(),
-                    Points = points,
-                    RunRate = 0
-                };
-                pointsTable.Add(item);
+                    var pointsTable = new List<PointsTableDto>();
+
+                    var groupTeams = teams.Where(i => i.EventTeams.Any(j => j.Group == index)).ToList();
+
+                    foreach (var team in groupTeams)
+                    {
+                        var winningMatch = new List<ViewMatch>();
+                        var loosingMatch = new List<ViewMatch>();
+                        var tieMatch = new List<ViewMatch>();
+                        var noResult = new List<ViewMatch>();
+
+                        var myMatches = matches.Where(i => i.Team1Id == team.Id || i.Team2Id == team.Id).ToList();
+
+                        var points = 0;
+                        foreach (var match in myMatches)
+                        {
+
+                            if (match.Team1Score is 0 || match.Team2Score is 0)
+                            {
+                                noResult.Add(match);
+                            }
+                            else if (match.Team1Id == team.Id && match.Team1Score > match.Team2Score)
+                            {
+                                winningMatch.Add(match);
+                                points += 2;
+                            }
+                            else if (match.Team2Id == team.Id && match.Team1Score > match.Team2Score)
+                            {
+                                loosingMatch.Add(match);
+                            }
+                            else if (match.Team1Id == team.Id && match.Team1Score < match.Team2Score)
+                            {
+                                loosingMatch.Add(match);
+                            }
+                            else if (match.Team2Id == team.Id && match.Team1Score < match.Team2Score)
+                            {
+                                winningMatch.Add(match);
+                                points += 2;
+                            }
+                            else if (match.Team1Score == match.Team2Score)
+                            {
+                                tieMatch.Add(match);
+                                points++;
+                            }
+                            else
+                            {
+                                noResult.Add(match);
+                            }
+                        }
+
+                        var item = new PointsTableDto
+                        {
+                            Team = team.Name,
+                            Played = myMatches.Count(),
+                            Won = winningMatch.Count(),
+                            Lost = loosingMatch.Count(),
+                            Tie = tieMatch.Count(),
+                            Points = points,
+                            RunRate = 0
+                        };
+                        pointsTable.Add(item);
+                    }
+                    if(GroupWisePointsTable[index - 1] == null)
+                    {
+                        GroupWisePointsTable[index - 1] = new GroupWisePointTable();
+                    }
+
+                    GroupWisePointsTable[index - 1].PointsTables = pointsTable;
+                }
+
+                return GroupWisePointsTable;
             }
 
-            return pointsTable;
+
+            return null;
         }
     }
 }

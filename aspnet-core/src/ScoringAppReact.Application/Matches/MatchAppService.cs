@@ -36,7 +36,7 @@ namespace ScoringAppReact.Matches
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateMatchDto matchDto)
         {
             ResponseMessageDto result;
-            if (matchDto.Id == 0)
+            if (matchDto.Id == 0 || matchDto.Id == null)
             {
                 result = await CreateTeamAsync(matchDto);
             }

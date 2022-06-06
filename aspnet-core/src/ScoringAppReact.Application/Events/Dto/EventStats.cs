@@ -25,5 +25,6 @@ namespace ScoringAppReact.Events.Dto
         public int? Stumps { get; set; }
         public int? Runouts { get; set; }
         public int? Groups { get; set; }
+        public int? Type { get; set; }
     }
 }

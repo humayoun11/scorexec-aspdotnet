@@ -26,6 +26,6 @@ namespace ScoringAppReact.Events
 
         ResponseMessageDto AddGroupWiseEventTeam(CreateGroupWiseTeams model);
 
-        Task<List<PointsTableDto>> GetPointsTable(long id);
+        Task<GroupWisePointTable[]> GetPointsTable(long id);
     }
 }

@@ -13,7 +13,8 @@ eve.[Name] as 'Event',
 eve.Organizor as 'Organizor',
 eve.StartDate as 'StartDate',
 eve.EndDate as 'EndDate',
-eve.NumberOfGroup as 'Groups'
+eve.NumberOfGroup as 'Groups',
+eve.TournamentType as 'Type'
 from matches
 left join PlayerScores on PlayerScores.MatchId = Matches.Id
 left join [Events] as eve on eve.id = Matches.EventId
@@ -23,7 +24,8 @@ eve.[name],
 eve.StartDate,
 eve.EndDate,
 eve.NumberOfGroup,
-eve.Organizor
+eve.Organizor,
+eve.TournamentType
 End
 Go
 
