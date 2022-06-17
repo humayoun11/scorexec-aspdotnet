@@ -120,7 +120,7 @@ namespace ScoringAppReact.Teams
 
             if (string.IsNullOrEmpty(teamDto.Profile.Url))
             {
-                var profilePicture = _pictureGalleryAppService.GetImageUrl(teamDtox.Profile);
+                var profilePicture = _pictureGalleryAppService.GetImageUrl(teamDto.Profile);
                 teamDto.ProfileUrl = profilePicture.Url;
             }
             var result = await _repository.UpdateAsync(new Team()
