@@ -27,7 +27,7 @@ namespace ScoringAppReact.Models
         public bool IsRegistered { get; set; }
         [Required]
         public string City { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public List<Match> OpponentTeamMatches { get; set; }
         public List<Match> HomeTeamMatches { get; set; }
         public List<TeamScore> TeamScores { get; set; }
@@ -35,6 +35,7 @@ namespace ScoringAppReact.Models
         public List<MatchSchedule> MatchSchedules { get; set; }
         public List<EventTeam> EventTeams { get; set; }
         public List<TeamPlayer> TeamPlayers { get; set; }
+        public List<Gallery> Pictures { get; set; }
         public bool? IsVerified { get; set; }
         public int? TenantId { get; set; }
     }

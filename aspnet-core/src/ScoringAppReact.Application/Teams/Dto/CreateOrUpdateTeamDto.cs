@@ -15,7 +15,9 @@ namespace ScoringAppReact.Teams.Dto
         public string Contact { get; set; }
         public bool IsRegistered { get; set; }
         public string City { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
+        public PictureDto Profile { get; set; }
+        public List<PictureDto> Gallery { get; set; }
         public int? TenantId { get; set; }
     }
 }

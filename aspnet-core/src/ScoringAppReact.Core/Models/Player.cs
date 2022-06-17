@@ -23,7 +23,7 @@ namespace ScoringAppReact.Models
         public long? DOB { get; set; }
         public string IsGuestorRegistered { get; set; }
         public bool IsDeactivated { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public List<TeamPlayer> Teams { get; set; }
         public bool? IsVerified { get; set; }
         public int? TenantId { get; set; }

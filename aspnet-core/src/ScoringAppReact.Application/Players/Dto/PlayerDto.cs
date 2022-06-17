@@ -23,7 +23,7 @@ namespace ScoringAppReact.Players.Dto
         public bool IsDeactivated { get; set; }
         public string ClubName { get; set; }
         public List<TeamDto> Teams { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public int? TenantId { get; set; }
     }
 }

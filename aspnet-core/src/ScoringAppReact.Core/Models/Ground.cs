@@ -10,6 +10,7 @@ namespace ScoringAppReact.Models
         public string Name { get; set; }
         [MaxLength(25)]
         public string Location { get; set; }
+        public string ProfileUrl { get; set; }
         public int? TenantId { get; set; }
     }
 }

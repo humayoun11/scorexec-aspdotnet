@@ -82,7 +82,7 @@ namespace ScoringAppReact.Players
                 CNIC = model.CNIC,
                 Contact = model.Contact,
                 DOB = model.DOB,
-                FileName = model.FileName,
+                ProfileUrl = model.ProfileUrl,
                 Gender = model.Gender,
                 CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
@@ -189,7 +189,7 @@ namespace ScoringAppReact.Players
                 CNIC = model.CNIC,
                 Contact = model.Contact,
                 DOB = model.DOB,
-                FileName = model.FileName,
+                ProfileUrl = model.ProfileUrl,
                 Gender = model.Gender,
                 CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
@@ -259,7 +259,7 @@ namespace ScoringAppReact.Players
                 CNIC = i.CNIC,
                 Contact = i.Contact,
                 DOB = i.DOB,
-                FileName = i.FileName,
+                ProfileUrl = i.ProfileUrl,
                 Gender = i.Gender,
                 TeamIds = i.Teams.Select(i => i.TeamId).ToList()
             }).FirstOrDefaultAsync();
@@ -287,7 +287,7 @@ namespace ScoringAppReact.Players
             {
                 Id = i.Id,
                 Name = i.Name,
-                FileName = i.FileName,
+                ProfileUrl = i.ProfileUrl,
                 Contact = i.Contact
             }).ToListAsync();
             return result;
@@ -364,7 +364,7 @@ namespace ScoringAppReact.Players
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    FileName = i.FileName
+                    ProfileUrl = i.ProfileUrl
                 }).ToListAsync();
             return result;
         }
@@ -378,7 +378,7 @@ namespace ScoringAppReact.Players
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    FileName = i.FileName
+                    ProfileUrl = i.ProfileUrl
                 }).ToListAsync();
             return result;
         }
@@ -452,7 +452,7 @@ namespace ScoringAppReact.Players
                     DOB = i.DOB,
                     IsDeactivated = i.IsDeactivated,
                     Contact = i.Contact,
-                    FileName = i.FileName,
+                    ProfileUrl = i.ProfileUrl,
                     Address = i.Address,
                     Teams = i.Teams.Where(j => j.PlayerId == i.Id).Select(j => j.Team).Select(k => new TeamDto()
                     {

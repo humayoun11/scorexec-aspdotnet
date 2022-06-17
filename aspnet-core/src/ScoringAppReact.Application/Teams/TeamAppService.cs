@@ -13,10 +13,15 @@ using ScoringAppReact.Teams.Dto;
 using Abp.Runtime.Session;
 using Abp.UI;
 using System;
-using ScoringAppReact.Events.Dto;
 using ScoringAppReact.Matches.Dto;
 using ScoringAppReact.Teams.InputDto;
 using ScoringAppReact.Events;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Abp.Domain.Uow;
+using ScoringAppReact.PictureGallery;
 
 namespace ScoringAppReact.Teams
 {
@@ -27,22 +32,28 @@ namespace ScoringAppReact.Teams
         private readonly IRepository<Match, long> _matchRepository;
         private readonly IAbpSession _abpSession;
         private readonly EventAppService _eventAppService;
+        private readonly IWebHostEnvironment _hosting;
+        private readonly PictureGalleryAppService _pictureGalleryAppService;
         public TeamAppService(IRepository<Team, long> repository, IRepository<Match, long> matchRepository,
             IAbpSession abpSession,
-            EventAppService eventAppService
+            EventAppService eventAppService,
+            IWebHostEnvironment hosting,
+            PictureGalleryAppService pictureGalleryAppService
             )
         {
             _repository = repository;
             _abpSession = abpSession;
             _eventAppService = eventAppService;
             _matchRepository = matchRepository;
+            _hosting = hosting;
+            _pictureGalleryAppService = pictureGalleryAppService;
         }
 
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdateTeamDto teamDto)
         {
             ResponseMessageDto result;
-            if (teamDto.Id == 0)
+            if (teamDto.Id == 0 || teamDto.Id == null)
             {
                 result = await CreateTeamAsync(teamDto);
             }
@@ -55,21 +66,34 @@ namespace ScoringAppReact.Teams
 
         private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateTeamDto model)
         {
-
-
+            if (string.IsNullOrEmpty(model.Profile.Url))
+            {
+                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                model.ProfileUrl = profilePicture.Url;
+            }
+            
             var result = await _repository.InsertAsync(new Team()
             {
                 Name = model.Name,
                 Place = model.Place,
                 Zone = model.Zone,
                 Contact = model.Contact,
-                IsRegistered = model.IsRegistered,
+                IsRegistered = true,
                 City = model.City,
-                FileName = model.FileName,
+                ProfileUrl = model.ProfileUrl,
                 Type = model.Type,
                 TenantId = _abpSession.TenantId
 
             });
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            var gallery = new CreateOrUpdateGalleryDto
+            {
+                TeamId = result.Id,
+                Galleries = model.Gallery
+            };
+
+            await _pictureGalleryAppService.CreateAsync(gallery);
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
             if (result.Id != 0)
@@ -93,12 +117,18 @@ namespace ScoringAppReact.Teams
 
         private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto teamDto)
         {
+
+            if (string.IsNullOrEmpty(teamDto.Profile.Url))
+            {
+                var profilePicture = _pictureGalleryAppService.GetImageUrl(teamDtox.Profile);
+                teamDto.ProfileUrl = profilePicture.Url;
+            }
             var result = await _repository.UpdateAsync(new Team()
             {
                 Id = teamDto.Id.Value,
                 Name = teamDto.Name,
                 Contact = teamDto.Contact,
-                FileName = teamDto.FileName,
+                ProfileUrl = teamDto.ProfileUrl,
                 Zone = teamDto.Zone,
                 IsRegistered = teamDto.IsRegistered,
                 City = teamDto.City,
@@ -106,6 +136,14 @@ namespace ScoringAppReact.Teams
                 Type = teamDto.Type,
                 TenantId = _abpSession.TenantId
             });
+
+            var gallery = new CreateOrUpdateGalleryDto
+            {
+                TeamId = result.Id,
+                Galleries = teamDto.Gallery
+            };
+
+            await _pictureGalleryAppService.UpdateAsync(gallery);
 
             if (result != null)
             {
@@ -140,11 +178,17 @@ namespace ScoringAppReact.Teams
                     Id = i.Id,
                     Name = i.Name,
                     Contact = i.Contact,
-                    FileName = i.FileName,
+                    ProfileUrl = i.ProfileUrl,
                     Zone = i.Zone,
                     IsRegistered = i.IsRegistered,
                     City = i.City,
-                    Place = i.Place
+                    Place = i.Place,
+                    Pictures = i.Pictures.Select(i => new GalleryDto()
+                    {
+                        Id = i.Id,
+                        Url = i.Path,
+                        Name = i.Name
+                    }).ToList(),
                 })
                 .FirstOrDefaultAsync(i => i.Id == id);
             return result;
@@ -206,7 +250,7 @@ namespace ScoringAppReact.Teams
                 return await _repository.GetAll()
                .Where(i => i.IsDeleted == false &&
                 i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
-               .WhereIf(group.HasValue, i=> i.EventTeams.Any(j=> j.Group == group && j.EventId == id))
+               .WhereIf(group.HasValue, i => i.EventTeams.Any(j => j.Group == group && j.EventId == id))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,
@@ -231,7 +275,7 @@ namespace ScoringAppReact.Teams
                 var eventData = await _eventAppService.GetById(id);
                 if (eventData == null || eventData.NumberOfGroup == null || eventData.NumberOfGroup < 1)
                 {
-                    throw new UserFriendlyException("League Based Tournaments No of Group Must Required");
+                    throw new UserFriendlyException("Groups Must be required in League Based Tournament");
                 }
 
                 var allTeams = await _repository.GetAll()
@@ -256,7 +300,7 @@ namespace ScoringAppReact.Teams
             }
             catch (Exception e)
             {
-                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+                throw new UserFriendlyException(e.Message);
 
             }
 
@@ -282,7 +326,7 @@ namespace ScoringAppReact.Teams
                     Id = i.Id,
                     Name = i.Name,
                     Contact = i.Contact,
-                    FileName = i.FileName,
+                    ProfileUrl = i.ProfileUrl,
                     Zone = i.Zone,
                     IsRegistered = i.IsRegistered,
                     City = i.City,
@@ -440,6 +484,17 @@ namespace ScoringAppReact.Teams
 
             }
 
+        }
+
+
+        private string SaveImagesBase64Async(PictureDto sender)
+        {
+            string imageName = new String(Path.GetFileNameWithoutExtension(sender.Name).Take(10).ToArray()).Replace(' ', '-');
+            imageName = imageName + DateTime.Now.ToString("yymmssff") + Path.GetExtension(sender.Name);
+            var path = Path.Combine(_hosting.ContentRootPath, "Images", imageName);
+            var b = sender.Blob.Split("base64,")[1];
+            File.WriteAllBytes(path, Convert.FromBase64String(b));
+            return imageName;
         }
 
 

@@ -25,7 +25,7 @@ namespace ScoringAppReact.Models
         public long? DateOfMatch { get; set; }
         public long HomeTeamId { get; set; }
         public long OppponentTeamId { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public int MatchTypeId { get; set; }
         public int? EventStage { get; set; }
         public long? PlayerOTM { get; set; }

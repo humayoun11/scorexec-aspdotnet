@@ -9,7 +9,7 @@ namespace ScoringAppReact.Events.Dto
     {
         public long? Id { get; set; }
         public string Name { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public string Organizor { get; set; }
         public string OrganizorContact { get; set; }
         public long? StartDate { get; set; }

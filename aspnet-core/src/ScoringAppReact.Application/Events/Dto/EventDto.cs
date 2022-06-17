@@ -11,7 +11,7 @@ namespace ScoringAppReact.Events.Dto
     public class EventDto : EntityDto<long>
     {
         public string Name { get; set; }
-        public string FileName { get; set; }
+        public string ProfileUrl { get; set; }
         public string Organizor { get; set; }
         public string OrganizorContact { get; set; }
         public long? StartDate { get; set; }

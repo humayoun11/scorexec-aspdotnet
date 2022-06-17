@@ -68,7 +68,7 @@ namespace ScoringAppReact.Events
             var result = await _repository.InsertAsync(new Event()
             {
                 Name = model.Name,
-                FileName = model.FileName,
+                ProfileUrl = model.ProfileUrl,
                 Organizor = model.Organizor,
                 OrganizorContact = model.OrganizorContact,
                 StartDate = model.StartDate,
@@ -106,7 +106,7 @@ namespace ScoringAppReact.Events
             {
                 Id = model.Id.Value,
                 Name = model.Name,
-                FileName = model.FileName,
+                ProfileUrl = model.ProfileUrl,
                 Organizor = model.Organizor,
                 OrganizorContact = model.OrganizorContact,
                 StartDate = model.StartDate,
@@ -285,7 +285,7 @@ namespace ScoringAppReact.Events
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    FileName = i.FileName,
+                    ProfileUrl = i.ProfileUrl,
                     EventType = i.EventType,
                     TournamentType = i.TournamentType,
                     StartDate = i.StartDate,
