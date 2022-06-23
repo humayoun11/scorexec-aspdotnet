@@ -21,6 +21,8 @@ namespace ScoringAppReact.Players.Dto
         public bool IsDeactivated { get; set; }
         public List<long> TeamIds { get; set; }
         public string ProfileUrl { get; set; }
+        public PictureDto Profile { get; set; }
+        public List<PictureDto> Gallery { get; set; }
         public long? CreationTime { get; set; }
         public int? TenantId { get; set; }
     }

@@ -50,22 +50,9 @@ namespace ScoringAppReact.PictureGallery
             if (entityId == 0)
                 throw new UserFriendlyException("EntityId can not be null or 0");
 
-            //var newIds = model.Galleries.Select(i => i.Id).ToList();
-
-            //var oldGalleriesIds = await _repository.GetAll()
-            //    .Where(i => i.MatchId == entityId && i.IsDeleted == false).Select(i => i.Id)
-            //    .ToListAsync();
-
-            //var toAddTeams = selectedTeam.Except(oldGalleriesIds).ToList();
-            //var ToDelete = oldGalleriesIds.Except(selectedTeam).ToList();
-
             var gallery = new List<Gallery>();
             foreach (var item in model.Galleries)
             {
-                //var data = new Gallery();
-                //data.Path = item.Url;
-                //data.Name = item.Name;
-
                 var data = SaveImagesBase64Async(item);
                 var result = new Gallery()
                 {

@@ -23,6 +23,7 @@ using System.Threading;
 using System;
 using Dapper;
 using Abp.Domain.Uow;
+using ScoringAppReact.PictureGallery;
 
 namespace ScoringAppReact.Players
 {
@@ -34,19 +35,22 @@ namespace ScoringAppReact.Players
         private readonly IRepository<PlayerScore, long> _playerScoreRepository;
         private readonly IAbpSession _abpSession;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
+        private readonly PictureGalleryAppService _pictureGalleryAppService;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
                 long> teamPlayerRepository,
             IRepository<PlayerScore,
                 long> playerScoreRepository,
-            IDbContextProvider<ScoringAppReactDbContext> context)
+            IDbContextProvider<ScoringAppReactDbContext> context,
+            PictureGalleryAppService pictureGalleryAppService)
         {
             _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
             _playerScoreRepository = playerScoreRepository;
             _context = context;
+            _pictureGalleryAppService = pictureGalleryAppService;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model)
@@ -69,6 +73,12 @@ namespace ScoringAppReact.Players
             {
                 throw new UserFriendlyException("Name must required");
                 //return;
+            }
+
+            if (string.IsNullOrEmpty(model.Profile.Url))
+            {
+                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                model.ProfileUrl = profilePicture.Url;
             }
 
 
@@ -103,6 +113,18 @@ namespace ScoringAppReact.Players
 
             await _teamPlayerRepository.GetDbContext().AddRangeAsync(teamPlayerList);
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    PlayerId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result.Id != 0)
             {
@@ -178,6 +200,12 @@ namespace ScoringAppReact.Players
 
         private async Task<ResponseMessageDto> UpdatePlayerAsync(CreateOrUpdatePlayerDto model)
         {
+            if (string.IsNullOrEmpty(model.Profile.Url))
+            {
+                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                model.ProfileUrl = profilePicture.Url;
+            }
+
             var result = await _repository.UpdateAsync(new Player()
             {
                 Id = model.Id.Value,
@@ -226,6 +254,18 @@ namespace ScoringAppReact.Players
                 _teamPlayerRepository.GetDbContext().AddRange(addNewTeams);
             }
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result != null)
             {

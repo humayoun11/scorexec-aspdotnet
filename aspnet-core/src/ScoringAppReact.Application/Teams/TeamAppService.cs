@@ -66,6 +66,12 @@ namespace ScoringAppReact.Teams
 
         private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateTeamDto model)
         {
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                throw new UserFriendlyException("Name must required");
+                //return;
+            }
+
             if (string.IsNullOrEmpty(model.Profile.Url))
             {
                 var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
@@ -87,14 +93,18 @@ namespace ScoringAppReact.Teams
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            var gallery = new CreateOrUpdateGalleryDto
+            if (model.Gallery.Any())
             {
-                TeamId = result.Id,
-                Galleries = model.Gallery
-            };
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
 
-            await _pictureGalleryAppService.CreateAsync(gallery);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+           
 
             if (result.Id != 0)
             {
