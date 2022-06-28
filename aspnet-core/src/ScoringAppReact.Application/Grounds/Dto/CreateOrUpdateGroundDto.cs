@@ -10,5 +10,8 @@ namespace ScoringAppReact.Grounds.Dto
         public long? Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
+        public string ProfileUrl { get; set; }
+        public PictureDto Profile { get; set; }
+        public List<PictureDto> Gallery { get; set; }
     }
 }

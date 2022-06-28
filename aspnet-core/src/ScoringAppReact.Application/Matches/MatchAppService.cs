@@ -16,6 +16,7 @@ using System;
 using ScoringAppReact.MatchSummary.Dto;
 using ScoringAppReact.Teams.Dto;
 using Abp.EntityFrameworkCore.Repositories;
+using ScoringAppReact.PictureGallery;
 
 namespace ScoringAppReact.Matches
 {
@@ -25,11 +26,17 @@ namespace ScoringAppReact.Matches
         private readonly IRepository<Match, long> _repository;
         private readonly IRepository<EventTeam, long> _teamRepository;
         private readonly IAbpSession _abpSession;
-        public MatchAppService(IRepository<Match, long> repository, IRepository<EventTeam, long> teamRepository, IAbpSession abpSession)
+        private readonly PictureGalleryAppService _pictureGalleryAppService;
+        public MatchAppService(IRepository<Match, long> repository,
+            IRepository<EventTeam, long> teamRepository,
+            IAbpSession abpSession,
+            PictureGalleryAppService pictureGalleryAppService
+            )
         {
             _repository = repository;
             _teamRepository = teamRepository;
             _abpSession = abpSession;
+            _pictureGalleryAppService = pictureGalleryAppService;
         }
 
 
@@ -38,65 +45,94 @@ namespace ScoringAppReact.Matches
             ResponseMessageDto result;
             if (matchDto.Id == 0 || matchDto.Id == null)
             {
-                result = await CreateTeamAsync(matchDto);
+                result = await CreateMatchAsync(matchDto);
             }
             else
             {
-                result = await UpdateTeamAsync(matchDto);
+                result = await UpdateMatchAsync(matchDto);
             }
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateMatchDto model)
+        private async Task<ResponseMessageDto> CreateMatchAsync(CreateOrUpdateMatchDto model)
         {
-            try
-            {
-                var result = await _repository.InsertAsync(new Match()
-                {
-                    GroundId = model.GroundId,
-                    MatchOvers = model.MatchOvers,
-                    HomeTeamId = model.Team1Id,
-                    OppponentTeamId = model.Team2Id,
-                    MatchDescription = model.MatchDescription,
-                    DateOfMatch = model.DateOfMatch,
-                    Season = model.Season,
-                    MatchTypeId = model.MatchTypeId,
-                    TossWinningTeam = model.TossWinningTeam,
-                    PlayerOTM = model.PlayerOTM,
-                    EventId = model.EventId,
-                    EventStage = model.EventStage,
-                    TenantId = _abpSession.TenantId
-                });
-                await _repository.InsertAsync(result);
-                await UnitOfWorkManager.Current.SaveChangesAsync();
 
-                if (result.Id != 0)
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
                 {
-                    return new ResponseMessageDto()
-                    {
-                        Id = result.Id,
-                        SuccessMessage = AppConsts.SuccessfullyInserted,
-                        Success = true,
-                        Error = false,
-                    };
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
                 }
+
+            }
+
+            var result = await _repository.InsertAsync(new Match()
+            {
+                GroundId = model.GroundId,
+                MatchOvers = model.MatchOvers,
+                HomeTeamId = model.Team1Id,
+                OppponentTeamId = model.Team2Id,
+                MatchDescription = model.MatchDescription,
+                DateOfMatch = model.DateOfMatch,
+                Season = model.Season,
+                MatchTypeId = model.MatchTypeId,
+                TossWinningTeam = model.TossWinningTeam,
+                PlayerOTM = model.PlayerOTM,
+                EventId = model.EventId,
+                EventStage = model.EventStage,
+                ProfileUrl = model.ProfileUrl,
+                TenantId = _abpSession.TenantId
+            });
+            await _repository.InsertAsync(result);
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery != null && model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
+            if (result.Id != 0)
+            {
                 return new ResponseMessageDto()
                 {
-                    Id = 0,
-                    ErrorMessage = AppConsts.InsertFailure,
-                    Success = false,
-                    Error = true,
+                    Id = result.Id,
+                    SuccessMessage = AppConsts.SuccessfullyInserted,
+                    Success = true,
+                    Error = false,
                 };
             }
-            catch (Exception e)
+            return new ResponseMessageDto()
             {
-                throw new UserFriendlyException("No Record Exists", e);
-            }
+                Id = 0,
+                ErrorMessage = AppConsts.InsertFailure,
+                Success = false,
+                Error = true,
+            };
 
         }
 
-        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateMatchDto model)
+        private async Task<ResponseMessageDto> UpdateMatchAsync(CreateOrUpdateMatchDto model)
         {
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
+            }
+
             var result = await _repository.UpdateAsync(new Match()
             {
                 Id = model.Id.Value,
@@ -112,8 +148,21 @@ namespace ScoringAppReact.Matches
                 PlayerOTM = model.PlayerOTM,
                 EventId = model.EventId,
                 EventStage = model.EventStage,
+                ProfileUrl = model.ProfileUrl,
                 TenantId = _abpSession.TenantId
             });
+
+            if (model.Gallery != null && model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result != null)
             {
@@ -232,7 +281,7 @@ namespace ScoringAppReact.Matches
         public BracketStages GetAllStagedMatchesByEventId(long eventId)
         {
             var teamCount = _teamRepository.GetAll().Where(i => i.EventId == eventId && i.IsDeleted == false && i.TenantId == _abpSession.TenantId).Count();
-            if(teamCount == 0)
+            if (teamCount == 0)
             {
                 return null;
             }
@@ -248,6 +297,11 @@ namespace ScoringAppReact.Matches
             var winTeam = new TeamDto();
             for (var outer = 0; outer < stages.Count; outer++)
             {
+
+                if (outer == 2)
+                {
+                    var temp = 1;
+                }
                 var result = matches
                 .Where(i => i.EventStage == stages[outer]).OrderBy(i => i.Id)
                 .ToList();
@@ -256,9 +310,9 @@ namespace ScoringAppReact.Matches
                     continue;
 
                 var matchLength = result.Count / 2;
-                if (result.Count <= 2)
-                {
-                    matchLength = 1;
+                if (matchLength < 2)
+                {   
+                    matchLength = 2;
                 }
                 var newMatch = new MatchDto[matchLength];
                 var matchIndex = 0;
@@ -266,9 +320,8 @@ namespace ScoringAppReact.Matches
 
                 for (var loop = 0; loop < loopLength; loop++)
                 {
-                    var currentMatch = eventMatches[outer] != null && eventMatches[outer].Matches.Any() ? eventMatches[outer].Matches[loop] : null;
-                    var singleMatch = currentMatch == null ? result[loop] : result.Where(i => i.HomeTeamId == currentMatch.Team1Id &&
-                    i.OppponentTeamId == currentMatch.Team2Id).FirstOrDefault();
+
+                    var singleMatch = GetSingleMatch(result, outer, loop, eventMatches);
 
                     if (singleMatch == null || !singleMatch.TeamScores.Any())
                     {
@@ -281,7 +334,7 @@ namespace ScoringAppReact.Matches
                     var team2Score = singleMatch.TeamScores.Where(i => i.TeamId == singleMatch.OppponentTeamId).Select(i => i.TotalScore).FirstOrDefault();
                     var winningTeam = team1Score > team2Score ? singleMatch.HomeTeam : singleMatch.OppponentTeam;
 
-                    
+
                     if (outer + 1 == eventMatches.Length)
                     {
                         winTeam.Name = winningTeam.Name;
@@ -339,8 +392,20 @@ namespace ScoringAppReact.Matches
                 {
                     foreach (var item in result)
                     {
-                        var index = eventMatches[outer].Matches.FindIndex(i => i.Team1Id == item.HomeTeamId && i.Team2Id == item.OppponentTeamId);
-                        eventMatches[outer].Matches[index] = result.Where(i => i.HomeTeamId == item.HomeTeamId && i.OppponentTeamId == item.OppponentTeamId)
+
+                        var thisMatch = eventMatches[outer].Matches;
+                        var fIndex = 0;
+                        for (fIndex = 0; fIndex < thisMatch.Count; fIndex++)
+                        {
+                            if (thisMatch[fIndex] != null)
+                            {
+                                if (thisMatch[fIndex].Team1Id == item.HomeTeamId && thisMatch[fIndex].Team2Id == item.OppponentTeamId)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        eventMatches[outer].Matches[fIndex] = result.Where(i => i.HomeTeamId == item.HomeTeamId && i.OppponentTeamId == item.OppponentTeamId)
                       .Select(i => new MatchDto()
                       {
                           Id = i.Id,
@@ -372,6 +437,23 @@ namespace ScoringAppReact.Matches
                 Winner = winTeam
             };
             return data;
+        }
+
+        private Match GetSingleMatch(List<Match> result, int outerIndex, int loopIndex, EventMatches[] eventMatches)
+        {
+            var currentMatch = eventMatches[outerIndex] != null && eventMatches[outerIndex].Matches.Any() ? eventMatches[outerIndex].Matches[outerIndex] : null;
+            var singleMatch = new Match();
+            if (currentMatch != null)
+            {
+                singleMatch = result.Where(i => i.HomeTeamId == currentMatch.Team1Id && i.OppponentTeamId == currentMatch.Team2Id).FirstOrDefault();
+            }
+            else
+            {
+                if (result.Count > loopIndex)
+                    singleMatch = result[loopIndex];
+            }
+
+            return singleMatch;
         }
 
         public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)

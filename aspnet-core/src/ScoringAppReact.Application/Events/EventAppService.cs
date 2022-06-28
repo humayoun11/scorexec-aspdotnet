@@ -21,6 +21,9 @@ using System.Data;
 using ScoringAppReact.Matches;
 using ScoringAppReact.Teams;
 using ScoringAppReact.Matches.Dto;
+using Abp.UI;
+using ScoringAppReact.PictureGallery;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Events
 {
@@ -33,11 +36,13 @@ namespace ScoringAppReact.Events
         private readonly IAbpSession _abpSession;
         private readonly MatchAppService _matchAppService;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
+        private readonly PictureGalleryAppService _pictureGalleryAppService;
         public EventAppService(IRepository<Event, long> repository,
             IRepository<EventTeam, long> eventTeamRepository,
             IRepository<Team, long> teamRepository,
             IAbpSession abpSession,
             MatchAppService matchAppService,
+            PictureGalleryAppService pictureGalleryAppService,
             IDbContextProvider<ScoringAppReactDbContext> context)
         {
             _repository = repository;
@@ -46,6 +51,7 @@ namespace ScoringAppReact.Events
             _context = context;
             _matchAppService = matchAppService;
             _teamRepository = teamRepository;
+            _pictureGalleryAppService = pictureGalleryAppService;
         }
 
 
@@ -65,6 +71,22 @@ namespace ScoringAppReact.Events
 
         private async Task<ResponseMessageDto> CreateEventAsync(CreateOrUpdateEventDto model)
         {
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                throw new UserFriendlyException("Name must required");
+                //return;
+            }
+
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+            }
+
+
             var result = await _repository.InsertAsync(new Event()
             {
                 Name = model.Name,
@@ -80,6 +102,18 @@ namespace ScoringAppReact.Events
 
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result.Id != 0)
             {
@@ -102,6 +136,16 @@ namespace ScoringAppReact.Events
 
         private async Task<ResponseMessageDto> UpdateEventAsync(CreateOrUpdateEventDto model)
         {
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+            }
+
+
             var result = await _repository.UpdateAsync(new Event()
             {
                 Id = model.Id.Value,
@@ -118,6 +162,18 @@ namespace ScoringAppReact.Events
 
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.UpdateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result != null)
             {
@@ -419,7 +475,7 @@ namespace ScoringAppReact.Events
             {
                 var GroupWisePointsTable = new GroupWisePointTable[thisEvent.NumberOfGroup.Value];
                 var matches = _matchAppService.GetMatchesByEventId(id);
-                var teams = await _teamRepository.GetAll().Include(i=> i.EventTeams).Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id)).ToListAsync();
+                var teams = await _teamRepository.GetAll().Include(i => i.EventTeams).Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id)).ToListAsync();
                 if (matches == null || matches.Count == 0 || teams == null || teams.Count == 0)
                 {
                     return GroupWisePointsTable;
@@ -489,7 +545,7 @@ namespace ScoringAppReact.Events
                         };
                         pointsTable.Add(item);
                     }
-                    if(GroupWisePointsTable[index - 1] == null)
+                    if (GroupWisePointsTable[index - 1] == null)
                     {
                         GroupWisePointsTable[index - 1] = new GroupWisePointTable();
                     }

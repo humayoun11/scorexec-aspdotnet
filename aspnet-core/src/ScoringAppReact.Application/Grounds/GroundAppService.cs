@@ -13,6 +13,8 @@ using Abp.Runtime.Session;
 using Microsoft.AspNetCore.Mvc;
 using ScoringAppReact.Grounds.Dto;
 using Abp.UI;
+using ScoringAppReact.Teams.Dto;
+using ScoringAppReact.PictureGallery;
 
 namespace ScoringAppReact.Grounds
 {
@@ -21,10 +23,15 @@ namespace ScoringAppReact.Grounds
     {
         private readonly IRepository<Ground, long> _repository;
         private readonly IAbpSession _abpSession;
-        public GroundAppService(IRepository<Ground, long> repository, IAbpSession abpSession)
+        private readonly PictureGalleryAppService _pictureGalleryAppService;
+        public GroundAppService(IRepository<Ground, long> repository,
+            IAbpSession abpSession,
+            PictureGalleryAppService pictureGalleryAppService
+            )
         {
             _repository = repository;
             _abpSession = abpSession;
+            _pictureGalleryAppService = pictureGalleryAppService;
         }
 
 
@@ -44,16 +51,39 @@ namespace ScoringAppReact.Grounds
 
         private async Task<ResponseMessageDto> CreateGroundAsync(CreateOrUpdateGroundDto model)
         {
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
 
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
+            }
 
             var result = await _repository.InsertAsync(new Ground()
             {
                 Name = model.Name,
                 Location = model.Location,
+                ProfileUrl = model.ProfileUrl,
                 TenantId = _abpSession.TenantId
 
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.UpdateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
 
             if (result.Id != 0)
             {
@@ -76,11 +106,37 @@ namespace ScoringAppReact.Grounds
 
         private async Task<ResponseMessageDto> UpdateGroundAsync(CreateOrUpdateGroundDto model)
         {
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
+            }
+
             var result = await _repository.UpdateAsync(new Ground()
             {
                 Name = model.Name,
                 Location = model.Location,
+                ProfileUrl = model.ProfileUrl,
             });
+
+            if (model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.UpdateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
+
 
             if (result != null)
             {
@@ -103,7 +159,7 @@ namespace ScoringAppReact.Grounds
 
         public async Task<GroundDto> GetById(long id)
         {
-            if (id == 0 )
+            if (id == 0)
             {
                 throw new UserFriendlyException("Id cannot be zero");
                 //return;
@@ -123,12 +179,12 @@ namespace ScoringAppReact.Grounds
 
         public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 throw new UserFriendlyException("Id cannot be zero");
             }
             var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
-            if(model == null)
+            if (model == null)
             {
                 throw new UserFriendlyException("Record not found");
             }

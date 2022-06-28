@@ -17,6 +17,8 @@ namespace ScoringAppReact.Events.Dto
         public int EventType { get; set; }
         public int? TournamentType { get; set; }
         public int? NumberOfGroup { get; set; }
+        public PictureDto Profile { get; set; }
+        public List<PictureDto> Gallery { get; set; }
         public int? TenantId { get; set; }
     }
 }

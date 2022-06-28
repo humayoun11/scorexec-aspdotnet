@@ -74,11 +74,14 @@ namespace ScoringAppReact.Players
                 throw new UserFriendlyException("Name must required");
                 //return;
             }
-
-            if (string.IsNullOrEmpty(model.Profile.Url))
+            if (model.Profile != null)
             {
-                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
-                model.ProfileUrl = profilePicture.Url;
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
             }
 
 
@@ -200,10 +203,15 @@ namespace ScoringAppReact.Players
 
         private async Task<ResponseMessageDto> UpdatePlayerAsync(CreateOrUpdatePlayerDto model)
         {
-            if (string.IsNullOrEmpty(model.Profile.Url))
+            if (model.Profile != null)
             {
-                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
-                model.ProfileUrl = profilePicture.Url;
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
             }
 
             var result = await _repository.UpdateAsync(new Player()

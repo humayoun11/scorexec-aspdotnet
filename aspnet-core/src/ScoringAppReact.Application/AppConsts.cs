@@ -21,9 +21,9 @@
 
     public class MatchTypeConsts
     {
-        public const int Tournament = 2;
-        public const int Friendly = 1;
-        public const int Series = 3;
+        public const int Tournament = 1;
+        public const int Series = 2;
+        public const int Friendly = 3;
     }
 
     public class EventStageConsts

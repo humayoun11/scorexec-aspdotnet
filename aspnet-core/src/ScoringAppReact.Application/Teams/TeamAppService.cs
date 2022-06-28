@@ -71,13 +71,17 @@ namespace ScoringAppReact.Teams
                 throw new UserFriendlyException("Name must required");
                 //return;
             }
-
-            if (string.IsNullOrEmpty(model.Profile.Url))
+            if (model.Profile != null)
             {
-                var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
-                model.ProfileUrl = profilePicture.Url;
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
             }
-            
+
             var result = await _repository.InsertAsync(new Team()
             {
                 Name = model.Name,
@@ -104,7 +108,7 @@ namespace ScoringAppReact.Teams
                 await _pictureGalleryAppService.CreateAsync(gallery);
                 await UnitOfWorkManager.Current.SaveChangesAsync();
             }
-           
+
 
             if (result.Id != 0)
             {
@@ -125,35 +129,46 @@ namespace ScoringAppReact.Teams
             };
         }
 
-        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto teamDto)
+        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto model)
         {
+            if (model.Profile != null)
+            { 
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
 
-            if (string.IsNullOrEmpty(teamDto.Profile.Url))
-            {
-                var profilePicture = _pictureGalleryAppService.GetImageUrl(teamDto.Profile);
-                teamDto.ProfileUrl = profilePicture.Url;
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
             }
             var result = await _repository.UpdateAsync(new Team()
             {
-                Id = teamDto.Id.Value,
-                Name = teamDto.Name,
-                Contact = teamDto.Contact,
-                ProfileUrl = teamDto.ProfileUrl,
-                Zone = teamDto.Zone,
-                IsRegistered = teamDto.IsRegistered,
-                City = teamDto.City,
-                Place = teamDto.Place,
-                Type = teamDto.Type,
+                Id = model.Id.Value,
+                Name = model.Name,
+                Contact = model.Contact,
+                ProfileUrl = model.ProfileUrl,
+                Zone = model.Zone,
+                IsRegistered = model.IsRegistered,
+                City = model.City,
+                Place = model.Place,
+                Type = model.Type,
                 TenantId = _abpSession.TenantId
             });
+            await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            var gallery = new CreateOrUpdateGalleryDto
+            if (model.Gallery.Any())
             {
-                TeamId = result.Id,
-                Galleries = teamDto.Gallery
-            };
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
 
-            await _pictureGalleryAppService.UpdateAsync(gallery);
+                await _pictureGalleryAppService.UpdateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
+
 
             if (result != null)
             {
