@@ -14,7 +14,8 @@ eve.Organizor as 'Organizor',
 eve.StartDate as 'StartDate',
 eve.EndDate as 'EndDate',
 eve.NumberOfGroup as 'Groups',
-eve.TournamentType as 'Type'
+eve.TournamentType as 'Type',
+eve.ProfileUrl as 'ProfileUrl'
 from matches
 left join PlayerScores on PlayerScores.MatchId = Matches.Id
 left join [Events] as eve on eve.id = Matches.EventId
@@ -25,7 +26,8 @@ eve.StartDate,
 eve.EndDate,
 eve.NumberOfGroup,
 eve.Organizor,
-eve.TournamentType
+eve.TournamentType,
+eve.ProfileUrl
 End
 Go
 

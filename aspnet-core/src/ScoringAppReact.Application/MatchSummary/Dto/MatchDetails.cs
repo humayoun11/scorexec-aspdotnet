@@ -20,6 +20,7 @@ namespace ScoringAppReact.MatchSummary.Dto
         }
 
         public string MatchResult { get; set; }
+        public string ProfileUrl { get; set; }
         public string Ground { get; set; }
         public string Toss { get; set; }
         public long? Date { get; set; }

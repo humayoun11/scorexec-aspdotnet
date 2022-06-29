@@ -18,5 +18,6 @@ namespace ScoringAppReact.Teams.Dto
         public int? TossWon { get; set; }
         public int? BatFirst { get; set; }
         public int? FieldFirst { get; set; }
+        public string ProfileUrl { get; set; }
     }
 }

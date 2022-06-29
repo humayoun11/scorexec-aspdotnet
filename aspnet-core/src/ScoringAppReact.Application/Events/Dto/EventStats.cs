@@ -26,5 +26,6 @@ namespace ScoringAppReact.Events.Dto
         public int? Runouts { get; set; }
         public int? Groups { get; set; }
         public int? Type { get; set; }
+        public string ProfileUrl { get; set; }
     }
 }

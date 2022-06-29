@@ -274,7 +274,8 @@ namespace ScoringAppReact.TeamScores
                 Bye = i.Byes,
                 LegBye = i.LegByes,
                 NoBall = i.NoBalls,
-                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes
+                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes,
+                ProfileUrl = i.Team.ProfileUrl
 
             }).FirstOrDefault() ?? new TeamsScoreDto();
 
@@ -289,7 +290,8 @@ namespace ScoringAppReact.TeamScores
                 Bye = i.Byes,
                 LegBye = i.LegByes,
                 NoBall = i.NoBalls,
-                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes
+                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes,
+                ProfileUrl = i.Team.ProfileUrl
 
             }).FirstOrDefault() ?? new TeamsScoreDto();
 
@@ -306,6 +308,7 @@ namespace ScoringAppReact.TeamScores
                 FirstInningBowler = FirstInningBowler,
                 SecondInningBowler = SecondInningBowler,
                 Team1Score = Team1Score,
+                ProfileUrl = match.ProfileUrl,
                 Team2Score = Team2Score,
                 MatchResult = MatchResult(Team1Score, Team2Score),
                 Ground = match.GroundId.HasValue ? match.Ground.Name : "N/A",

@@ -18,5 +18,6 @@ namespace ScoringAppReact.MatchSummary.Dto
         public int? LegBye { get; set; }
         public int? Bye { get; set; }
         public int? Extras { get; set; }
+        public string ProfileUrl { get; set; }
     }
 }

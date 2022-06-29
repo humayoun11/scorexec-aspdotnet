@@ -394,6 +394,7 @@ namespace ScoringAppReact.Players
                     stats.PlayerRole = player.PlayerRoleId;
                     stats.BattingStyle = player.BattingStyleId;
                     stats.BowlingStyle = player.BowlingStyleId;
+                    stats.ProfileUrl = player.ProfileUrl;
                     return stats;
                 }
                 return result;

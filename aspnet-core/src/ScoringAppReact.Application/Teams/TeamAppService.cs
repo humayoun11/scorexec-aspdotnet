@@ -496,7 +496,9 @@ namespace ScoringAppReact.Teams
                     FieldFirst = matches.Count(i => i.OppponentTeamId == input.TeamId),
                     Name = teamDetails != null ? teamDetails.Name : "N/A",
                     Location = teamDetails != null ? teamDetails.Place : "N/A",
-                    Type = teamDetails != null ? teamDetails.Type : 0
+                    Type = teamDetails != null ? teamDetails.Type : 0,
+                    ProfileUrl = teamDetails != null ? teamDetails.ProfileUrl : "dummy.jpg",
+
 
                 };
 
