@@ -256,7 +256,8 @@ namespace ScoringAppReact.Matches
                     Ground = i.Ground.Name,
                     Team1 = i.HomeTeam.Name,
                     Team2 = i.OppponentTeam.Name,
-                    DateOfMatch = i.DateOfMatch
+                    DateOfMatch = i.DateOfMatch,
+                    EventStageId = i.EventStage
 
                 }).ToListAsync();
             return result;
@@ -297,11 +298,11 @@ namespace ScoringAppReact.Matches
             var winTeam = new TeamDto();
             for (var outer = 0; outer < stages.Count; outer++)
             {
-
-                if (outer == 2)
-                {
-                    var temp = 1;
-                }
+                
+                //if (outer == stages[stages.LastOrDefault()])
+                //{
+                //    var temp = 1;
+                //}
                 var result = matches
                 .Where(i => i.EventStage == stages[outer]).OrderBy(i => i.Id)
                 .ToList();
@@ -311,7 +312,7 @@ namespace ScoringAppReact.Matches
 
                 var matchLength = result.Count / 2;
                 if (matchLength < 2)
-                {   
+                {
                     matchLength = 2;
                 }
                 var newMatch = new MatchDto[matchLength];
@@ -441,7 +442,7 @@ namespace ScoringAppReact.Matches
 
         private Match GetSingleMatch(List<Match> result, int outerIndex, int loopIndex, EventMatches[] eventMatches)
         {
-            var currentMatch = eventMatches[outerIndex] != null && eventMatches[outerIndex].Matches.Any() ? eventMatches[outerIndex].Matches[outerIndex] : null;
+            var currentMatch = eventMatches[outerIndex] != null && eventMatches[outerIndex].Matches.Any() ? eventMatches[outerIndex].Matches[loopIndex] : null;
             var singleMatch = new Match();
             if (currentMatch != null)
             {
@@ -660,6 +661,42 @@ namespace ScoringAppReact.Matches
         public void InsertDbRange(List<Match> matches)
         {
             _repository.GetDbContext().AddRange(matches);
+        }
+
+        public async void CreateBracketMatch(List<EventTeam> teams, long? eventId)
+        {
+            var newTeams = new List<EventTeam>();
+            foreach (var item in teams)
+            {
+                var isMatchAlreadyCreated = _repository.GetAll()
+                    .Where(i => (i.HomeTeamId == item.TeamId || i.OppponentTeamId == item.TeamId) &&
+                        i.EventStage == EventStageConsts.Group && i.EventId == eventId).Any();
+                if (!isMatchAlreadyCreated)
+                {
+                    newTeams.Add(item);
+                }
+            }
+            if (newTeams.Any())
+            {
+                var matchList = new List<Match>();
+                for (var i = 0; i < newTeams.Count; i += 2)
+                {
+                    matchList.Add(new Match()
+                    {
+                        HomeTeamId = teams[i].TeamId,
+                        OppponentTeamId = teams[i + 1].TeamId,
+                        MatchTypeId = MatchTypeConsts.Tournament,
+                        EventId = eventId,
+                        EventStage = EventStageConsts.Group,
+                        TenantId = _abpSession.TenantId
+                    });
+                }
+
+                InsertDbRange(matchList);
+
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
         }
     }
 }

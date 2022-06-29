@@ -230,23 +230,8 @@ namespace ScoringAppReact.Events
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
             var teams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
-            var matchList = new List<Match>();
-            for (var i = 0; i < teams.Count; i += 2)
-            {
-                matchList.Add(new Match()
-                {
-                    HomeTeamId = teams[i].TeamId,
-                    OppponentTeamId = teams[i + 1].TeamId,
-                    MatchTypeId = MatchTypeConsts.Tournament,
-                    EventId = model.EventId,
-                    EventStage = EventStageConsts.Group,
-                    TenantId = _abpSession.TenantId
-                });
-            }
 
-            _matchAppService.InsertDbRange(matchList);
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
+            _matchAppService.CreateBracketMatch(teams,model.EventId);
 
             if (model.EventId != 0)
             {

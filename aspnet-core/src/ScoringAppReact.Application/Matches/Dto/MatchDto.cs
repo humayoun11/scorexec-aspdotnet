@@ -25,6 +25,7 @@ namespace ScoringAppReact.Matches.Dto
         public string FileName { get; set; }
         public string MatchType { get; set; }
         public string EventStage { get; set; }
+        public int? EventStageId { get; set; }
         public string PlayerOTM { get; set; }
         public int? TenantId { get; set; }
     }
