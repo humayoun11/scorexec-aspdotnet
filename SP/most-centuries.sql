@@ -13,7 +13,7 @@ BEGIN
 			count (PlayerScores.MatchId) as 'TotalMatch',
 			count (case when IsPlayedInning = 1 then 1 else null end) as 'TotalInnings',
 			COUNT(CASE WHEN Bat_Runs >= 100 THEN 1 ELSE NULL END) AS 'NumberOf100s',
-			Case When Players.[FileName] is null  then  'noImage.jpg' else Players.[FileName] end  AS 'Image',
+			Case When Players.ProfileUrl is null  then  'dummy.jpg' else Players.ProfileUrl end  AS 'ProfileUrl',
 			Players.[Name] AS 'PlayerName'
 			
 	
@@ -37,7 +37,7 @@ BEGIN
 	
 	GROUP BY PlayerScores.PlayerId,
 			Players.[Name],
-			Players.[FileName]
+			Players.ProfileUrl
 		--	PlayerScores.Bat_Runs
 
 	order by COUNT(CASE WHEN Bat_Runs >= 100 THEN 1 ELSE NULL END) desc ;

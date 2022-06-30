@@ -8,6 +8,7 @@ namespace ScoringAppReact.Players.Dto
     {
         public long Id { get; set; }
         public string Name { get; set; }
+        public string ProfileUrl { get; set; }
         public long TeamId { get; set; }
         public DateTime CreationTime { get; set; }
     }

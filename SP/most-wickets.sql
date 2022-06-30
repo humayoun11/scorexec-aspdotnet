@@ -11,7 +11,7 @@ BEGIN
 			count (PlayerScores.MatchId) as 'TotalMatch',
 			count (case when Overs != null and Overs != 0 then 1 else null end) as 'TotalInnings',
 			sum (Wickets) as 'MostWickets',
-			Case When Players.[FileName] is null  then  'noImage.jpg' else Players.[FileName] end  AS 'Image',
+			Case When Players.ProfileUrl is null  then  'dummy.jpg' else Players.ProfileUrl end  AS 'Image',
 			Players.[Name] AS 'PlayerName'
 			
 	
@@ -35,7 +35,7 @@ BEGIN
 	
 	GROUP BY PlayerScores.PlayerId,
 			Players.Name,
-			Players.[FileName]
+			Players.ProfileUrl
 		--	PlayerScores.Bat_Runs
 
 	order by sum(Wickets) desc ;

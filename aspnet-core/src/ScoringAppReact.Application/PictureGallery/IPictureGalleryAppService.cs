@@ -23,5 +23,7 @@ namespace ScoringAppReact.PictureGallery
         Task<List<CreateOrUpdateGalleryDto>> GetAll();
         GalleryDto GetImageUrl(PictureDto model);
 
+        Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId);
+
     }
 }

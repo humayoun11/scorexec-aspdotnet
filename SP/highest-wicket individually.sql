@@ -1,4 +1,4 @@
-Create PROCEDURE [usp_GetHighestWicketsIndividual]
+Alter PROCEDURE [usp_GetHighestWicketsIndividual]
 @paramTeamId AS INT,
 @paramSeason As Int,
 @paramOvers As Int,
@@ -10,7 +10,7 @@ BEGIN
 	SELECT  top 10
 			count (PlayerScores.MatchId) as 'TotalMatch',
 			max (Wickets) as 'Highest',
-			Case When Players.[FileName] is null  then  'noImage.jpg' else Players.[FileName] end  AS 'Image',
+			Case When Players.ProfileUrl is null  then  'dummy.jpg' else Players.ProfileUrl end  AS 'ProfileUrl',
 			Players.[Name] AS 'PlayerName'
 			
 	
@@ -31,7 +31,7 @@ BEGIN
 	
 	GROUP BY PlayerScores.PlayerId,
 			Players.[Name],
-			Players.[FileName]
+			Players.ProfileUrl
 		--	PlayerScores.Bat_Runs
 
 	order by max(Wickets) desc ;

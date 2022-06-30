@@ -277,6 +277,32 @@ namespace ScoringAppReact.PictureGallery
         }
 
 
+        public async Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId)
+        {
+            try
+            {
+                return await _repository.GetAll()
+               .Where(i => i.IsDeleted == false &&
+               (!teamId.HasValue || i.TeamId == teamId) &&
+               (!eventId.HasValue || i.EventId == teamId) &&
+               (!playerId.HasValue || i.PlayerId == teamId) &&
+               (!matchId.HasValue || i.MatchId == teamId))
+               .Select(i => new GalleryDto()
+               {
+                   Id = i.Id,
+                   Url = i.Path,
+
+               }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException("Something went wrong with geeting all teams", e);
+
+            }
+
+        }
+
+
 
     }
 }

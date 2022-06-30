@@ -465,7 +465,9 @@ namespace ScoringAppReact.Players
                 {
                     Id = i.Id,
                     Name = i.Player.Name,
-                    TeamId = i.TeamId
+                    TeamId = i.TeamId,
+                    ProfileUrl = i.Player.ProfileUrl,
+
                 }).ToListAsync();
             return result;
         }

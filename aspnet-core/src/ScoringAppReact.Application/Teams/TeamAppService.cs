@@ -280,7 +280,8 @@ namespace ScoringAppReact.Teams
                {
                    Id = i.Id,
                    Name = i.Name,
-                   Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList()
+                   Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList(),
+                   ProfileUrl = i.ProfileUrl
 
                }).ToListAsync();
             }
@@ -408,6 +409,7 @@ namespace ScoringAppReact.Teams
                {
                    Id = i.Id,
                    Name = i.Name,
+                   ProfileUrl = i.ProfileUrl
 
                }).ToListAsync();
             }
