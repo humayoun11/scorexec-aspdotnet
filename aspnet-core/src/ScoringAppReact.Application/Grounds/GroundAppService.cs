@@ -73,7 +73,7 @@ namespace ScoringAppReact.Grounds
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -124,7 +124,7 @@ namespace ScoringAppReact.Grounds
                 ProfileUrl = model.ProfileUrl,
             });
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {

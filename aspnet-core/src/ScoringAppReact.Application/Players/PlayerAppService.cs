@@ -117,7 +117,7 @@ namespace ScoringAppReact.Players
             await _teamPlayerRepository.GetDbContext().AddRangeAsync(teamPlayerList);
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -263,7 +263,7 @@ namespace ScoringAppReact.Players
             }
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {

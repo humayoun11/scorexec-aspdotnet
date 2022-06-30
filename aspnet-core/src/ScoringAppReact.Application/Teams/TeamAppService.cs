@@ -97,7 +97,7 @@ namespace ScoringAppReact.Teams
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -156,7 +156,7 @@ namespace ScoringAppReact.Teams
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
