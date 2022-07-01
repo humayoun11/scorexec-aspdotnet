@@ -35,5 +35,7 @@ namespace ScoringAppReact.Matches
         List<ViewMatch> GetMatchesByEventId(long id);
 
         void InsertDbRange(List<Match> matches);
+
+        void CreateBracketMatch(List<EventTeam> teams, long? eventId);
     }
 }

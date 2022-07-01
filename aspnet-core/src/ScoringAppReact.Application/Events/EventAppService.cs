@@ -76,7 +76,7 @@ namespace ScoringAppReact.Events
                 throw new UserFriendlyException("Name must required");
                 //return;
             }
-
+                
             if (model.Profile != null)
             {
                 if (string.IsNullOrEmpty(model.Profile.Url))
@@ -232,6 +232,9 @@ namespace ScoringAppReact.Events
             var teams = _eventTeamRepository.GetAll().Where(i => i.EventId == model.EventId && i.IsDeleted == false).ToList();
 
             _matchAppService.CreateBracketMatch(teams,model.EventId);
+
+
+            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             if (model.EventId != 0)
             {

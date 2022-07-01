@@ -663,7 +663,7 @@ namespace ScoringAppReact.Matches
             _repository.GetDbContext().AddRange(matches);
         }
 
-        public async void CreateBracketMatch(List<EventTeam> teams, long? eventId)
+        public void CreateBracketMatch(List<EventTeam> teams, long? eventId)
         {
             var newTeams = new List<EventTeam>();
             foreach (var item in teams)
@@ -694,7 +694,7 @@ namespace ScoringAppReact.Matches
 
                 InsertDbRange(matchList);
 
-                await UnitOfWorkManager.Current.SaveChangesAsync();
+
             }
 
         }
