@@ -171,7 +171,8 @@ namespace ScoringAppReact.Grounds
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    Location = i.Location
+                    Location = i.Location,
+                    ProfileUrl = i.ProfileUrl
                 })
                 .FirstOrDefaultAsync();
             return result;

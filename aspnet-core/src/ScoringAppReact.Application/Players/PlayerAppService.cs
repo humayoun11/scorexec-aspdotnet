@@ -67,7 +67,7 @@ namespace ScoringAppReact.Players
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto model)
+        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto model) 
         {
             if (string.IsNullOrEmpty(model.Name))
             {
@@ -104,18 +104,23 @@ namespace ScoringAppReact.Players
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
             var teamPlayerList = new List<TeamPlayer>();
-            foreach (var item in model.TeamIds)
+            if(model.TeamIds != null)
             {
-                var res = new TeamPlayer()
+                foreach (var item in model.TeamIds)
                 {
-                    PlayerId = result.Id,
-                    TeamId = item
-                };
-                teamPlayerList.Add(res);
+                    var res = new TeamPlayer()
+                    {
+                        PlayerId = result.Id,
+                        TeamId = item
+                    };
+                    teamPlayerList.Add(res);
+                }
+                await _teamPlayerRepository.GetDbContext().AddRangeAsync(teamPlayerList);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+
             }
 
-            await _teamPlayerRepository.GetDbContext().AddRangeAsync(teamPlayerList);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
+            
 
             if (model.Gallery != null)
             {
