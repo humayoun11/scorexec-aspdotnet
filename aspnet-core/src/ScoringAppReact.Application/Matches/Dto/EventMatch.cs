@@ -24,5 +24,6 @@ namespace ScoringAppReact.Matches.Dto
         public int MatchTypeId { get; set; }
         public int? EventStage { get; set; }
         public long? PlayerOTM { get; set; }
+        public string ProfileUrl { get; set; }
     }
 }

@@ -200,6 +200,7 @@ namespace ScoringAppReact.Matches
                 PlayerOTM = i.PlayerOTM,
                 EventId = i.EventId,
                 EventStage = i.EventStage,
+                ProfileUrl = i.ProfileUrl
 
             })
                 .FirstOrDefaultAsync();
@@ -386,7 +387,8 @@ namespace ScoringAppReact.Matches
                           MatchDescription = i.MatchDescription,
                           DateOfMatch = i.DateOfMatch,
                           Season = i.Season,
-                          EventId = i.EventId
+                          EventId = i.EventId,
+                          ProfileUrl = i.ProfileUrl
                       }).ToList();
                 }
                 else
@@ -418,7 +420,8 @@ namespace ScoringAppReact.Matches
                           MatchDescription = i.MatchDescription,
                           DateOfMatch = i.DateOfMatch,
                           Season = i.Season,
-                          EventId = i.EventId
+                          EventId = i.EventId,
+                          ProfileUrl = i.ProfileUrl
                       }).SingleOrDefault();
                     }
                 }
@@ -511,7 +514,7 @@ namespace ScoringAppReact.Matches
                 EventId = i.EventId,
                 Event = i.Event.Name,
                 EventStage = i.EventStage,
-
+                ProfileUrl = i.ProfileUrl                
             })
                 .FirstOrDefaultAsync();
             if (result == null)

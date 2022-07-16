@@ -480,7 +480,8 @@ namespace ScoringAppReact.Teams
                     {
                         Name = team.Name,
                         Location = team.Place,
-                        Type = team.Type
+                        Type = team.Type,
+                        ProfileUrl = team.ProfileUrl
                     };
 
                 }
@@ -499,7 +500,7 @@ namespace ScoringAppReact.Teams
                     Name = teamDetails != null ? teamDetails.Name : "N/A",
                     Location = teamDetails != null ? teamDetails.Place : "N/A",
                     Type = teamDetails != null ? teamDetails.Type : 0,
-                    ProfileUrl = teamDetails != null ? teamDetails.ProfileUrl : "dummy.jpg",
+                    ProfileUrl = teamDetails != null ? teamDetails.ProfileUrl : "Images/dummy.jpg",
 
 
                 };
