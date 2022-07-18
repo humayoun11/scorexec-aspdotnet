@@ -5,6 +5,7 @@ using Abp.Authorization.Roles;
 using Abp.AutoMapper;
 using ScoringAppReact.Authorization.Roles;
 using ScoringAppReact.Models;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Events.Dto
 {
@@ -19,6 +20,7 @@ namespace ScoringAppReact.Events.Dto
         public int EventType { get; set; }
         public int? TournamentType { get; set; }
         public int? NumberOfGroup { get; set; }
+        public List<GalleryDto> Pictures { get; set; }
         public int? TenantId { get; set; }
     }
 }

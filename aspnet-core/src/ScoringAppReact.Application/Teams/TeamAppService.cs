@@ -208,11 +208,11 @@ namespace ScoringAppReact.Teams
                     IsRegistered = i.IsRegistered,
                     City = i.City,
                     Place = i.Place,
-                    Pictures = i.Pictures.Select(i => new GalleryDto()
+                    Pictures = i.Pictures.Select(j => new GalleryDto()
                     {
-                        Id = i.Id,
-                        Url = i.Path,
-                        Name = i.Name
+                        Id = j.Id,
+                        Url = j.Path,
+                        Name = j.Name
                     }).ToList(),
                 })
                 .FirstOrDefaultAsync(i => i.Id == id);

@@ -12,5 +12,6 @@ namespace ScoringAppReact.Teams.Dto
         public string Blob { get; set; }
         public string Name { get; set; }
         public int? TenantId { get; set; }
+        public List<GalleryDto> Pictures { get; set; }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Abp.Authorization.Roles;
 using ScoringAppReact.Authorization.Roles;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Matches.Dto
 {
@@ -24,6 +25,7 @@ namespace ScoringAppReact.Matches.Dto
         public int MatchTypeId { get; set; }
         public int? EventStage { get; set; }
         public long? PlayerOTM { get; set; }
+        public List<GalleryDto> Pictures { get; set; }
         public string ProfileUrl { get; set; }
     }
 }

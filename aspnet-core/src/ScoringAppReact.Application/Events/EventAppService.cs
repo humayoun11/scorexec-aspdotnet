@@ -107,7 +107,7 @@ namespace ScoringAppReact.Events
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    EventId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -167,7 +167,7 @@ namespace ScoringAppReact.Events
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    EventId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -262,7 +262,6 @@ namespace ScoringAppReact.Events
                 throw new ArgumentNullException(nameof(id));
             }
             var result = await _repository.GetAll()
-                .Where(i => i.Id == id)
                 .Select(i =>
                 new EventDto()
                 {
@@ -273,9 +272,15 @@ namespace ScoringAppReact.Events
                     EventType = i.EventType,
                     TournamentType = i.TournamentType,
                     NumberOfGroup = i.NumberOfGroup,
-                    ProfileUrl = i.ProfileUrl
+                    ProfileUrl = i.ProfileUrl,
+                    Pictures = i.Pictures.Select(j => new GalleryDto()
+                    {
+                        Id = j.Id,
+                        Url = j.Path,
+                        Name = j.Name
+                    }).ToList(),
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(i => i.Id == id);
             return result;
         }
 

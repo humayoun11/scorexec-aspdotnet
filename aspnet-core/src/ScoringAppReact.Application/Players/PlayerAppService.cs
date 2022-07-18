@@ -272,7 +272,7 @@ namespace ScoringAppReact.Players
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    PlayerId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -314,7 +314,13 @@ namespace ScoringAppReact.Players
                 DOB = i.DOB,
                 ProfileUrl = i.ProfileUrl,
                 Gender = i.Gender,
-                TeamIds = i.Teams.Select(i => i.TeamId).ToList()
+                TeamIds = i.Teams.Select(i => i.TeamId).ToList(),
+                Pictures = i.Pictures.Select(j => new GalleryDto()
+                {
+                    Id = j.Id,
+                    Url = j.Path,
+                    Name = j.Name
+                }).ToList(),
             }).FirstOrDefaultAsync();
             return result;
         }
