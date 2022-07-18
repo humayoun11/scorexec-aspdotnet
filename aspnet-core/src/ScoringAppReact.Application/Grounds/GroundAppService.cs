@@ -73,7 +73,7 @@ namespace ScoringAppReact.Grounds
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
 
-            if (model.Gallery != null)
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -119,12 +119,16 @@ namespace ScoringAppReact.Grounds
 
             var result = await _repository.UpdateAsync(new Ground()
             {
+                Id = model.Id.Value,
                 Name = model.Name,
                 Location = model.Location,
                 ProfileUrl = model.ProfileUrl,
+                TenantId = _abpSession.TenantId
             });
 
-            if (model.Gallery != null)
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {

@@ -122,7 +122,7 @@ namespace ScoringAppReact.Players
 
             
 
-            if (model.Gallery != null)
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -268,7 +268,7 @@ namespace ScoringAppReact.Players
             }
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery != null)
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {

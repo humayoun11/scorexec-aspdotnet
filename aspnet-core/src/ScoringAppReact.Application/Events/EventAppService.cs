@@ -103,7 +103,7 @@ namespace ScoringAppReact.Events
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery != null)
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -163,7 +163,7 @@ namespace ScoringAppReact.Events
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery != null)
+            if (model.Gallery != null && model.Gallery.Any())
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
