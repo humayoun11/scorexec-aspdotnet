@@ -77,7 +77,7 @@ namespace ScoringAppReact.Grounds
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    GroundId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -132,7 +132,7 @@ namespace ScoringAppReact.Grounds
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    GroundId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -176,7 +176,13 @@ namespace ScoringAppReact.Grounds
                     Id = i.Id,
                     Name = i.Name,
                     Location = i.Location,
-                    ProfileUrl = i.ProfileUrl
+                    ProfileUrl = i.ProfileUrl,
+                    Pictures = i.Pictures.Select(j => new GalleryDto()
+                    {
+                        Id = j.Id,
+                        Url = j.Path,
+                        Name = j.Name
+                    }).ToList(),
                 })
                 .FirstOrDefaultAsync();
             return result;
@@ -213,7 +219,7 @@ namespace ScoringAppReact.Grounds
                 .Select(i => new GroundDto()
                 {
                     Id = i.Id,
-                    Name = i.Name
+                    Name = i.Name,
                 }).ToListAsync();
             return result;
         }
