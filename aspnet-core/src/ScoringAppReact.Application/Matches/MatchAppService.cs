@@ -152,7 +152,7 @@ namespace ScoringAppReact.Matches
                 TenantId = _abpSession.TenantId,
             });
 
-            if (model.Gallery != null && model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
