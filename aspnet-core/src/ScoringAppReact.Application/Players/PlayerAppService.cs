@@ -276,7 +276,7 @@ namespace ScoringAppReact.Players
                     Galleries = model.Gallery
                 };
 
-                await _pictureGalleryAppService.CreateAsync(gallery);
+                await _pictureGalleryAppService.UpdateAsync(gallery);
                 await UnitOfWorkManager.Current.SaveChangesAsync();
             }
 

@@ -51,7 +51,7 @@ namespace ScoringAppReact.PictureGallery
                 throw new UserFriendlyException("EntityId can not be null or 0");
 
             var gallery = new List<Gallery>();
-            foreach (var item in model.Galleries)
+            foreach (var item in model.Galleries.Where(j=> !string.IsNullOrEmpty(j.Blob)))
             {
                 var data = SaveImagesBase64Async(item);
                 var result = new Gallery()
