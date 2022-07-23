@@ -23,6 +23,8 @@ namespace ScoringAppReact.Matches.Dto
         public long? DateOfMatch { get; set; }
         public string Team1 { get; set; }
         public string Team2 { get; set; }
+        public string Team1ProfileUrl { get; set; }
+        public string Team2ProfileUrl { get; set; }
         public long Team1Id { get; set; }
         public long Team2Id { get; set; }
         public string FileName { get; set; }

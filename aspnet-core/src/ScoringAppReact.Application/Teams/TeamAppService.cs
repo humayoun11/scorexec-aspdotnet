@@ -374,6 +374,8 @@ namespace ScoringAppReact.Teams
                    Team1Id = i.HomeTeam.Id,
                    Team2 = i.OppponentTeam.Name,
                    Team2Id = i.OppponentTeam.Id,
+                   Team1ProfileUrl = i.HomeTeam.ProfileUrl,
+                   Team2ProfileUrl = i.OppponentTeam.ProfileUrl,
 
                }).SingleOrDefaultAsync();
                 var teamList = new List<TeamDto>();
@@ -383,6 +385,7 @@ namespace ScoringAppReact.Teams
                     {
                         Id = x == 0 ? match.Team1Id : match.Team2Id,
                         Name = x == 0 ? match.Team1 : match.Team2,
+                        ProfileUrl = x == 0 ? match.Team1ProfileUrl : match.Team2ProfileUrl
                     };
                     teamList.Add(team);
 

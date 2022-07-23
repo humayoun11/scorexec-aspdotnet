@@ -15,6 +15,7 @@ using ScoringAppReact.PlayerScores;
 using ScoringAppReact.FallOfWickets;
 using System;
 using ScoringAppReact.Teams;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.TeamScores
 {
@@ -209,91 +210,35 @@ namespace ScoringAppReact.TeamScores
                 .Include(i => i.Event)
                 .Where(i => i.Id == matchId).FirstOrDefaultAsync();
 
+
+
             var team1Players = playerScore.Where(i => i.TeamId == team1Id).OrderBy(i => i.Position).ToList();
             var team2Players = playerScore.Where(i => i.TeamId == team2Id).OrderBy(i => i.Position).ToList();
 
             var team1Bowler = team1Players.Where(i => i.Overs.HasValue);
             var team2Bowler = team2Players.Where(i => i.Overs.HasValue);
 
-            var FirstInningBatsman = team1Players.Select(i => new MatchBatsman()
+            var FirstInningBatsman = BatsmanMapper(team1Players);
+            var SecondInningBatsman = BatsmanMapper(team2Players);
+
+            var FirstInningBowler = BowlersMapper(team1Bowler);
+            var SecondInningBowler = BowlersMapper(team2Bowler);
+
+            var teams = new List<TeamDto>();
+            var Team1Score = new TeamsScoreDto();
+            var Team2Score = new TeamsScoreDto();
+            if (!teamScores.Any())
             {
-                PlayerId = i.PlayerId,
-                PlayerName = i.Player.Name,
-                Bowler = i.Bowler != null ? i.Bowler.Name : "N/A",
-                Fielder = i.Fielder,
-                Runs = i.Bat_Runs,
-                Balls = i.Bat_Balls,
-                Four = i.Four,
-                Six = i.Six,
-                HowOut = i.HowOutId
-
-            }).ToList() ?? new List<MatchBatsman>();
-
-            var SecondInningBatsman = team2Players.Select(i => new MatchBatsman()
+                teams = await _teamAppService.GetAllTeamsByMatchId(matchId);
+                Team1Score = TeamScoreMapper(null, team1Id, teams);
+                Team2Score = TeamScoreMapper(null, team2Id, teams);
+            }
+            else
             {
-                PlayerId = i.PlayerId,
-                PlayerName = i.Player.Name,
-                Bowler = i.Bowler != null ? i.Bowler.Name : "N/A",
-                Fielder = i.Fielder,
-                Runs = i.Bat_Runs,
-                Balls = i.Bat_Balls,
-                Four = i.Four,
-                Six = i.Six,
-                HowOut = i.HowOutId
+                Team1Score = TeamScoreMapper(teamScores, team1Id , null);
+                Team2Score = TeamScoreMapper(teamScores, team2Id , null);
+            }
 
-            }).ToList() ?? new List<MatchBatsman>();
-
-            var FirstInningBowler = team2Bowler.Select(i => new MatchBowler()
-            {
-                PlayerId = i.PlayerId,
-                PlayerName = i.Player.Name,
-                Overs = i.Overs,
-                Runs = i.Ball_Runs,
-                Wickets = i.Wickets
-
-            }).ToList() ?? new List<MatchBowler>();
-
-            var SecondInningBowler = team1Bowler.Select(i => new MatchBowler()
-            {
-                PlayerId = i.PlayerId,
-                PlayerName = i.Player.Name,
-                Overs = i.Overs,
-                Runs = i.Ball_Runs,
-                Wickets = i.Wickets
-
-            }).ToList() ?? new List<MatchBowler>();
-
-            var Team1Score = teamScores.Where(i => i.TeamId == team1Id).Select(i => new TeamsScoreDto()
-            {
-                Id = i.TeamId,
-                Score = i.TotalScore,
-                Name = i.Team.Name,
-                Overs = i.Overs,
-                Wickets = i.Wickets,
-                Wide = i.Wideballs,
-                Bye = i.Byes,
-                LegBye = i.LegByes,
-                NoBall = i.NoBalls,
-                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes,
-                ProfileUrl = i.Team.ProfileUrl
-
-            }).FirstOrDefault() ?? new TeamsScoreDto();
-
-            var Team2Score = teamScores.Where(i => i.TeamId == team2Id).Select(i => new TeamsScoreDto()
-            {
-                Id = i.TeamId,
-                Score = i.TotalScore,
-                Name = i.Team.Name,
-                Overs = i.Overs,
-                Wickets = i.Wickets,
-                Wide = i.Wideballs,
-                Bye = i.Byes,
-                LegBye = i.LegByes,
-                NoBall = i.NoBalls,
-                Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes,
-                ProfileUrl = i.Team.ProfileUrl
-
-            }).FirstOrDefault() ?? new TeamsScoreDto();
 
             var firstInningTop3Batsman = FirstInningBatsman.Where(i => i.Runs.HasValue).OrderByDescending(x => x.Runs).Take(3);
             var firstInningTop3Bowler = FirstInningBowler.Where(i => i.Wickets.HasValue).OrderByDescending(x => x.Wickets).Take(3);
@@ -322,9 +267,6 @@ namespace ScoringAppReact.TeamScores
 
 
             };
-
-
-
             return matchDetail;
         }
 
@@ -392,6 +334,78 @@ namespace ScoringAppReact.TeamScores
                 throw e;
             }
 
+        }
+
+
+        private TeamsScoreDto TeamScoreMapper(List<TeamScore> teamScores, long teamId, List<TeamDto> teams)
+        {
+            var teamScore = new TeamsScoreDto();
+            if (teamScores != null)
+            {
+                teamScore = teamScores.Where(i => i.TeamId == teamId).Select(i => new TeamsScoreDto()
+                {
+                    Id = i.TeamId,
+                    Score = i.TotalScore,
+                    Name = i.Team.Name,
+                    Overs = i.Overs,
+                    Wickets = i.Wickets,
+                    Wide = i.Wideballs,
+                    Bye = i.Byes,
+                    LegBye = i.LegByes,
+                    NoBall = i.NoBalls,
+                    Extras = i.Wideballs + i.NoBalls + i.Byes + i.LegByes,
+                    ProfileUrl = i.Team.ProfileUrl
+
+                }).FirstOrDefault() ?? new TeamsScoreDto();
+            }
+            else
+            {
+                teamScore = teams.Where(i => i.Id == teamId).Select(i => new TeamsScoreDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Overs = null,
+                    Wickets = null,
+                    Wide = null,
+                    Bye = null,
+                    LegBye = null,
+                    NoBall = null,
+                    Extras = null,
+                    ProfileUrl = i.ProfileUrl
+
+                }).FirstOrDefault() ?? new TeamsScoreDto();
+            }
+            return teamScore;
+        }
+        private List<MatchBatsman> BatsmanMapper(List<PlayerScore> teamPlayers)
+        {
+            var FirstInningBatsman = teamPlayers.Select(i => new MatchBatsman()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Bowler = i.Bowler != null ? i.Bowler.Name : "N/A",
+                Fielder = i.Fielder,
+                Runs = i.Bat_Runs,
+                Balls = i.Bat_Balls,
+                Four = i.Four,
+                Six = i.Six,
+                HowOut = i.HowOutId
+
+            }).ToList() ?? new List<MatchBatsman>();
+            return FirstInningBatsman;
+        }
+        private List<MatchBowler> BowlersMapper(IEnumerable<PlayerScore> teamBowler)
+        {
+            var FirstInningBowler = teamBowler.Select(i => new MatchBowler()
+            {
+                PlayerId = i.PlayerId,
+                PlayerName = i.Player.Name,
+                Overs = i.Overs,
+                Runs = i.Ball_Runs,
+                Wickets = i.Wickets
+
+            }).ToList() ?? new List<MatchBowler>();
+            return FirstInningBowler;
         }
     }
 }

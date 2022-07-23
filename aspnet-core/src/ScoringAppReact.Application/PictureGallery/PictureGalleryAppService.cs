@@ -214,7 +214,7 @@ namespace ScoringAppReact.PictureGallery
                 Error = false,
             };
         }
-
+        
         public async Task<List<CreateOrUpdateGalleryDto>> GetAll()
         {
             try
