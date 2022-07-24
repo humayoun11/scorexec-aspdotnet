@@ -24,6 +24,8 @@ using System;
 using Dapper;
 using Abp.Domain.Uow;
 using ScoringAppReact.PictureGallery;
+using ScoringAppReact.EntityAdmins.Dto;
+using ScoringAppReact.EntityAdmins;
 
 namespace ScoringAppReact.Players
 {
@@ -36,6 +38,7 @@ namespace ScoringAppReact.Players
         private readonly IAbpSession _abpSession;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         private readonly PictureGalleryAppService _pictureGalleryAppService;
+        private readonly EntityAdminAppService _entityAppService;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
@@ -43,7 +46,9 @@ namespace ScoringAppReact.Players
             IRepository<PlayerScore,
                 long> playerScoreRepository,
             IDbContextProvider<ScoringAppReactDbContext> context,
-            PictureGalleryAppService pictureGalleryAppService)
+            PictureGalleryAppService pictureGalleryAppService,
+            EntityAdminAppService entityAppService
+            )
         {
             _repository = repository;
             _abpSession = abpSession;
@@ -51,6 +56,7 @@ namespace ScoringAppReact.Players
             _playerScoreRepository = playerScoreRepository;
             _context = context;
             _pictureGalleryAppService = pictureGalleryAppService;
+            _entityAppService = entityAppService;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model)
@@ -67,7 +73,7 @@ namespace ScoringAppReact.Players
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto model) 
+        private async Task<ResponseMessageDto> CreatePlayerAsync(CreateOrUpdatePlayerDto model)
         {
             if (string.IsNullOrEmpty(model.Name))
             {
@@ -82,6 +88,11 @@ namespace ScoringAppReact.Players
                     var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
                     model.ProfileUrl = profilePicture.Url;
                 }
+            }
+
+            if (CheckPhoneNumber(model.Contact))
+            {
+                throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
 
 
@@ -100,11 +111,10 @@ namespace ScoringAppReact.Players
                 CreatingTime = model.CreationTime,
                 TenantId = _abpSession.TenantId
             });
-
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
             var teamPlayerList = new List<TeamPlayer>();
-            if(model.TeamIds != null)
+            if (model.TeamIds != null)
             {
                 foreach (var item in model.TeamIds)
                 {
@@ -120,7 +130,7 @@ namespace ScoringAppReact.Players
 
             }
 
-            
+
 
             if (model.Gallery != null && model.Gallery.Any())
             {
@@ -133,6 +143,11 @@ namespace ScoringAppReact.Players
                 await _pictureGalleryAppService.CreateAsync(gallery);
                 await UnitOfWorkManager.Current.SaveChangesAsync();
             }
+            long[] userIds = new long[1] { _abpSession.UserId.Value };
+
+            var entityAdmin = new CreateOrEditEntityAdmin { PlayerId = result.Id, UserIds = userIds };
+
+            await _entityAppService.CreateOrEditAsync(entityAdmin);
 
             if (result.Id != 0)
             {
@@ -217,6 +232,11 @@ namespace ScoringAppReact.Players
                     model.ProfileUrl = profilePicture.Url;
                 }
 
+            }
+
+            if (CheckPhoneNumber(model.Contact))
+            {
+                throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
 
             var result = await _repository.UpdateAsync(new Player()
@@ -526,6 +546,16 @@ namespace ScoringAppReact.Players
 
 
                 }).ToListAsync()); ;
+        }
+
+
+        private bool CheckPhoneNumber(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                throw new UserFriendlyException("Phone Number is required");
+            }
+            return _repository.GetAll().Any(i => i.Contact == phone);
         }
     }
 }
