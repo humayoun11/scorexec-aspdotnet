@@ -273,6 +273,8 @@ namespace ScoringAppReact.Events
                     TournamentType = i.TournamentType,
                     NumberOfGroup = i.NumberOfGroup,
                     ProfileUrl = i.ProfileUrl,
+                    Organizor = i.Organizor,
+                    OrganizorContact = i.OrganizorContact,
                     Pictures = i.Pictures.Select(j => new GalleryDto()
                     {
                         Id = j.Id,
@@ -381,7 +383,7 @@ namespace ScoringAppReact.Events
                 {
                     var stats = new EventStats();
                     var e = await GetById(id);
-                    stats.Event = e.Name;
+                    stats.Name = e.Name;
                     stats.Organizor = e.Organizor;
                     stats.Groups = e.NumberOfGroup;
                     stats.Type = e.TournamentType;

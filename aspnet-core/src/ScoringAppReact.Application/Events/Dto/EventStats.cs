@@ -10,7 +10,7 @@ namespace ScoringAppReact.Events.Dto
 {
     public class EventStats
     {
-        public string Event { get; set; }
+        public string Name { get; set; }
         public string Organizor { get; set; }
         public long? StartDate { get; set; }
         public long? EndDate { get; set; }
