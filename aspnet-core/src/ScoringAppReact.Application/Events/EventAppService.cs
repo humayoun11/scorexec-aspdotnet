@@ -361,7 +361,8 @@ namespace ScoringAppReact.Events
                     StartDate = i.StartDate,
                     EndDate = i.EndDate,
                     Organizor = i.Organizor,
-                    OrganizorContact = i.OrganizorContact
+                    OrganizorContact = i.OrganizorContact,
+                    ProfileUrl = i.ProfileUrl
                 }).ToListAsync();
             return result;
         }
@@ -387,6 +388,7 @@ namespace ScoringAppReact.Events
                     stats.Organizor = e.Organizor;
                     stats.Groups = e.NumberOfGroup;
                     stats.Type = e.TournamentType;
+                    stats.ProfileUrl = e.ProfileUrl;
                     return stats;
                 }
                 return result;

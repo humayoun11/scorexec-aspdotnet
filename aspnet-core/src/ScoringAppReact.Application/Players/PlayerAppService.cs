@@ -90,7 +90,7 @@ namespace ScoringAppReact.Players
                 }
             }
 
-            if (CheckPhoneNumber(model.Contact))
+            if (CheckPhoneNumber(model.Contact,null))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
@@ -234,7 +234,7 @@ namespace ScoringAppReact.Players
 
             }
 
-            if (CheckPhoneNumber(model.Contact))
+            if (CheckPhoneNumber(model.Contact,model.Id))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
@@ -421,7 +421,7 @@ namespace ScoringAppReact.Players
                     var player = await _repository.GetAll().Where(i => i.Id == input.PlayerId).SingleOrDefaultAsync();
                     if (player == null)
                         return null;
-                    stats.PlayerName = player.Name;
+                    stats.Name = player.Name;
                     stats.PlayerRole = player.PlayerRoleId;
                     stats.BattingStyle = player.BattingStyleId;
                     stats.BowlingStyle = player.BowlingStyleId;
@@ -549,13 +549,13 @@ namespace ScoringAppReact.Players
         }
 
 
-        private bool CheckPhoneNumber(string phone)
+        private bool CheckPhoneNumber(string phone,long? id)
         {
             if (string.IsNullOrWhiteSpace(phone))
             {
                 throw new UserFriendlyException("Phone Number is required");
             }
-            return _repository.GetAll().Any(i => i.Contact == phone);
+            return _repository.GetAll().Any(i => i.Contact == phone && (!id.HasValue || i.Id != id));
         }
     }
 }
