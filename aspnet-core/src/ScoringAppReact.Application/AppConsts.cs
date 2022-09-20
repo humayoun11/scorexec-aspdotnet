@@ -33,4 +33,18 @@
         public const int Semi = 3;
         public const int Final = 3;
     }
+
+    public class ScoringBy
+    {
+        public const int Manuual = 1;
+        public const int ScoringApp = 2;
+    }
+
+    public class MatchStatus
+    {
+        public const int Started = 1;
+        public const int Break = 2;
+        public const int Ended = 3;
+        public const int Suspended = 4;
+    }
 }

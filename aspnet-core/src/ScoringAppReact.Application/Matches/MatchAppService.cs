@@ -17,6 +17,7 @@ using ScoringAppReact.MatchSummary.Dto;
 using ScoringAppReact.Teams.Dto;
 using Abp.EntityFrameworkCore.Repositories;
 using ScoringAppReact.PictureGallery;
+using ScoringAppReact.PlayerScores;
 
 namespace ScoringAppReact.Matches
 {
@@ -27,16 +28,22 @@ namespace ScoringAppReact.Matches
         private readonly IRepository<EventTeam, long> _teamRepository;
         private readonly IAbpSession _abpSession;
         private readonly PictureGalleryAppService _pictureGalleryAppService;
+        private readonly IRepository<MatchDetail, long> _matchDetailRepository;
+        private readonly IPlayerScoreAppService _playerScoreAppService;
         public MatchAppService(IRepository<Match, long> repository,
             IRepository<EventTeam, long> teamRepository,
+            IRepository<MatchDetail, long> matchDetailRepository,
             IAbpSession abpSession,
-            PictureGalleryAppService pictureGalleryAppService
+            PictureGalleryAppService pictureGalleryAppService,
+            IPlayerScoreAppService playerScoreAppService
             )
         {
             _repository = repository;
             _teamRepository = teamRepository;
             _abpSession = abpSession;
             _pictureGalleryAppService = pictureGalleryAppService;
+            _matchDetailRepository = matchDetailRepository;
+            _playerScoreAppService = playerScoreAppService;
         }
 
 
@@ -85,7 +92,6 @@ namespace ScoringAppReact.Matches
                 ProfileUrl = model.ProfileUrl,
                 TenantId = _abpSession.TenantId
             });
-            await _repository.InsertAsync(result);
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
             if (model.Gallery != null && model.Gallery.Any())
@@ -299,7 +305,7 @@ namespace ScoringAppReact.Matches
             var winTeam = new TeamDto();
             for (var outer = 0; outer < stages.Count; outer++)
             {
-                
+
                 //if (outer == stages[stages.LastOrDefault()])
                 //{
                 //    var temp = 1;
@@ -514,7 +520,7 @@ namespace ScoringAppReact.Matches
                 EventId = i.EventId,
                 Event = i.Event.Name,
                 EventStage = i.EventStage,
-                ProfileUrl = i.ProfileUrl                
+                ProfileUrl = i.ProfileUrl
             })
                 .FirstOrDefaultAsync();
             if (result == null)
@@ -697,6 +703,64 @@ namespace ScoringAppReact.Matches
 
                 InsertDbRange(matchList);
 
+
+            }
+
+        }
+
+        public async Task<ResponseMessageDto> CreateMatchDetails(MatchDetailAndPlayerListDto model)
+        {
+            try
+            {
+
+                var result = await _matchDetailRepository.InsertAsync(new MatchDetail
+                {
+                    Status = model.Status,
+                    IsLiveStreaming = model.IsLiveStreaming,
+                    ScoringBy = model.ScoringBy,
+                    MatchId = model.MatchId
+                });
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+                await _playerScoreAppService.CreatePlayerScoreListAsync(model.Players);
+
+                if (result.Id != 0)
+                {
+                    return new ResponseMessageDto()
+                    {
+                        Id = result.Id,
+                        SuccessMessage = AppConsts.SuccessfullyInserted,
+                        Success = true,
+                        Error = false,
+                    };
+                }
+                return new ResponseMessageDto()
+                {
+                    Id = 0,
+                    ErrorMessage = AppConsts.InsertFailure,
+                    Success = false,
+                    Error = true,
+                };
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException(e.ToString());
+            }
+
+        }
+
+        public async Task<MatchDetail> GetByMatchId(long matchId)
+        {
+            try
+            {
+                var result = await _matchDetailRepository.GetAll()
+            .FirstOrDefaultAsync(i => i.MatchId == matchId);
+                if (result == null)
+                    throw new UserFriendlyException("No Record Exists");
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException(e.ToString());
 
             }
 

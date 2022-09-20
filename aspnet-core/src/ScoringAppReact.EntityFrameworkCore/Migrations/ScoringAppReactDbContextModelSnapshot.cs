@@ -1945,6 +1945,54 @@ namespace ScoringAppReact.Migrations
                     b.ToTable("Matches");
                 });
 
+            modelBuilder.Entity("ScoringAppReact.Models.MatchDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLiveStreaming")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("MatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ScoringBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId")
+                        .IsUnique();
+
+                    b.ToTable("MatchDetails");
+                });
+
             modelBuilder.Entity("ScoringAppReact.Models.MatchSchedule", b =>
                 {
                     b.Property<long>("Id")
@@ -2820,7 +2868,7 @@ namespace ScoringAppReact.Migrations
                         .HasForeignKey("PlayerId");
 
                     b.HasOne("ScoringAppReact.Models.Team", "Team")
-                        .WithMany()
+                        .WithMany("Pictures")
                         .HasForeignKey("TeamId");
                 });
 
@@ -2849,6 +2897,15 @@ namespace ScoringAppReact.Migrations
                     b.HasOne("ScoringAppReact.Models.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerOTM");
+                });
+
+            modelBuilder.Entity("ScoringAppReact.Models.MatchDetail", b =>
+                {
+                    b.HasOne("ScoringAppReact.Models.Match", "Match")
+                        .WithOne("MatchDetail")
+                        .HasForeignKey("ScoringAppReact.Models.MatchDetail", "MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ScoringAppReact.Models.MatchSchedule", b =>
