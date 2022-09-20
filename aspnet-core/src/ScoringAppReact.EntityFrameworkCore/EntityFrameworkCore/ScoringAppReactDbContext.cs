@@ -24,7 +24,11 @@ namespace ScoringAppReact.EntityFrameworkCore
         public DbSet<EventBracket> EventBrackets { get; set; }
         public DbSet<Gallery> Galleries { get; set; }
         public DbSet<PlayerPastRecord> PlayerPastRecords { get; set; }
+<<<<<<< HEAD
         public DbSet<MatchDetail> MatchDetails { get; set; }
+=======
+        public DbSet<EntityAdmin> EntityAdmin { get; set; }
+>>>>>>> origin/development
         public ScoringAppReactDbContext(DbContextOptions<ScoringAppReactDbContext> options)
             : base(options)
         {

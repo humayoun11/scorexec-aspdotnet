@@ -279,6 +279,19 @@ namespace ScoringAppReact.Users
             }
             return obj;
         }
+
+        [AbpAllowAnonymous]
+        [UnitOfWork(isTransactional: false)]
+        public async Task<User> GetUserByContact(string contact)
+        {
+            var user = await _repository.GetAll().Where(i => i.PhoneNumber == contact).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new UserFriendlyException("This phone number does not assiciate with any account");
+            }
+            return user;
+        }
+
     }
 }
 

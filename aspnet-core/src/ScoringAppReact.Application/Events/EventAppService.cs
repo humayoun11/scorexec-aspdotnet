@@ -107,7 +107,7 @@ namespace ScoringAppReact.Events
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    EventId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -163,11 +163,11 @@ namespace ScoringAppReact.Events
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery != null && model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    EventId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -262,7 +262,6 @@ namespace ScoringAppReact.Events
                 throw new ArgumentNullException(nameof(id));
             }
             var result = await _repository.GetAll()
-                .Where(i => i.Id == id)
                 .Select(i =>
                 new EventDto()
                 {
@@ -273,9 +272,17 @@ namespace ScoringAppReact.Events
                     EventType = i.EventType,
                     TournamentType = i.TournamentType,
                     NumberOfGroup = i.NumberOfGroup,
-                    ProfileUrl = i.ProfileUrl
+                    ProfileUrl = i.ProfileUrl,
+                    Organizor = i.Organizor,
+                    OrganizorContact = i.OrganizorContact,
+                    Pictures = i.Pictures.Select(j => new GalleryDto()
+                    {
+                        Id = j.Id,
+                        Url = j.Path,
+                        Name = j.Name
+                    }).ToList(),
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(i => i.Id == id);
             return result;
         }
 
@@ -354,7 +361,8 @@ namespace ScoringAppReact.Events
                     StartDate = i.StartDate,
                     EndDate = i.EndDate,
                     Organizor = i.Organizor,
-                    OrganizorContact = i.OrganizorContact
+                    OrganizorContact = i.OrganizorContact,
+                    ProfileUrl = i.ProfileUrl
                 }).ToListAsync();
             return result;
         }
@@ -376,10 +384,11 @@ namespace ScoringAppReact.Events
                 {
                     var stats = new EventStats();
                     var e = await GetById(id);
-                    stats.Event = e.Name;
+                    stats.Name = e.Name;
                     stats.Organizor = e.Organizor;
                     stats.Groups = e.NumberOfGroup;
                     stats.Type = e.TournamentType;
+                    stats.ProfileUrl = e.ProfileUrl;
                     return stats;
                 }
                 return result;

@@ -1512,6 +1512,70 @@ namespace ScoringAppReact.Migrations
                     b.ToTable("AbpUsers");
                 });
 
+            modelBuilder.Entity("ScoringAppReact.Models.EntityAdmin", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("GroundId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("MatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("PlayerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("TeamId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("GroundId");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EntityAdmin");
+                });
+
             modelBuilder.Entity("ScoringAppReact.Models.Event", b =>
                 {
                     b.Property<long>("Id")
@@ -2810,6 +2874,35 @@ namespace ScoringAppReact.Migrations
                         .HasForeignKey("LastModifierUserId");
                 });
 
+            modelBuilder.Entity("ScoringAppReact.Models.EntityAdmin", b =>
+                {
+                    b.HasOne("ScoringAppReact.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId");
+
+                    b.HasOne("ScoringAppReact.Models.Ground", "Ground")
+                        .WithMany()
+                        .HasForeignKey("GroundId");
+
+                    b.HasOne("ScoringAppReact.Models.Match", "Match")
+                        .WithMany()
+                        .HasForeignKey("MatchId");
+
+                    b.HasOne("ScoringAppReact.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("MatchId");
+
+                    b.HasOne("ScoringAppReact.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId");
+
+                    b.HasOne("ScoringAppReact.Authorization.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ScoringAppReact.Models.EventBracket", b =>
                 {
                     b.HasOne("ScoringAppReact.Models.Event", "Event")
@@ -2852,19 +2945,19 @@ namespace ScoringAppReact.Migrations
             modelBuilder.Entity("ScoringAppReact.Models.Gallery", b =>
                 {
                     b.HasOne("ScoringAppReact.Models.Event", "Event")
-                        .WithMany()
+                        .WithMany("Pictures")
                         .HasForeignKey("EventId");
 
                     b.HasOne("ScoringAppReact.Models.Ground", "Ground")
-                        .WithMany()
+                        .WithMany("Pictures")
                         .HasForeignKey("GroundId");
 
                     b.HasOne("ScoringAppReact.Models.Match", "Match")
-                        .WithMany()
+                        .WithMany("Pictures")
                         .HasForeignKey("MatchId");
 
                     b.HasOne("ScoringAppReact.Models.Player", "Player")
-                        .WithMany()
+                        .WithMany("Pictures")
                         .HasForeignKey("PlayerId");
 
                     b.HasOne("ScoringAppReact.Models.Team", "Team")

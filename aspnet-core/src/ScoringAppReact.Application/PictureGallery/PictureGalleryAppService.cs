@@ -51,7 +51,7 @@ namespace ScoringAppReact.PictureGallery
                 throw new UserFriendlyException("EntityId can not be null or 0");
 
             var gallery = new List<Gallery>();
-            foreach (var item in model.Galleries)
+            foreach (var item in model.Galleries.Where(j=> !string.IsNullOrEmpty(j.Blob)))
             {
                 var data = SaveImagesBase64Async(item);
                 var result = new Gallery()
@@ -214,7 +214,7 @@ namespace ScoringAppReact.PictureGallery
                 Error = false,
             };
         }
-
+        
         public async Task<List<CreateOrUpdateGalleryDto>> GetAll()
         {
             try
@@ -277,16 +277,17 @@ namespace ScoringAppReact.PictureGallery
         }
 
 
-        public async Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId)
+        public async Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId, long? groundId)
         {
             try
             {
                 return await _repository.GetAll()
                .Where(i => i.IsDeleted == false &&
                (!teamId.HasValue || i.TeamId == teamId) &&
-               (!eventId.HasValue || i.EventId == teamId) &&
-               (!playerId.HasValue || i.PlayerId == teamId) &&
-               (!matchId.HasValue || i.MatchId == teamId))
+               (!eventId.HasValue || i.EventId == eventId) &&
+               (!playerId.HasValue || i.PlayerId == playerId) &&
+               (!matchId.HasValue || i.MatchId == matchId) &&
+               (!groundId.HasValue || i.GroundId == groundId)) 
                .Select(i => new GalleryDto()
                {
                    Id = i.Id,

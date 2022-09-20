@@ -156,7 +156,7 @@ namespace ScoringAppReact.Teams
             });
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
-            if (model.Gallery != null && model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
@@ -208,11 +208,11 @@ namespace ScoringAppReact.Teams
                     IsRegistered = i.IsRegistered,
                     City = i.City,
                     Place = i.Place,
-                    Pictures = i.Pictures.Select(i => new GalleryDto()
+                    Pictures = i.Pictures.Select(j => new GalleryDto()
                     {
-                        Id = i.Id,
-                        Url = i.Path,
-                        Name = i.Name
+                        Id = j.Id,
+                        Url = j.Path,
+                        Name = j.Name
                     }).ToList(),
                 })
                 .FirstOrDefaultAsync(i => i.Id == id);
@@ -374,6 +374,8 @@ namespace ScoringAppReact.Teams
                    Team1Id = i.HomeTeam.Id,
                    Team2 = i.OppponentTeam.Name,
                    Team2Id = i.OppponentTeam.Id,
+                   Team1ProfileUrl = i.HomeTeam.ProfileUrl,
+                   Team2ProfileUrl = i.OppponentTeam.ProfileUrl,
 
                }).SingleOrDefaultAsync();
                 var teamList = new List<TeamDto>();
@@ -383,6 +385,7 @@ namespace ScoringAppReact.Teams
                     {
                         Id = x == 0 ? match.Team1Id : match.Team2Id,
                         Name = x == 0 ? match.Team1 : match.Team2,
+                        ProfileUrl = x == 0 ? match.Team1ProfileUrl : match.Team2ProfileUrl
                     };
                     teamList.Add(team);
 

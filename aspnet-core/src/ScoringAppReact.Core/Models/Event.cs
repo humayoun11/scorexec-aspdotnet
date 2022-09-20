@@ -22,6 +22,7 @@ namespace ScoringAppReact.Models
         public int EventType { get; set; }
         public int? TournamentType { get; set; }
         public int? NumberOfGroup { get; set; }
+        public List<Gallery> Pictures { get; set; }
         //public int? NumberOfTeam { get; set; }
         public List<Match> Matches { get; set; }
         public List<EventTeam> EventTeams { get; set; }

@@ -98,7 +98,7 @@ namespace ScoringAppReact.Matches
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    MatchId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -155,14 +155,14 @@ namespace ScoringAppReact.Matches
                 EventId = model.EventId,
                 EventStage = model.EventStage,
                 ProfileUrl = model.ProfileUrl,
-                TenantId = _abpSession.TenantId
+                TenantId = _abpSession.TenantId,
             });
 
-            if (model.Gallery != null && model.Gallery.Any())
+            if (model.Gallery != null)
             {
                 var gallery = new CreateOrUpdateGalleryDto
                 {
-                    TeamId = result.Id,
+                    MatchId = result.Id,
                     Galleries = model.Gallery
                 };
 
@@ -189,9 +189,9 @@ namespace ScoringAppReact.Matches
             };
         }
 
-        public async Task<CreateOrUpdateMatchDto> GetById(long id)
+        public async Task<MatchDto> GetById(long id)
         {
-            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new CreateOrUpdateMatchDto
+            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new MatchDto
             {
                 Id = i.Id,
                 GroundId = i.GroundId,
@@ -205,8 +205,14 @@ namespace ScoringAppReact.Matches
                 TossWinningTeam = i.TossWinningTeam,
                 PlayerOTM = i.PlayerOTM,
                 EventId = i.EventId,
-                EventStage = i.EventStage,
-                ProfileUrl = i.ProfileUrl
+                EventStageId = i.EventStage,
+                ProfileUrl = i.ProfileUrl,
+                Pictures = i.Pictures.Select(j => new GalleryDto()
+                {
+                    Id = j.Id,
+                    Url = j.Path,
+                    Name = j.Name
+                }).ToList(),
 
             })
                 .FirstOrDefaultAsync();
@@ -520,7 +526,17 @@ namespace ScoringAppReact.Matches
                 EventId = i.EventId,
                 Event = i.Event.Name,
                 EventStage = i.EventStage,
+<<<<<<< HEAD
                 ProfileUrl = i.ProfileUrl
+=======
+                ProfileUrl = i.ProfileUrl,
+                Pictures = i.Pictures.Select(j => new GalleryDto()
+                {
+                    Id = j.Id,
+                    Url = j.Path,
+                    Name = j.Name
+                }).ToList(),
+>>>>>>> origin/development
             })
                 .FirstOrDefaultAsync();
             if (result == null)

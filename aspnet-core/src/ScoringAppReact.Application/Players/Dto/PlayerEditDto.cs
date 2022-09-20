@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Abp.Application.Services.Dto;
 using Abp.Authorization.Roles;
 using ScoringAppReact.Authorization.Roles;
+using ScoringAppReact.Teams.Dto;
 
 namespace ScoringAppReact.Players.Dto
 {
@@ -19,6 +20,7 @@ namespace ScoringAppReact.Players.Dto
         public long? DOB { get; set; }
         public string IsGuestorRegistered { get; set; }
         public bool IsDeactivated { get; set; }
+        public List<GalleryDto> Pictures { get; set; }
         public List<long> TeamIds { get; set; }
         public string ProfileUrl { get; set; }
         public int? TenantId { get; set; }

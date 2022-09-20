@@ -7,7 +7,7 @@ namespace ScoringAppReact.Players.Dto
     public class PlayerStatisticsDto
     {
         public int playerId { get; set; }
-        public string PlayerName { get; set; }
+        public string Name { get; set; }
         public string ProfileUrl { get; set; }
         public int? PlayerRole { get; set; }
         public int? BattingStyle { get; set; }

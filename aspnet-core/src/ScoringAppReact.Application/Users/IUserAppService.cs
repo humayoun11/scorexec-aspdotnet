@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
+using ScoringAppReact.Authorization.Users;
 using ScoringAppReact.Roles.Dto;
 using ScoringAppReact.Users.Dto;
 
@@ -16,5 +17,7 @@ namespace ScoringAppReact.Users
         Task<bool> ChangePassword(ChangePasswordDto input);
 
         Task<UserDetail> UserDetails(string contact);
+
+        Task<User> GetUserByContact(string contact);
     }
 }

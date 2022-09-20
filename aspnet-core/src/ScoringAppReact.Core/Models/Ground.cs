@@ -1,5 +1,6 @@
 ﻿using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ScoringAppReact.Models
@@ -12,5 +13,6 @@ namespace ScoringAppReact.Models
         public string Location { get; set; }
         public string ProfileUrl { get; set; }
         public int? TenantId { get; set; }
+        public List<Gallery> Pictures { get; set; }
     }
 }
