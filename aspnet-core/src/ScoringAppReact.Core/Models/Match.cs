@@ -45,6 +45,8 @@ namespace ScoringAppReact.Models
         [ForeignKey("EventId")]
         public Event Event { get; set; }
         public List<Gallery> Pictures { get; set; }
+        public MatchDetail MatchDetail { get; set; }
+
         public List<PlayerScore> PlayerScores { get; set; }
         public List<TeamScore> TeamScores { get; set; }
         public List<FallOfWicket> FallOfWickets { get; set; }
