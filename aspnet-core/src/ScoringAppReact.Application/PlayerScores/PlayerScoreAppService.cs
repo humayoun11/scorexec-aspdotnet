@@ -255,23 +255,9 @@ namespace ScoringAppReact.PlayerScores
                     var obj = new PlayerScore()
                     {
                         PlayerId = item.PlayerId,
-                        Position = item.Position.Value,
+                        Position = item.Position,
                         MatchId = item.MatchId,
                         TeamId = item.TeamId,
-                        BowlerId = item.BowlerId,
-                        Bat_Runs = item.Bat_Runs,
-                        Bat_Balls = item.Bat_Balls,
-                        HowOutId = item.HowOutId,
-                        Ball_Runs = item.Ball_Runs,
-                        Overs = item.Overs,
-                        Wickets = item.Wickets,
-                        Catches = item.Catches,
-                        Stump = item.Stump,
-                        Maiden = item.Maiden,
-                        RunOut = item.RunOut,
-                        Four = item.Four,
-                        Six = item.Six,
-                        Fielder = item.Fielder,
                         IsPlayedInning = item.IsPlayedInning,
                         TenantId = _abpSession.TenantId
                     };

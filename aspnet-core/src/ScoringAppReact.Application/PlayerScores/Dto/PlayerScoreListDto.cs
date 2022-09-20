@@ -10,7 +10,7 @@ namespace ScoringAppReact.PlayerScores.Dto
         public long? Id { get; set; }
         public long PlayerId { get; set; }
         public string PlayerName { get; set; }
-        public int Position { get; set; }
+        public int? Position { get; set; }
         public long MatchId { get; set; }
         public long TeamId { get; set; }
         public long? BowlerId { get; set; }

@@ -501,7 +501,8 @@ namespace ScoringAppReact.Matches
                     Team1Id = i.HomeTeamId,
                     Team2Id = i.OppponentTeamId,
                     MatchOvers = i.MatchOvers,
-                    EventName = i.Event.Name ?? "N/A"
+                    EventName = i.Event.Name ?? "N/A",
+                    Status = i.MatchDetail != null ? i.MatchDetail.Status : 0
                 }).ToListAsync());
         }
 

@@ -6,7 +6,7 @@ namespace ScoringAppReact.Models
     public class PlayerScore : FullAuditedEntity<long>, IMayHaveTenant
     {
         public long PlayerId { get; set; }
-        public int Position { get; set; }
+        public int? Position { get; set; }
         public long MatchId { get; set; }
         public long? BowlerId { get; set; }
         public int? Bat_Runs { get; set; }
