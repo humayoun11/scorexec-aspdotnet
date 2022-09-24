@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ScoringAppReact.LiveScore.Dto
 {
-    public class TeamDto
+    public class LiveTeamDto
     {
         public long TeamId { get; set; }
         public string Name { get; set; }

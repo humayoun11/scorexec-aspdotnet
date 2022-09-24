@@ -14,8 +14,8 @@ namespace ScoringAppReact.LiveScore.Dto
         public BatsmanDto NonStriker { get; set; }
         public BowlerDto Bowler { get; set; }
         public ExtrasDto Extras { get; set; }
-        public TeamDto Team1 { get; set; }
-        public TeamDto Team2 { get; set; }
+        public LiveTeamDto Team1 { get; set; }
+        public LiveTeamDto Team2 { get; set; }
         public WicketDto HowOut { get; set; }
 
     }

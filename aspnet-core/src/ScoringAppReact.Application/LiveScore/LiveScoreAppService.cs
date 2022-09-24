@@ -18,7 +18,7 @@ using ScoringAppReact.TeamScores.Repository;
 namespace ScoringAppReact.LiveScore
 {
     [AbpAuthorize(PermissionNames.Pages_Roles)]
-    public class PlayerScoreAppService : AbpServiceBase, ILiveScoreAppService
+    public class LiveScoreAppService : AbpServiceBase, ILiveScoreAppService
     {
         private readonly IRepository<PlayerScore, long> _repository;
         private readonly IRepository<TeamScore, long> _teamRepository;
@@ -27,7 +27,7 @@ namespace ScoringAppReact.LiveScore
         private readonly IPlayerScoreRepository _playerScoreRepository;
         private readonly ITeamScoreRepository _teamScoreRepository;
 
-        public PlayerScoreAppService(
+        public LiveScoreAppService(
             IRepository<PlayerScore, long> repository,
             IRepository<TeamScore, long> teamRepository,
             IRepository<Match, long> matchRepository,
@@ -156,11 +156,11 @@ namespace ScoringAppReact.LiveScore
 
         }
 
-        private TeamDto GetTeamScore(List<TeamScore> model, long teamId)
+        private LiveTeamDto GetTeamScore(List<TeamScore> model, long teamId)
         {
             return model
                     .Where(i => i.TeamId == teamId)
-                    .Select(i => new TeamDto()
+                    .Select(i => new LiveTeamDto()
                     {
                         TeamId = i.TeamId,
                         Name = i.Team.Name,

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ScoringAppReact.Matches
 {
-    public class MatchRepository
+    public class MatchRepository : IMatchRepository
     {
         private readonly IRepository<Match, long> _repository;
 

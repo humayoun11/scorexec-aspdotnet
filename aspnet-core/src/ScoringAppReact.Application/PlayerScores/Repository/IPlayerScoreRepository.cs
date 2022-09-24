@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScoringAppReact.PlayerScores.Repository
 {
-    public interface IPlayerScoreRepository
+    public interface IPlayerScoreRepository : IDomainService
     {
         Task<List<PlayerScore>> GetAll(long? teamId, long matchId, int? tenantId);
 
