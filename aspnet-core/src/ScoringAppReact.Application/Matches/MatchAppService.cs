@@ -254,11 +254,6 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-        private async Task<List<Match>> GetAllMatches()
-        {
-            return await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId).ToListAsync();
-        }
-
         public async Task<List<MatchDto>> GetAllMatchesBYEventId(long eventId)
         {
             var result = await _repository.GetAll()
@@ -275,22 +270,6 @@ namespace ScoringAppReact.Matches
                 }).ToListAsync();
             return result;
         }
-
-        public List<int> CalculateUnorderedStages(int teamCount)
-        {
-            var unOrderedstages = new List<int>();
-            var x = teamCount;
-            var s = 0;
-            while (x != 1)
-            {
-                x /= 2;
-                s++;
-                unOrderedstages.Add(s);
-            }
-
-            return unOrderedstages;
-        }
-
 
         public BracketStages GetAllStagedMatchesByEventId(long eventId)
         {
@@ -311,11 +290,6 @@ namespace ScoringAppReact.Matches
             var winTeam = new TeamDto();
             for (var outer = 0; outer < stages.Count; outer++)
             {
-
-                //if (outer == stages[stages.LastOrDefault()])
-                //{
-                //    var temp = 1;
-                //}
                 var result = matches
                 .Where(i => i.EventStage == stages[outer]).OrderBy(i => i.Id)
                 .ToList();
@@ -455,57 +429,6 @@ namespace ScoringAppReact.Matches
             return data;
         }
 
-        private Match GetSingleMatch(List<Match> result, int outerIndex, int loopIndex, EventMatches[] eventMatches)
-        {
-            var currentMatch = eventMatches[outerIndex] != null && eventMatches[outerIndex].Matches.Any() ? eventMatches[outerIndex].Matches[loopIndex] : null;
-            var singleMatch = new Match();
-            if (currentMatch != null)
-            {
-                singleMatch = result.Where(i => i.HomeTeamId == currentMatch.Team1Id && i.OppponentTeamId == currentMatch.Team2Id).FirstOrDefault();
-            }
-            else
-            {
-                if (result.Count > loopIndex)
-                    singleMatch = result[loopIndex];
-            }
-
-            return singleMatch;
-        }
-
-        public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)
-        {
-            var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) &&
-                   (!input.Team1Id.HasValue || i.HomeTeamId == input.Team1Id || i.OppponentTeamId == input.Team1Id) && (!input.Team2Id.HasValue || i.HomeTeamId == input.Team2Id || i.OppponentTeamId == input.Team2Id))
-                .WhereIf(input.Overs.HasValue, i => i.MatchOvers == input.Overs)
-                .WhereIf(input.Type.HasValue, i => i.MatchTypeId == input.Type)
-                .WhereIf(input.Date.HasValue, i => i.DateOfMatch == input.Date)
-                .WhereIf(input.GroundId.HasValue, i => i.GroundId == input.GroundId);
-
-            var pagedAndFilteredPlayers = filteredPlayers
-                .OrderByDescending(i => i.Id)
-                .PageBy(input);
-
-            var totalCount = filteredPlayers.Count();
-
-            return new PagedResultDto<MatchDto>(
-                totalCount: totalCount,
-                items: await pagedAndFilteredPlayers.Select(i => new MatchDto()
-                {
-                    Id = i.Id,
-                    Ground = i.Ground.Name,
-                    Team1 = i.HomeTeam.Name,
-                    Team2 = i.OppponentTeam.Name,
-                    DateOfMatch = i.DateOfMatch,
-                    MatchType = i.MatchTypeId.ToString(),
-                    Team1Id = i.HomeTeamId,
-                    Team2Id = i.OppponentTeamId,
-                    MatchOvers = i.MatchOvers,
-                    EventName = i.Event.Name ?? "N/A",
-                    Status = i.MatchDetail != null ? i.MatchDetail.Status : 0
-                }).ToListAsync());
-        }
-
         public async Task<EventMatch> EditEventMatch(long id)
         {
             var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new EventMatch
@@ -585,22 +508,6 @@ namespace ScoringAppReact.Matches
             return result;
         }
 
-        private string MatchResult(ViewMatch match)
-        {
-            if (match == null || match.Team1Score == 0 || match.Team2Score == 0)
-                return "No Result";
-
-            if (match.Team1Score > match.Team2Score)
-            {
-                return $"{match.Team1} won the match by {match.Team1Score - match.Team2Score}";
-            }
-            if (match.Team1Score < match.Team2Score)
-            {
-                return $"{match.Team2} won the match by {10 - match.Team2Wickets}";
-            }
-            return "Match Tie";
-        }
-
         public List<ViewMatch> GetMOMByPlayerId(long id)
         {
             var result = GetALLMatches().Where(i => i.POM == id).ToList();
@@ -644,34 +551,6 @@ namespace ScoringAppReact.Matches
                 item.Result = MatchResult(item);
             }
             return result;
-        }
-
-
-        private List<ViewMatch> GetALLMatches()
-        {
-            return _repository.GetAll().Where(i => i.IsDeleted == false
-               && i.TenantId == _abpSession.TenantId).Select(i => new ViewMatch()
-               {
-                   Id = i.Id,
-                   Ground = i.Ground.Name,
-                   Date = i.DateOfMatch,
-                   Team1 = i.HomeTeam.Name,
-                   Team1Id = i.HomeTeamId,
-                   Team2 = i.OppponentTeam.Name,
-                   Team2Id = i.OppponentTeamId,
-                   Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                   Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
-                   Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
-                   Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
-                   Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                   Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
-                   MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
-                   Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
-                   : "Friendly / Individual",
-                   Mom = i.Player.Name ?? "N/A",
-                   EventId = i.EventId,
-                   POM = i.PlayerOTM
-               }).ToList();
         }
 
         public void InsertDbRange(List<Match> matches)
@@ -771,6 +650,116 @@ namespace ScoringAppReact.Matches
 
             }
 
+        }
+
+        public async Task<PagedResultDto<MatchDto>> GetPaginatedAllAsync(PagedMatchResultRequestDto input)
+        {
+            var filteredPlayers = _repository.GetAll()
+                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) &&
+                   (!input.Team1Id.HasValue || i.HomeTeamId == input.Team1Id || i.OppponentTeamId == input.Team1Id) && (!input.Team2Id.HasValue || i.HomeTeamId == input.Team2Id || i.OppponentTeamId == input.Team2Id))
+                .WhereIf(input.Overs.HasValue, i => i.MatchOvers == input.Overs)
+                .WhereIf(input.Type.HasValue, i => i.MatchTypeId == input.Type)
+                .WhereIf(input.Date.HasValue, i => i.DateOfMatch == input.Date)
+                .WhereIf(input.GroundId.HasValue, i => i.GroundId == input.GroundId);
+
+            var pagedAndFilteredPlayers = filteredPlayers
+                .OrderByDescending(i => i.Id)
+                .PageBy(input);
+
+            var totalCount = filteredPlayers.Count();
+
+            return new PagedResultDto<MatchDto>(
+                totalCount: totalCount,
+                items: await pagedAndFilteredPlayers.Select(i => new MatchDto()
+                {
+                    Id = i.Id,
+                    Ground = i.Ground.Name,
+                    Team1 = i.HomeTeam.Name,
+                    Team2 = i.OppponentTeam.Name,
+                    DateOfMatch = i.DateOfMatch,
+                    MatchType = i.MatchTypeId.ToString(),
+                    Team1Id = i.HomeTeamId,
+                    Team2Id = i.OppponentTeamId,
+                    MatchOvers = i.MatchOvers,
+                    EventName = i.Event.Name ?? "N/A",
+                    Status = i.MatchDetail != null ? i.MatchDetail.Status : 0
+                }).ToListAsync());
+        }
+
+        //private methods
+
+        private Match GetSingleMatch(List<Match> result, int outerIndex, int loopIndex, EventMatches[] eventMatches)
+        {
+            var currentMatch = eventMatches[outerIndex] != null && eventMatches[outerIndex].Matches.Any() ? eventMatches[outerIndex].Matches[loopIndex] : null;
+            var singleMatch = new Match();
+            if (currentMatch != null)
+            {
+                singleMatch = result.Where(i => i.HomeTeamId == currentMatch.Team1Id && i.OppponentTeamId == currentMatch.Team2Id).FirstOrDefault();
+            }
+            else
+            {
+                if (result.Count > loopIndex)
+                    singleMatch = result[loopIndex];
+            }
+
+            return singleMatch;
+        }
+
+        private string MatchResult(ViewMatch match)
+        {
+            if (match == null || match.Team1Score == 0 || match.Team2Score == 0)
+                return "No Result";
+
+            if (match.Team1Score > match.Team2Score)
+            {
+                return $"{match.Team1} won the match by {match.Team1Score - match.Team2Score}";
+            }
+            if (match.Team1Score < match.Team2Score)
+            {
+                return $"{match.Team2} won the match by {10 - match.Team2Wickets}";
+            }
+            return "Match Tie";
+        }
+
+        private List<ViewMatch> GetALLMatches()
+        {
+            return _repository.GetAll().Where(i => i.IsDeleted == false
+               && i.TenantId == _abpSession.TenantId).Select(i => new ViewMatch()
+               {
+                   Id = i.Id,
+                   Ground = i.Ground.Name,
+                   Date = i.DateOfMatch,
+                   Team1 = i.HomeTeam.Name,
+                   Team1Id = i.HomeTeamId,
+                   Team2 = i.OppponentTeam.Name,
+                   Team2Id = i.OppponentTeamId,
+                   Team1Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.TotalScore).SingleOrDefault(),
+                   Team2Score = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.TotalScore).SingleOrDefault(),
+                   Team1Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Overs).SingleOrDefault(),
+                   Team2Overs = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Overs).SingleOrDefault(),
+                   Team1Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.HomeTeamId).Select(j => j.Wickets).SingleOrDefault(),
+                   Team2Wickets = i.TeamScores.Where(j => j.MatchId == i.Id && j.TeamId == i.OppponentTeamId).Select(j => j.Wickets).SingleOrDefault(),
+                   MatchType = i.MatchTypeId == 1 ? "Friendly" : i.MatchTypeId == 2 ? "Tournament" : "Series",
+                   Tournament = i.MatchTypeId == 2 ? $"Tournament: {i.Event.Name}"
+                   : "Friendly / Individual",
+                   Mom = i.Player.Name ?? "N/A",
+                   EventId = i.EventId,
+                   POM = i.PlayerOTM
+               }).ToList();
+        }
+        private List<int> CalculateUnorderedStages(int teamCount)
+        {
+            var unOrderedstages = new List<int>();
+            var x = teamCount;
+            var s = 0;
+            while (x != 1)
+            {
+                x /= 2;
+                s++;
+                unOrderedstages.Add(s);
+            }
+
+            return unOrderedstages;
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScoringAppReact.EntityFrameworkCore;
 
 namespace ScoringAppReact.Migrations
 {
     [DbContext(typeof(ScoringAppReactDbContext))]
-    partial class ScoringAppReactDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220922143805_match-details-update")]
+    partial class matchdetailsupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2339,16 +2341,10 @@ namespace ScoringAppReact.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("Ball_Dots")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Ball_Runs")
                         .HasColumnType("int");
 
                     b.Property<int?>("Bat_Balls")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Bat_Dots")
                         .HasColumnType("int");
 
                     b.Property<int?>("Bat_Runs")
@@ -2381,16 +2377,10 @@ namespace ScoringAppReact.Migrations
                     b.Property<int?>("HowOutId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsBowling")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsPlayedInning")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsStriker")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
@@ -2612,10 +2602,10 @@ namespace ScoringAppReact.Migrations
                     b.Property<int?>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TotalScore")
+                    b.Property<int>("TotalScore")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Wickets")
+                    b.Property<int>("Wickets")
                         .HasColumnType("int");
 
                     b.Property<int?>("Wideballs")

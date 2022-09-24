@@ -28,5 +28,7 @@ namespace ScoringAppReact.PlayerScores.Dto
         public int? Six { get; set; }
         public string Fielder { get; set; }
         public bool IsPlayedInning { get; set; }
+        public int? Bat_Dots { get; set; }
+        public int? Ball_Dots { get; set; }
     }
 }
