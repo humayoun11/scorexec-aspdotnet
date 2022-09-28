@@ -26,6 +26,8 @@ using Abp.Domain.Uow;
 using ScoringAppReact.PictureGallery;
 using ScoringAppReact.EntityAdmins.Dto;
 using ScoringAppReact.EntityAdmins;
+using ScoringAppReact.Players.Repository;
+using ScoringAppReact.PlayerScores.Repository;
 
 namespace ScoringAppReact.Players
 {
@@ -34,20 +36,21 @@ namespace ScoringAppReact.Players
     {
         private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
-        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
+        private readonly IPlayerScoreRepository _playerScoreRepository;
         private readonly IAbpSession _abpSession;
         private readonly IDbContextProvider<ScoringAppReactDbContext> _context;
         private readonly PictureGalleryAppService _pictureGalleryAppService;
         private readonly EntityAdminAppService _entityAppService;
+        private readonly IPlayerRepository _playerRepository;
         public PlayerAppService(IRepository<Player, long> repository,
             IAbpSession abpSession,
             IRepository<TeamPlayer,
                 long> teamPlayerRepository,
-            IRepository<PlayerScore,
-                long> playerScoreRepository,
+            IPlayerScoreRepository playerScoreRepository,
             IDbContextProvider<ScoringAppReactDbContext> context,
             PictureGalleryAppService pictureGalleryAppService,
-            EntityAdminAppService entityAppService
+            EntityAdminAppService entityAppService,
+            IPlayerRepository playerRepository
             )
         {
             _repository = repository;
@@ -57,6 +60,7 @@ namespace ScoringAppReact.Players
             _context = context;
             _pictureGalleryAppService = pictureGalleryAppService;
             _entityAppService = entityAppService;
+            _playerRepository = playerRepository;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerDto model)
@@ -90,7 +94,7 @@ namespace ScoringAppReact.Players
                 }
             }
 
-            if (CheckPhoneNumber(model.Contact,null))
+            if (CheckPhoneNumber(model.Contact, null))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
@@ -234,7 +238,7 @@ namespace ScoringAppReact.Players
 
             }
 
-            if (CheckPhoneNumber(model.Contact,model.Id))
+            if (CheckPhoneNumber(model.Contact, model.Id))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
@@ -321,28 +325,30 @@ namespace ScoringAppReact.Players
 
         public async Task<PlayerEditDto> GetById(long id)
         {
-            var result = await _repository.GetAll().Where(i => i.Id == id).Select(i => new PlayerEditDto
+            var result = await _playerRepository.Get(id);
+            var player = new PlayerEditDto
             {
-                Id = i.Id,
-                Name = i.Name,
-                Address = i.Address,
-                BattingStyleId = i.BattingStyleId,
-                BowlingStyleId = i.BowlingStyleId,
-                PlayerRoleId = i.PlayerRoleId,
-                CNIC = i.CNIC,
-                Contact = i.Contact,
-                DOB = i.DOB,
-                ProfileUrl = i.ProfileUrl,
-                Gender = i.Gender,
-                TeamIds = i.Teams.Select(i => i.TeamId).ToList(),
-                Pictures = i.Pictures.Select(j => new GalleryDto()
+                Id = result.Id,
+                Name = result.Name,
+                Address = result.Address,
+                BattingStyleId = result.BattingStyleId,
+                BowlingStyleId = result.BowlingStyleId,
+                PlayerRoleId = result.PlayerRoleId,
+                CNIC = result.CNIC,
+                Contact = result.Contact,
+                DOB = result.DOB,
+                ProfileUrl = result.ProfileUrl,
+                Gender = result.Gender,
+                TeamIds = result.Teams.Select(i => i.TeamId).ToList(),
+                Pictures = result.Pictures?.Select(j => new GalleryDto()
                 {
                     Id = j.Id,
                     Url = j.Path,
                     Name = j.Name
                 }).ToList(),
-            }).FirstOrDefaultAsync();
-            return result;
+            };
+            return player;
+
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long playerId)
@@ -362,14 +368,14 @@ namespace ScoringAppReact.Players
 
         public async Task<List<PlayerDto>> GetAll()
         {
-            var result = await _repository.GetAll().Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId).Select(i => new PlayerDto()
+            var result = await _playerRepository.GetAll(tenantId: _abpSession.TenantId, null);
+            return result.Select(i => new PlayerDto()
             {
                 Id = i.Id,
                 Name = i.Name,
                 ProfileUrl = i.ProfileUrl,
                 Contact = i.Contact
-            }).ToListAsync();
-            return result;
+            }).ToList();
         }
 
         [AbpAllowAnonymous]
@@ -438,69 +444,62 @@ namespace ScoringAppReact.Players
 
         public async Task<List<PlayerDto>> GetAllByTeamId(long teamId)
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Teams.Any(j => j.TeamId == teamId))
-                .Select(i => new PlayerDto()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    ProfileUrl = i.ProfileUrl
-                }).ToListAsync();
-            return result;
+            var result = await _playerRepository.GetAll(tenantId: _abpSession.TenantId, teamId: teamId);
+
+            return result
+            .Select(i => new PlayerDto()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                ProfileUrl = i.ProfileUrl
+            }).ToList();
         }
 
 
         public async Task<List<PlayerDto>> AllPlayersByTeamIds(List<long> teamIds)
         {
-            var result = await _repository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Teams.Any(j => teamIds.Contains(j.TeamId)))
-                .Select(i => new PlayerDto()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    ProfileUrl = i.ProfileUrl
-                }).ToListAsync();
-            return result;
+            var result = await _playerRepository.GetAllByTeamIds(teamIds, _abpSession.TenantId);
+            return result.Select(i => new PlayerDto()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                ProfileUrl = i.ProfileUrl
+            }).ToList();
         }
 
 
         public async Task<List<PlayerDto>> GetAllByMatchId(long id)
         {
-            var result = await _playerScoreRepository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == id)
-                .Select(i => new PlayerDto()
-                {
-                    Id = i.Id,
-                    Name = i.Player.Name,
-                }).ToListAsync();
-            return result;
+            var result = await _playerScoreRepository.GetAllPlayers(matchId: id, null, tenantId: _abpSession.TenantId);
+            return result.Select(i => new PlayerDto()
+            {
+                Id = i.Id,
+                Name = i.Player.Name,
+            }).ToList();
         }
 
         public async Task<List<PlayerDto>> GetAllByEventId(long id)
         {
-            var result = await _playerScoreRepository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.Match.EventId == id)
-                .Select(i => new PlayerDto()
-                {
-                    Id = i.Id,
-                    Name = i.Player.Name,
-                }).ToListAsync();
-            return result;
+            var result = await _playerScoreRepository.GetAllPlayers(null, id, _abpSession.TenantId);
+            return result.Select(i => new PlayerDto()
+            {
+                Id = i.Id,
+                Name = i.Player.Name,
+            }).ToList();
         }
 
         public async Task<List<PlayerListDto>> GetTeamPlayersByMatchId(long matchId)
         {
-            var result = await _playerScoreRepository.GetAll()
-                .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == matchId)
-                .Select(i => new PlayerListDto()
-                {
-                    Id = i.Id,
-                    Name = i.Player.Name,
-                    TeamId = i.TeamId,
-                    ProfileUrl = i.Player.ProfileUrl,
+            var result = await _playerScoreRepository.GetAllPlayers(matchId, null, _abpSession.TenantId);
+            return result.Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == matchId)
+             .Select(i => new PlayerListDto()
+             {
+                 Id = i.Id,
+                 Name = i.Player.Name,
+                 TeamId = i.TeamId,
+                 ProfileUrl = i.Player.ProfileUrl,
 
-                }).ToListAsync();
-            return result;
+             }).ToList();
         }
 
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
@@ -549,7 +548,7 @@ namespace ScoringAppReact.Players
         }
 
 
-        private bool CheckPhoneNumber(string phone,long? id)
+        private bool CheckPhoneNumber(string phone, long? id)
         {
             if (string.IsNullOrWhiteSpace(phone))
             {

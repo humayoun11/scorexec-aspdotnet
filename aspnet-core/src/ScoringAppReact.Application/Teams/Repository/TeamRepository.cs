@@ -21,7 +21,7 @@ namespace ScoringAppReact.Teams.Repository
         public async Task<Team> Get(long id)
         {
             var result = await _repository.GetAll()
-                .Where(i => i.Id == id)
+                .Where(i => i.Id == id && i.IsDeleted == false)
                 .FirstOrDefaultAsync();
             return result;
         }
@@ -29,6 +29,7 @@ namespace ScoringAppReact.Teams.Repository
         public async Task<List<Team>> GetAll(int? tenantId)
         {
             return await _repository.GetAll()
+                .Include(i=> i.EventTeams)
                 .Where(i => i.IsDeleted == false && (!tenantId.HasValue || i.TenantId == tenantId))
                 .ToListAsync();
         }

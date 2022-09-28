@@ -22,6 +22,7 @@ using ScoringAppReact.PlayerScores.Repository;
 using ScoringAppReact.TeamScores.Repository;
 using ScoringAppReact.Teams.Repository;
 using ScoringAppReact.Events.Repository;
+using ScoringAppReact.Players.Repository;
 
 namespace ScoringAppReact.Web.Host.Startup
 {
@@ -117,6 +118,7 @@ namespace ScoringAppReact.Web.Host.Startup
             services.AddScoped<ITeamScoreRepository, TeamScoreRepository>();
             services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IPlayerRepository, PlayerRepository>();
 
             // Configure Abp and Dependency Injection
             return services.AddAbp<ScoringAppReactWebHostModule>(

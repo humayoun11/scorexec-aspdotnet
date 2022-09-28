@@ -18,14 +18,15 @@ namespace ScoringAppReact.PlayerScores.Repository
             _repository = repository;
         }
 
-        public async Task<List<PlayerScore>> GetAll(long? teamId, long matchId, int? tenantId)
+        public async Task<List<PlayerScore>> GetAll(long? teamId, long? matchId, long? player1Id, long? player2Id, int? tenantId)
         {
             var result = await _repository.GetAll().
                 Include(i => i.Player).
                 Where(i => i.IsDeleted == false &&
                 (!teamId.HasValue || i.TeamId == teamId) &&
+                (!matchId.HasValue || i.MatchId == matchId) &&
                 (!tenantId.HasValue || i.TenantId == tenantId) &&
-                i.MatchId == matchId)
+                (!player1Id.HasValue || i.PlayerId == player1Id || !player2Id.HasValue || i.PlayerId == player2Id))
                 .ToListAsync();
             return result;
         }
@@ -38,6 +39,19 @@ namespace ScoringAppReact.PlayerScores.Repository
                 .FirstOrDefaultAsync();
             return result;
         }
+
+
+        public async Task<List<PlayerScore>> GetAllPlayers(long? matchId, long? eventId, int? tenantId)
+        {
+            var result = await _repository.GetAll()
+                .Where(i => i.IsDeleted == false &&
+                (!tenantId.HasValue || i.TenantId == tenantId) &&
+                (!matchId.HasValue || i.MatchId == matchId) &&
+                (!eventId.HasValue || i.Match.EventId == eventId))
+                .ToListAsync();
+            return result;
+        }
+
 
     }
 }

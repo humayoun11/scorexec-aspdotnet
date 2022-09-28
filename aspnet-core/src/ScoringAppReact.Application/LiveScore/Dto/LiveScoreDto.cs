@@ -9,6 +9,7 @@ namespace ScoringAppReact.LiveScore.Dto
         public long MatchId { get; set; }
         public int CurrentInning { get; set; }
         public long PlayingTeamId { get; set; }
+        public long BowlingTeamId { get; set; }
         public long StrikerId { get; set; }
         public Dictionary<long, BatsmanDto> Batsmans { get; set; }
         public BowlerDto Bowler { get; set; }

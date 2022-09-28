@@ -10,10 +10,10 @@ namespace ScoringAppReact.LiveScore
     public interface ILiveScoreAppService : IApplicationService
     {
         Task<LiveScoreDto> Get(long matchId);
-        //Task<LiveScoreDto> UpdateLiveScore(LiveScoreDto model);
-
         Task<List<PlayerScore>> GetPlayers(long matchId, long teamId);
         Task<LiveScoreDto> Submit(InputLiveScoreDto model);
+
+        Task<LiveScoreDto> ChangeBowler(InputChangeBowler model);
     }
 }
 

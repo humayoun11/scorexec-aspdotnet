@@ -220,7 +220,7 @@ namespace ScoringAppReact.PlayerScores
         {
             try
             {
-                var result = await _playerScoreRepository.GetAll(teamId, matchId, _abpSession.TenantId);
+                var result = await _playerScoreRepository.GetAll(teamId, matchId, null, null, _abpSession.TenantId);
 
                 return result.Select(i => new PlayerScoreListDto
                 {
@@ -277,7 +277,7 @@ namespace ScoringAppReact.PlayerScores
                         Four = 0,
                         Stump = 0,
                         Catches = 0,
-                        Ball_Runs  = 0,
+                        Ball_Runs = 0,
                         Ball_Dots = 0,
                         Overs = 0,
                         Wickets = 0,

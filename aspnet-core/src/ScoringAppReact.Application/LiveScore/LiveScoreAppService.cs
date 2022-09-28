@@ -66,7 +66,7 @@ namespace ScoringAppReact.LiveScore
                     throw new UserFriendlyException("Match and details not found");
                 }
 
-                var playerScores = await _playerScoreRepository.GetAll(null, matchId, _abpSession.TenantId);
+                var playerScores = await _playerScoreRepository.GetAll(null, matchId, null, null, _abpSession.TenantId);
 
                 if (playerScores == null)
                 {
@@ -83,7 +83,7 @@ namespace ScoringAppReact.LiveScore
                 var bowlingTeamId = match.MatchDetail.Inning.Value == MatchStatus.SecondInning ?
                     match.HomeTeamId : match.OppponentTeamId;
 
-                if (bowlingTeamId == null)
+                if (bowlingTeamId == 0)
                 {
                     throw new UserFriendlyException("bowlingTeamId not found");
                 }
@@ -157,7 +157,8 @@ namespace ScoringAppReact.LiveScore
                     MatchId = matchId,
                     StrikerId = striker.Id,
                     PlayingTeamId = battingTeamId,
-                    Extras = extras
+                    Extras = extras,
+                    BowlingTeamId = bowlingTeamId
                 };
                 return liveScore;
 
@@ -174,7 +175,7 @@ namespace ScoringAppReact.LiveScore
         {
             try
             {
-                var bowlers = await _playerScoreRepository.GetAll(teamId, matchId, _abpSession.TenantId);
+                var bowlers = await _playerScoreRepository.GetAll(teamId, matchId, null, null, _abpSession.TenantId);
                 return bowlers;
             }
             catch (Exception e)
@@ -185,8 +186,7 @@ namespace ScoringAppReact.LiveScore
 
         public async Task<LiveScoreDto> Submit(InputLiveScoreDto model)
         {
-            var players = await _playerScoreRepository.GetAll(null, model.MatchId, _abpSession.TenantId);
-            var liveScore = new LiveScoreDto();
+            var players = await _playerScoreRepository.GetAll(null, model.MatchId, null, null, _abpSession.TenantId);
 
             switch (model.Extras)
             {
@@ -215,7 +215,6 @@ namespace ScoringAppReact.LiveScore
                     await UpdateStriker(players, model.Team1Id, model.BatsmanId, Run.DOT, Ball.LEGAL);
                     break;
             }
-
 
             return await Get(model.MatchId);
 
@@ -291,8 +290,24 @@ namespace ScoringAppReact.LiveScore
                     throw new UserFriendlyException("Bowler not found");
                 }
 
-                var Balls = (bowler.Overs != null && bowler.Overs != 0) ? int.Parse(bowler.Overs.ToString().Split('.')[1]) : 0;
-                var TotalBalls = (bowler.Overs != null && bowler.Overs != 0) ? (int)bowler.Overs * 6 + int.Parse(bowler.Overs.ToString().Split('.')[1]) : 0;
+                int Balls = 0;
+                var TotalBalls = 0;
+                if (bowler.Overs != null && bowler.Overs != 0)
+                {
+                    var a = bowler.Overs.ToString().Split('.');
+                    if (a.Count() > 1)
+                    {
+                        Balls = int.Parse(bowler.Overs.ToString().Split('.')[1]);
+
+                        TotalBalls = (int)bowler.Overs * 6 + int.Parse(bowler.Overs.ToString().Split('.')[1]);
+                    }
+                    else
+                    {
+                        TotalBalls = (int)bowler.Overs * 6;
+                    }
+
+                }
+
 
                 var mappedData = new BowlerDto
                 {
@@ -315,6 +330,27 @@ namespace ScoringAppReact.LiveScore
 
 
 
+        }
+
+        public async Task<LiveScoreDto> ChangeBowler(InputChangeBowler model)
+        {
+            var players = await _playerScoreRepository.GetAll(model.TeamId, model.MatchId, model.NewBowlerId, model.PrevBowlerId, _abpSession.TenantId);
+            if (!players.Any())
+            {
+                throw new UserFriendlyException($"Players not found with associating ids {model.NewBowlerId} and {model.PrevBowlerId}");
+            }
+            foreach (var item in players)
+            {
+                if (item.PlayerId == model.PrevBowlerId)
+                    item.IsBowling = false;
+                if (item.PlayerId == model.NewBowlerId)
+                    item.IsBowling = true;
+            }
+
+            _repository.GetDbContext().UpdateRange(players);
+
+
+            return await Get(model.MatchId);
         }
 
         private async Task<bool> UpdateStriker(List<PlayerScore> players, long teamId, long batsmanId, int runs, int balls)
@@ -404,8 +440,21 @@ namespace ScoringAppReact.LiveScore
 
         private Tuple<int, int> CalculateOvers(float? over, int ball)
         {
-            var balls = (over != null && over != 0) ? int.Parse(over.ToString().Split('.')[1]) : 0;
-            var overs = (over != null && over != 0) ? (int)over : 0;
+            var balls = 0;
+            var overs = 0;
+
+            if (over != null && over != 0)
+            {
+                var a = over.ToString().Split('.');
+                if (a.Count() > 1)
+                {
+                    balls = int.Parse(over.ToString().Split('.')[1]);
+
+                }
+
+                overs = (int)over;
+            }
+
 
             balls += ball;
 
