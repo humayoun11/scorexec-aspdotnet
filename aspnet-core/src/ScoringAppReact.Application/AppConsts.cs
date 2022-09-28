@@ -61,4 +61,31 @@
         public const int Run_Out = 7;
         public const int Retired = 8;
     }
+
+    public class Extras
+    {
+        public const int NO_EXTRA = 0;
+        public const int WIDE = 1;
+        public const int NO_BALLS = 2;
+        public const int LEG_BYES = 3;
+        public const int BYES = 4;
+    }
+
+    public class Ball
+    {
+        public const int ILL_LEGAL = 0;
+        public const int LEGAL = 1;
+    }
+
+    public class Run
+    {
+        public const int DOT = 0;
+        public const int SINGLE = 1;
+        public const int DOUBLE = 2;
+        public const int TRIPLE = 3;
+        public const int FOUR = 4;
+        public const int FIVE = 5;
+        public const int SIX = 6;
+        public const int SEVEN = 7;
+    }
 }

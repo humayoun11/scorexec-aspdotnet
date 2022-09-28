@@ -10,6 +10,9 @@ namespace ScoringAppReact.Matches.Dto
     public class MatchDetailAndPlayerListDto
     {
         public long? Id { get; set; }
+        public long Team1Id { get; set; }
+        public long Team2Id { get; set; }
+        public int? Inning { get; set; }
         public int Status { get; set; }
         public bool IsLiveStreaming { get; set; }
         public int ScoringBy { get; set; }

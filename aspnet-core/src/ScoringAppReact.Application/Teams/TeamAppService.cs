@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Abp.Domain.Uow;
 using ScoringAppReact.PictureGallery;
+using ScoringAppReact.Teams.Repository;
+using ScoringAppReact.Events.Repository;
 
 namespace ScoringAppReact.Teams
 {
@@ -29,24 +31,27 @@ namespace ScoringAppReact.Teams
     public class TeamAppService : AbpServiceBase, ITeamAppService
     {
         private readonly IRepository<Team, long> _repository;
+        private readonly ITeamRepository _teamRepository;
         private readonly IRepository<Match, long> _matchRepository;
         private readonly IAbpSession _abpSession;
-        private readonly EventAppService _eventAppService;
+        private readonly IEventRepository _eventRepository;
         private readonly IWebHostEnvironment _hosting;
         private readonly PictureGalleryAppService _pictureGalleryAppService;
         public TeamAppService(IRepository<Team, long> repository, IRepository<Match, long> matchRepository,
             IAbpSession abpSession,
-            EventAppService eventAppService,
             IWebHostEnvironment hosting,
-            PictureGalleryAppService pictureGalleryAppService
+            ITeamRepository teamRepository,
+            PictureGalleryAppService pictureGalleryAppService,
+            IEventRepository eventRepository
             )
         {
             _repository = repository;
+            _teamRepository = teamRepository;
             _abpSession = abpSession;
-            _eventAppService = eventAppService;
             _matchRepository = matchRepository;
             _hosting = hosting;
             _pictureGalleryAppService = pictureGalleryAppService;
+            _eventRepository = eventRepository;
         }
 
 
@@ -132,7 +137,7 @@ namespace ScoringAppReact.Teams
         private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto model)
         {
             if (model.Profile != null)
-            { 
+            {
                 if (string.IsNullOrEmpty(model.Profile.Url))
                 {
 
@@ -250,15 +255,14 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-                return await _repository.GetAll()
-               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId)
-               .Select(i => new TeamListDto()
-               {
-                   Id = i.Id,
-                   Name = i.Name,
-                   EventId = i.EventTeams.Select(j => j.EventId).FirstOrDefault()
+                var model = await _teamRepository.GetAll(_abpSession.TenantId);
+                return model.Select(i => new TeamListDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    EventId = i.EventTeams.Select(j => j.EventId).FirstOrDefault()
 
-               }).ToListAsync();
+                }).ToList();
             }
             catch (Exception e)
             {
@@ -298,22 +302,23 @@ namespace ScoringAppReact.Teams
             try
             {
                 var result = new List<GroupWiseTeamsDto>();
-                var eventData = await _eventAppService.GetById(id);
+                var eventData = await _eventRepository.Get(id);
                 if (eventData == null || eventData.NumberOfGroup == null || eventData.NumberOfGroup < 1)
                 {
                     throw new UserFriendlyException("Groups Must be required in League Based Tournament");
                 }
 
-                var allTeams = await _repository.GetAll()
-               .Where(i => i.IsDeleted == false &&
-                i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
+                var model = await _teamRepository.GetAll(_abpSession.TenantId);
+
+                var allTeams = model
+               .Where(i => i.EventTeams.Any(j => j.EventId == id))
                .Select(i => new Dto.EventGroupWiseTeamDto()
                {
                    Id = i.Id,
                    Name = i.Name,
                    Group = i.EventTeams.Where(j => j.EventId == id).Select(j => j.Group).FirstOrDefault()
 
-               }).ToListAsync();
+               }).ToList();
 
                 for (var index = 1; index <= eventData.NumberOfGroup; index++)
                 {

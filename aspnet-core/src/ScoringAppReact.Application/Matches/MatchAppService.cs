@@ -18,6 +18,9 @@ using ScoringAppReact.Teams.Dto;
 using Abp.EntityFrameworkCore.Repositories;
 using ScoringAppReact.PictureGallery;
 using ScoringAppReact.PlayerScores;
+using ScoringAppReact.TeamScores;
+using ScoringAppReact.TeamScores.Repository;
+using ScoringAppReact.TeamScores.Dto;
 
 namespace ScoringAppReact.Matches
 {
@@ -30,12 +33,14 @@ namespace ScoringAppReact.Matches
         private readonly PictureGalleryAppService _pictureGalleryAppService;
         private readonly IRepository<MatchDetail, long> _matchDetailRepository;
         private readonly IPlayerScoreAppService _playerScoreAppService;
+        private readonly ITeamScoreRepository _teamScoreRepository;
         public MatchAppService(IRepository<Match, long> repository,
             IRepository<EventTeam, long> teamRepository,
             IRepository<MatchDetail, long> matchDetailRepository,
             IAbpSession abpSession,
             PictureGalleryAppService pictureGalleryAppService,
-            IPlayerScoreAppService playerScoreAppService
+            IPlayerScoreAppService playerScoreAppService,
+            ITeamScoreRepository teamScoreRepository
             )
         {
             _repository = repository;
@@ -44,6 +49,7 @@ namespace ScoringAppReact.Matches
             _pictureGalleryAppService = pictureGalleryAppService;
             _matchDetailRepository = matchDetailRepository;
             _playerScoreAppService = playerScoreAppService;
+            _teamScoreRepository = teamScoreRepository;
         }
 
 
@@ -604,10 +610,24 @@ namespace ScoringAppReact.Matches
                     Status = model.Status,
                     IsLiveStreaming = model.IsLiveStreaming,
                     ScoringBy = model.ScoringBy,
-                    MatchId = model.MatchId
+                    MatchId = model.MatchId,
+                    Inning = model.Inning
                 });
                 await UnitOfWorkManager.Current.SaveChangesAsync();
                 await _playerScoreAppService.CreatePlayerScoreListAsync(model.Players);
+                var teamScore = new CreateOrUpdateTeamScoreDto
+                {
+                    TotalScore = 0,
+                    Wickets = 0,
+                    Overs = 0,
+                    Wideballs = 0,
+                    NoBalls = 0,
+                    Byes = 0,
+                    LegByes = 0,
+                    MatchId = model.MatchId,
+                    TeamId = model.Team1Id,
+                };
+                await _teamScoreRepository.Create(teamScore, _abpSession.TenantId);
 
                 if (result.Id != 0)
                 {

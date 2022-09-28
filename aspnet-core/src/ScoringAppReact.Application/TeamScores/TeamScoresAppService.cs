@@ -67,27 +67,14 @@ namespace ScoringAppReact.TeamScores
 
         private async Task<ResponseMessageDto> CreateTeamScoreAsync(CreateOrUpdateTeamScoreDto model)
         {
-            var alreadyAdded = await _repository.FirstOrDefaultAsync(i => i.MatchId == model.MatchId && i.TeamId == model.TeamId && i.IsDeleted == false);
+            var alreadyAdded = await _teamScoreRepository.Get(matchId: model.MatchId, teamId: model.TeamId);
             if (alreadyAdded != null)
             {
                 throw new UserFriendlyException("Already added with associated team and match");
             }
 
 
-            var result = await _repository.InsertAsync(new TeamScore()
-            {
-                TotalScore = model.TotalScore,
-                Overs = model.Overs,
-                Wickets = model.Wickets,
-                Wideballs = model.Wideballs,
-                NoBalls = model.NoBalls,
-                Byes = model.Byes,
-                LegByes = model.LegByes,
-                TeamId = model.TeamId,
-                MatchId = model.MatchId,
-                TenantId = _abpSession.TenantId
-
-            });
+            var result = await _teamScoreRepository.Create(model, _abpSession.TenantId);
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
 
