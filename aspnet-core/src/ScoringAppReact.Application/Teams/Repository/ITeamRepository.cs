@@ -10,6 +10,14 @@ namespace ScoringAppReact.Teams.Repository
     {
         Task<Team> Get(long id);
 
-        Task<List<Team>> GetAll(int? tenantId);
+        Task<List<Team>> GetAll(int? tenantId, long? eventId, bool eventTeamInclude = false);
+
+        Task<List<Team>> GetAllThenTeamPLayers(int? tenantId);
+
+        void InsertOrUpdateRange(List<Team> models);
+
+        Task<Team> Insert(Team model);
+
+        Task<Team> Update(Team model);
     }
 }

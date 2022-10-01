@@ -34,7 +34,6 @@ namespace ScoringAppReact.Players
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class PlayerAppService : AbpServiceBase, IPlayerAppService
     {
-        private readonly IRepository<Player, long> _repository;
         private readonly IRepository<TeamPlayer, long> _teamPlayerRepository;
         private readonly IPlayerScoreRepository _playerScoreRepository;
         private readonly IAbpSession _abpSession;
@@ -42,7 +41,7 @@ namespace ScoringAppReact.Players
         private readonly PictureGalleryAppService _pictureGalleryAppService;
         private readonly EntityAdminAppService _entityAppService;
         private readonly IPlayerRepository _playerRepository;
-        public PlayerAppService(IRepository<Player, long> repository,
+        public PlayerAppService(
             IAbpSession abpSession,
             IRepository<TeamPlayer,
                 long> teamPlayerRepository,
@@ -53,7 +52,6 @@ namespace ScoringAppReact.Players
             IPlayerRepository playerRepository
             )
         {
-            _repository = repository;
             _abpSession = abpSession;
             _teamPlayerRepository = teamPlayerRepository;
             _playerScoreRepository = playerScoreRepository;
@@ -94,13 +92,13 @@ namespace ScoringAppReact.Players
                 }
             }
 
-            if (CheckPhoneNumber(model.Contact, null))
+            if (await CheckPhoneNumber(model.Contact, null))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
 
 
-            var result = await _repository.InsertAsync(new Player()
+            var result = await _playerRepository.Insert(new Player()
             {
                 Name = model.Name,
                 Address = model.Address,
@@ -238,12 +236,12 @@ namespace ScoringAppReact.Players
 
             }
 
-            if (CheckPhoneNumber(model.Contact, model.Id))
+            if (await CheckPhoneNumber(model.Contact, model.Id))
             {
                 throw new UserFriendlyException("This Phone number is already assosicated with another account");
             }
 
-            var result = await _repository.UpdateAsync(new Player()
+            var result = await _playerRepository.Update(new Player()
             {
                 Id = model.Id.Value,
                 Name = model.Name,
@@ -353,9 +351,9 @@ namespace ScoringAppReact.Players
 
         public async Task<ResponseMessageDto> DeleteAsync(long playerId)
         {
-            var model = await _repository.FirstOrDefaultAsync(i => i.Id == playerId);
+            var model = await _playerRepository.Get(playerId);
             model.IsDeleted = true;
-            var result = await _repository.UpdateAsync(model);
+            await _playerRepository.Update(model);
 
             return new ResponseMessageDto()
             {
@@ -424,7 +422,7 @@ namespace ScoringAppReact.Players
                 if (result == null)
                 {
                     var stats = new PlayerStatisticsDto();
-                    var player = await _repository.GetAll().Where(i => i.Id == input.PlayerId).SingleOrDefaultAsync();
+                    var player = await _playerRepository.Get(input.PlayerId);
                     if (player == null)
                         return null;
                     stats.Name = player.Name;
@@ -504,26 +502,16 @@ namespace ScoringAppReact.Players
 
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
         {
-            var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId))
-                .WhereIf(input.TeamId.HasValue, i => i.Teams.Any(j => j.TeamId == input.TeamId))
-                .WhereIf(input.PlayingRole.HasValue, i => i.PlayerRoleId == input.PlayingRole)
-                .WhereIf(input.BattingStyle.HasValue, i => i.BattingStyleId == input.BattingStyle)
-                .WhereIf(input.BowlingStyle.HasValue, i => i.BowlingStyleId == input.BowlingStyle)
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.ToLower().Contains(input.Name.ToLower()))
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Contact),
-                    x => x.Contact.ToLower().Contains(input.Contact.ToLower()));
+            var filteredPlayers = await _playerRepository.GetAllPaginated(input, _abpSession.TenantId);
 
             var pagedAndFilteredPlayers = filteredPlayers
-                .OrderByDescending(i => i.Id)
-                .PageBy(input);
+                .OrderByDescending(i => i.Id);
 
             var totalCount = filteredPlayers.Count();
 
             return new PagedResultDto<PlayerDto>(
                 totalCount: totalCount,
-                items: await pagedAndFilteredPlayers.Select(i => new PlayerDto()
+                items: pagedAndFilteredPlayers.Select(i => new PlayerDto()
                 {
                     Id = i.Id,
                     Name = i.Name,
@@ -544,17 +532,18 @@ namespace ScoringAppReact.Players
                     }).ToList()
 
 
-                }).ToListAsync()); ;
+                }).ToList()); ;
         }
 
 
-        private bool CheckPhoneNumber(string phone, long? id)
+        private async Task<bool> CheckPhoneNumber(string phone, long? id)
         {
             if (string.IsNullOrWhiteSpace(phone))
             {
                 throw new UserFriendlyException("Phone Number is required");
             }
-            return _repository.GetAll().Any(i => i.Contact == phone && (!id.HasValue || i.Id != id));
+            var mode = await _playerRepository.GetAll(_abpSession.TenantId, id);
+            return mode.Any(i => i.Contact == phone);
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
-using Abp.Linq.Extensions;
 using ScoringAppReact.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
@@ -15,12 +14,6 @@ using Abp.UI;
 using System;
 using ScoringAppReact.Matches.Dto;
 using ScoringAppReact.Teams.InputDto;
-using ScoringAppReact.Events;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Abp.Domain.Uow;
 using ScoringAppReact.PictureGallery;
 using ScoringAppReact.Teams.Repository;
 using ScoringAppReact.Events.Repository;
@@ -30,26 +23,21 @@ namespace ScoringAppReact.Teams
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class TeamAppService : AbpServiceBase, ITeamAppService
     {
-        private readonly IRepository<Team, long> _repository;
         private readonly ITeamRepository _teamRepository;
         private readonly IRepository<Match, long> _matchRepository;
         private readonly IAbpSession _abpSession;
         private readonly IEventRepository _eventRepository;
-        private readonly IWebHostEnvironment _hosting;
         private readonly PictureGalleryAppService _pictureGalleryAppService;
-        public TeamAppService(IRepository<Team, long> repository, IRepository<Match, long> matchRepository,
+        public TeamAppService(IRepository<Match, long> matchRepository,
             IAbpSession abpSession,
-            IWebHostEnvironment hosting,
             ITeamRepository teamRepository,
             PictureGalleryAppService pictureGalleryAppService,
             IEventRepository eventRepository
             )
         {
-            _repository = repository;
             _teamRepository = teamRepository;
             _abpSession = abpSession;
             _matchRepository = matchRepository;
-            _hosting = hosting;
             _pictureGalleryAppService = pictureGalleryAppService;
             _eventRepository = eventRepository;
         }
@@ -87,7 +75,7 @@ namespace ScoringAppReact.Teams
 
             }
 
-            var result = await _repository.InsertAsync(new Team()
+            var result = await _teamRepository.Insert(new Team()
             {
                 Name = model.Name,
                 Place = model.Place,
@@ -146,7 +134,7 @@ namespace ScoringAppReact.Teams
                 }
 
             }
-            var result = await _repository.UpdateAsync(new Team()
+            var result = await _teamRepository.Update(new Team()
             {
                 Id = model.Id.Value,
                 Name = model.Name,
@@ -201,27 +189,26 @@ namespace ScoringAppReact.Teams
                 throw new UserFriendlyException("Team id required");
                 //return;
             }
-            var result = await _repository.GetAll()
-                .Select(i =>
-                new TeamDto()
+            var result = await _teamRepository.Get(id);
+
+            var mapped = new TeamDto
+            {
+                Id = result.Id,
+                Name = result.Name,
+                Contact = result.Contact,
+                ProfileUrl = result.ProfileUrl,
+                Zone = result.Zone,
+                IsRegistered = result.IsRegistered,
+                City = result.City,
+                Place = result.Place,
+                Pictures = result.Pictures.Select(j => new GalleryDto()
                 {
-                    Id = i.Id,
-                    Name = i.Name,
-                    Contact = i.Contact,
-                    ProfileUrl = i.ProfileUrl,
-                    Zone = i.Zone,
-                    IsRegistered = i.IsRegistered,
-                    City = i.City,
-                    Place = i.Place,
-                    Pictures = i.Pictures.Select(j => new GalleryDto()
-                    {
-                        Id = j.Id,
-                        Url = j.Path,
-                        Name = j.Name
-                    }).ToList(),
-                })
-                .FirstOrDefaultAsync(i => i.Id == id);
-            return result;
+                    Id = j.Id,
+                    Url = j.Path,
+                    Name = j.Name
+                }).ToList(),
+            };
+            return mapped;
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long id)
@@ -231,7 +218,7 @@ namespace ScoringAppReact.Teams
                 throw new UserFriendlyException("Team id required");
                 //return;
             }
-            var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
+            var model = await _teamRepository.Get(id);
 
             if (model == null)
             {
@@ -240,7 +227,7 @@ namespace ScoringAppReact.Teams
             }
 
             model.IsDeleted = true;
-            var result = await _repository.UpdateAsync(model);
+            var result = await _teamRepository.Update(model);
 
             return new ResponseMessageDto()
             {
@@ -255,7 +242,7 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-                var model = await _teamRepository.GetAll(_abpSession.TenantId);
+                var model = await _teamRepository.GetAll(_abpSession.TenantId,null);
                 return model.Select(i => new TeamListDto()
                 {
                     Id = i.Id,
@@ -276,10 +263,11 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-                return await _repository.GetAll()
-               .Where(i => i.IsDeleted == false &&
-                i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id))
-               .WhereIf(group.HasValue, i => i.EventTeams.Any(j => j.Group == group && j.EventId == id))
+                var model = await _teamRepository.GetAllThenTeamPLayers(_abpSession.TenantId);
+
+                return model.Where(i =>
+                i.TenantId == _abpSession.TenantId && i.EventTeams.Any(j => j.EventId == id) &&
+               (!group.HasValue || i.EventTeams.Any(j => j.Group == group && j.EventId == id)))
                .Select(i => new TeamDto()
                {
                    Id = i.Id,
@@ -287,7 +275,7 @@ namespace ScoringAppReact.Teams
                    Players = i.TeamPlayers.Where(j => j.TeamId == i.Id).Select(j => j.Player).ToList(),
                    ProfileUrl = i.ProfileUrl
 
-               }).ToListAsync();
+               }).ToList();
             }
             catch (Exception e)
             {
@@ -302,13 +290,13 @@ namespace ScoringAppReact.Teams
             try
             {
                 var result = new List<GroupWiseTeamsDto>();
-                var eventData = await _eventRepository.Get(id);
+                var eventData = await _eventRepository.Get(id,_abpSession.TenantId);
                 if (eventData == null || eventData.NumberOfGroup == null || eventData.NumberOfGroup < 1)
                 {
                     throw new UserFriendlyException("Groups Must be required in League Based Tournament");
                 }
 
-                var model = await _teamRepository.GetAll(_abpSession.TenantId);
+                var model = await _teamRepository.GetAll(_abpSession.TenantId,null);
 
                 var allTeams = model
                .Where(i => i.EventTeams.Any(j => j.EventId == id))
@@ -339,20 +327,18 @@ namespace ScoringAppReact.Teams
 
         public async Task<PagedResultDto<TeamDto>> GetPaginatedAllAsync(PagedTeamResultRequestDto input)
         {
-            var filteredPlayers = _repository.GetAll()
-                .Where(i => i.IsDeleted == false && (i.TenantId == _abpSession.TenantId) && (!input.Type.HasValue || i.Type == input.Type))
-                .WhereIf(!string.IsNullOrWhiteSpace(input.Name),
-                    x => x.Name.ToLower().Contains(input.Name.ToLower()));
+            var model = await _teamRepository.GetAll(_abpSession.TenantId, null);
+            var filteredTeams = model.Where(i => (!input.Type.HasValue || i.Type == input.Type)
+            && (string.IsNullOrWhiteSpace(input.Name) || i.Name.ToLower().Contains(input.Name.ToLower())));
 
-            var pagedAndFilteredPlayers = filteredPlayers
-                .OrderByDescending(i => i.Id)
-                .PageBy(input);
+            var pagedAndFilteredTeams = filteredTeams
+                .OrderByDescending(i => i.Id);
 
-            var totalCount = filteredPlayers.Count();
+            var totalCount = filteredTeams.Count();
 
             return new PagedResultDto<TeamDto>(
                 totalCount: totalCount,
-                items: await pagedAndFilteredPlayers.Select(i => new TeamDto()
+                items: pagedAndFilteredTeams.Select(i => new TeamDto()
                 {
                     Id = i.Id,
                     Name = i.Name,
@@ -363,7 +349,7 @@ namespace ScoringAppReact.Teams
                     City = i.City,
                     Place = i.Place,
                     Type = i.Type
-                }).ToListAsync());
+                }).ToList());
         }
 
         public async Task<List<TeamDto>> GetAllTeamsByMatchId(long id)
@@ -411,15 +397,15 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-                return await _repository.GetAll()
-               .Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.TeamPlayers.Any(i => i.PlayerId == id))
-               .Select(i => new TeamDto()
-               {
-                   Id = i.Id,
-                   Name = i.Name,
-                   ProfileUrl = i.ProfileUrl
+                var model = await _teamRepository.GetAll(_abpSession.TenantId, null);
+                return model.Where(i => i.TeamPlayers.Any(i => i.PlayerId == id))
+                .Select(i => new TeamDto()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    ProfileUrl = i.ProfileUrl
 
-               }).ToListAsync();
+                }).ToList();
             }
             catch (Exception e)
             {
@@ -482,7 +468,7 @@ namespace ScoringAppReact.Teams
                 ;
                 if (!matches.Any())
                 {
-                    var team = await _repository.GetAll().Where(i => i.IsDeleted == false && i.Id == input.TeamId).SingleOrDefaultAsync();
+                    var team = await _teamRepository.Get(input.TeamId);
 
                     return new TeamStatsDto
                     {
@@ -524,16 +510,6 @@ namespace ScoringAppReact.Teams
 
         }
 
-
-        private string SaveImagesBase64Async(PictureDto sender)
-        {
-            string imageName = new String(Path.GetFileNameWithoutExtension(sender.Name).Take(10).ToArray()).Replace(' ', '-');
-            imageName = imageName + DateTime.Now.ToString("yymmssff") + Path.GetExtension(sender.Name);
-            var path = Path.Combine(_hosting.ContentRootPath, "Images", imageName);
-            var b = sender.Blob.Split("base64,")[1];
-            File.WriteAllBytes(path, Convert.FromBase64String(b));
-            return imageName;
-        }
 
 
     }

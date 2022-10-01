@@ -2,9 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Authorization;
-using Abp.Domain.Repositories;
 using ScoringAppReact.Authorization;
-using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
 using Abp;
 using Abp.Runtime.Session;
@@ -17,31 +15,31 @@ using System;
 using ScoringAppReact.Teams;
 using ScoringAppReact.Teams.Dto;
 using ScoringAppReact.TeamScores.Repository;
+using ScoringAppReact.PlayerScores.Repository;
+using ScoringAppReact.Matches.Repository;
 
 namespace ScoringAppReact.TeamScores
 {
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class TeamScoresAppService : AbpServiceBase, ITeamScoresAppService
     {
-        private readonly IRepository<TeamScore, long> _repository;
         private readonly IAbpSession _abpSession;
-        private readonly IRepository<PlayerScore, long> _playerScoreRepository;
-        private readonly IRepository<Match, long> _matchRepository;
+        private readonly IPlayerScoreRepository _playerScoreRepository;
+        private readonly IMatchRepository _matchRepository;
         private readonly PlayerScoreAppService _playerscoreAppService;
         private readonly FallofWicketAppService _fallofWicketAppService;
         private readonly TeamAppService _teamAppService;
         private readonly ITeamScoreRepository _teamScoreRepository;
 
-        public TeamScoresAppService(IRepository<TeamScore, long> repository,
-            IRepository<Match, long> matchRepository, IAbpSession abpSession,
-            IRepository<PlayerScore, long> playerScoreRepository,
+        public TeamScoresAppService(
+            IMatchRepository matchRepository, IAbpSession abpSession,
+            IPlayerScoreRepository playerScoreRepository,
             PlayerScoreAppService playerscoreAppService,
             FallofWicketAppService fallofWicketAppService,
             TeamAppService teamAppService,
             ITeamScoreRepository teamScoreRepository
             )
         {
-            _repository = repository;
             _abpSession = abpSession;
             _playerScoreRepository = playerScoreRepository;
             _matchRepository = matchRepository;
@@ -100,7 +98,7 @@ namespace ScoringAppReact.TeamScores
 
         private async Task<ResponseMessageDto> UpdateTeamScoreAsync(CreateOrUpdateTeamScoreDto model)
         {
-            var result = await _repository.UpdateAsync(new TeamScore()
+            var result = await _teamScoreRepository.Update(new TeamScore()
             {
                 Id = model.Id.Value,
                 TotalScore = model.TotalScore,
@@ -157,7 +155,7 @@ namespace ScoringAppReact.TeamScores
                 throw new UserFriendlyException("Id id required");
                 //return;
             }
-            var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
+            var model = await _teamScoreRepository.Get(id);
 
             if (model == null)
             {
@@ -165,7 +163,7 @@ namespace ScoringAppReact.TeamScores
                 //return;
             }
             model.IsDeleted = true;
-            var result = await _repository.UpdateAsync(model);
+            var result = await _teamScoreRepository.Update(model);
 
             return new ResponseMessageDto()
             {
@@ -193,18 +191,11 @@ namespace ScoringAppReact.TeamScores
         {
             try
             {
-                var playerScore = await _playerScoreRepository.GetAll()
-                                .Include(i => i.Player)
-                                .Include(i => i.Bowler)
-                                .Where(i => i.MatchId == matchId && i.IsDeleted == false).ToListAsync();
-                var teamScores = await _repository.GetAll()
-                    .Include(i => i.Team)
-                    .Where(i => i.MatchId == matchId && i.IsDeleted == false).ToListAsync();
+                var playerScore = await _playerScoreRepository.GetAll(null, matchId, null, null, _abpSession.TenantId, playerInclude: true, bowlerInclude: true);
 
-                var match = await _matchRepository.GetAll()
-                    .Include(i => i.Ground)
-                    .Include(i => i.Event)
-                    .Where(i => i.Id == matchId).FirstOrDefaultAsync();
+                var teamScores = await _teamScoreRepository.GetAll(matchId, _abpSession.TenantId, teamInclude: true);
+
+                var match = await _matchRepository.GetAll(matchId, groundInclude: true, eventInclude: true);
 
 
                 var team1Players = playerScore.Where(i => i.TeamId == team1Id).OrderBy(i => i.Position).ToList();

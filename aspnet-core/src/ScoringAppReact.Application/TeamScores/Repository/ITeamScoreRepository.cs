@@ -11,6 +11,15 @@ namespace ScoringAppReact.TeamScores.Repository
     {
         Task<TeamScore> Get(long? id = null, long? teamId = null, long? matchId = null, int? tenantId = null);
 
+        Task<List<TeamScore>> GetAll(long? matchId, int? tenantId, bool teamInclude);
+
         Task<TeamScore> Create(CreateOrUpdateTeamScoreDto model, int? tenantId);
+
+
+        void InsertOrUpdateRange(List<TeamScore> models);
+
+        Task<TeamScore> Insert(TeamScore model);
+
+        Task<TeamScore> Update(TeamScore model);
     }
 }

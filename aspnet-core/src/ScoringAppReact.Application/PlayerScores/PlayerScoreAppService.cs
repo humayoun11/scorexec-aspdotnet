@@ -22,17 +22,14 @@ namespace ScoringAppReact.PlayerScores
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class PlayerScoreAppService : AbpServiceBase, IPlayerScoreAppService
     {
-        private readonly IRepository<PlayerScore, long> _repository;
         private readonly IAbpSession _abpSession;
         private readonly IPlayerScoreRepository _playerScoreRepository;
 
         public PlayerScoreAppService(
-            IRepository<PlayerScore, long> repository,
             IAbpSession abpSession,
             IPlayerScoreRepository playerScoreRepository
             )
         {
-            _repository = repository;
             _abpSession = abpSession;
             _playerScoreRepository = playerScoreRepository;
         }
@@ -61,7 +58,7 @@ namespace ScoringAppReact.PlayerScores
 
             try
             {
-                var result = await _repository.InsertAsync(new PlayerScore()
+                var result = await _playerScoreRepository.Insert(new PlayerScore()
                 {
                     PlayerId = model.PlayerId,
                     IsStriker = false,
@@ -117,7 +114,7 @@ namespace ScoringAppReact.PlayerScores
 
         private async Task<ResponseMessageDto> UpdatePlayerScoreAsync(CreateOrUpdatePlayerScoreDto model)
         {
-            var result = await _repository.UpdateAsync(new PlayerScore()
+            var result = await _playerScoreRepository.Update(new PlayerScore()
             {
                 Id = model.Id.Value,
                 PlayerId = model.PlayerId,
@@ -193,7 +190,7 @@ namespace ScoringAppReact.PlayerScores
                     //return;
                 }
                 model.IsDeleted = true;
-                var result = await _repository.UpdateAsync(model);
+                var result = await _playerScoreRepository.Update(model);
 
                 return new ResponseMessageDto()
                 {
@@ -292,7 +289,7 @@ namespace ScoringAppReact.PlayerScores
 
                 }
 
-                InsertDbRange(playerScore);
+                _playerScoreRepository.InsertOrUpdateRange(playerScore);
 
                 await UnitOfWorkManager.Current.SaveChangesAsync();
 
@@ -318,10 +315,6 @@ namespace ScoringAppReact.PlayerScores
 
         }
 
-        private void InsertDbRange(List<PlayerScore> models)
-        {
-            _repository.GetDbContext().AddRange(models);
-        }
 
     }
 }

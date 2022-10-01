@@ -1,4 +1,6 @@
 ﻿using Abp.Domain.Repositories;
+using Abp.EntityFrameworkCore.Extensions;
+using Abp.EntityFrameworkCore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
 using System;
@@ -18,10 +20,11 @@ namespace ScoringAppReact.PlayerScores.Repository
             _repository = repository;
         }
 
-        public async Task<List<PlayerScore>> GetAll(long? teamId, long? matchId, long? player1Id, long? player2Id, int? tenantId)
+        public async Task<List<PlayerScore>> GetAll(long? teamId, long? matchId, long? player1Id, long? player2Id, int? tenantId, bool playerInclude = false, bool bowlerInclude = false)
         {
             var result = await _repository.GetAll().
-                Include(i => i.Player).
+                IncludeIf(playerInclude, i => i.Player).
+                IncludeIf(bowlerInclude, i => i.Bowler).
                 Where(i => i.IsDeleted == false &&
                 (!teamId.HasValue || i.TeamId == teamId) &&
                 (!matchId.HasValue || i.MatchId == matchId) &&
@@ -50,6 +53,23 @@ namespace ScoringAppReact.PlayerScores.Repository
                 (!eventId.HasValue || i.Match.EventId == eventId))
                 .ToListAsync();
             return result;
+        }
+
+        public void InsertOrUpdateRange(List<PlayerScore> models)
+        {
+            _repository.GetDbContext().UpdateRange(models);
+        }
+
+        public async Task<PlayerScore> Update(PlayerScore model)
+        {
+            return await _repository.UpdateAsync(model);
+
+        }
+
+        public async Task<PlayerScore> Insert(PlayerScore model)
+        {
+            return await _repository.InsertAsync(model);
+
         }
 
 

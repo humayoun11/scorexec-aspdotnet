@@ -1,4 +1,6 @@
 ﻿using Abp.Domain.Repositories;
+using Abp.EntityFrameworkCore.Extensions;
+using Abp.EntityFrameworkCore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using ScoringAppReact.Models;
 using ScoringAppReact.TeamScores.Dto;
@@ -34,6 +36,15 @@ namespace ScoringAppReact.TeamScores.Repository
             return result;
         }
 
+        public async Task<List<TeamScore>> GetAll(long? matchId, int? tenantId, bool teamInclude)
+        {
+            return await _repository.GetAll()
+                   .IncludeIf(teamInclude, i => i.Team)
+                   .Where(i => (!matchId.HasValue || i.MatchId == matchId)
+                   && (!tenantId.HasValue || i.TenantId == tenantId)
+                   && i.IsDeleted == false).ToListAsync();
+        }
+
 
         public async Task<TeamScore> Create(CreateOrUpdateTeamScoreDto model, int? tenantId)
         {
@@ -52,6 +63,23 @@ namespace ScoringAppReact.TeamScores.Repository
 
             });
             return result;
+        }
+
+        public void InsertOrUpdateRange(List<TeamScore> models)
+        {
+            _repository.GetDbContext().UpdateRange(models);
+        }
+
+        public async Task<TeamScore> Update(TeamScore model)
+        {
+            return await _repository.UpdateAsync(model);
+
+        }
+
+        public async Task<TeamScore> Insert(TeamScore model)
+        {
+            return await _repository.InsertAsync(model);
+
         }
     }
 }
