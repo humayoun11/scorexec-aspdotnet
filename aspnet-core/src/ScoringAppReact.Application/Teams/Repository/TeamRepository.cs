@@ -31,11 +31,12 @@ namespace ScoringAppReact.Teams.Repository
 
         public async Task<List<Team>> GetAll(int? tenantId, long? eventId, bool eventTeamInclude = false)
         {
-            return await _repository.GetAll()
+            var result = await _repository.GetAll()
                 .IncludeIf(eventTeamInclude, i => i.EventTeams)
                 .Where(i => i.IsDeleted == false && (!tenantId.HasValue || i.TenantId == tenantId) &&
                 (!eventId.HasValue || i.EventTeams.Any(j => j.EventId == eventId)))
                 .ToListAsync();
+            return result;
         }
 
         public async Task<List<Team>> GetAllThenTeamPLayers(int? tenantId)

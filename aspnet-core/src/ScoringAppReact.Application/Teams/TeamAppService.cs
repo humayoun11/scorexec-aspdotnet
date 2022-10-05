@@ -57,131 +57,6 @@ namespace ScoringAppReact.Teams
             return result;
         }
 
-        private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateTeamDto model)
-        {
-            if (string.IsNullOrEmpty(model.Name))
-            {
-                throw new UserFriendlyException("Name must required");
-                //return;
-            }
-            if (model.Profile != null)
-            {
-                if (string.IsNullOrEmpty(model.Profile.Url))
-                {
-
-                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
-                    model.ProfileUrl = profilePicture.Url;
-                }
-
-            }
-
-            var result = await _teamRepository.Insert(new Team()
-            {
-                Name = model.Name,
-                Place = model.Place,
-                Zone = model.Zone,
-                Contact = model.Contact,
-                IsRegistered = true,
-                City = model.City,
-                ProfileUrl = model.ProfileUrl,
-                Type = model.Type,
-                TenantId = _abpSession.TenantId
-
-            });
-            await UnitOfWorkManager.Current.SaveChangesAsync();
-
-            if (model.Gallery != null && model.Gallery.Any())
-            {
-                var gallery = new CreateOrUpdateGalleryDto
-                {
-                    TeamId = result.Id,
-                    Galleries = model.Gallery
-                };
-
-                await _pictureGalleryAppService.CreateAsync(gallery);
-                await UnitOfWorkManager.Current.SaveChangesAsync();
-            }
-
-
-            if (result.Id != 0)
-            {
-                return new ResponseMessageDto()
-                {
-                    Id = result.Id,
-                    SuccessMessage = AppConsts.SuccessfullyInserted,
-                    Success = true,
-                    Error = false,
-                };
-            }
-            return new ResponseMessageDto()
-            {
-                Id = 0,
-                ErrorMessage = AppConsts.InsertFailure,
-                Success = false,
-                Error = true,
-            };
-        }
-
-        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto model)
-        {
-            if (model.Profile != null)
-            {
-                if (string.IsNullOrEmpty(model.Profile.Url))
-                {
-
-                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
-                    model.ProfileUrl = profilePicture.Url;
-                }
-
-            }
-            var result = await _teamRepository.Update(new Team()
-            {
-                Id = model.Id.Value,
-                Name = model.Name,
-                Contact = model.Contact,
-                ProfileUrl = model.ProfileUrl,
-                Zone = model.Zone,
-                IsRegistered = model.IsRegistered,
-                City = model.City,
-                Place = model.Place,
-                Type = model.Type,
-                TenantId = _abpSession.TenantId
-            });
-            await UnitOfWorkManager.Current.SaveChangesAsync();
-
-            if (model.Gallery != null)
-            {
-                var gallery = new CreateOrUpdateGalleryDto
-                {
-                    TeamId = result.Id,
-                    Galleries = model.Gallery
-                };
-
-                await _pictureGalleryAppService.UpdateAsync(gallery);
-                await UnitOfWorkManager.Current.SaveChangesAsync();
-            }
-
-
-
-            if (result != null)
-            {
-                return new ResponseMessageDto()
-                {
-                    Id = result.Id,
-                    SuccessMessage = AppConsts.SuccessfullyUpdated,
-                    Success = true,
-                    Error = false,
-                };
-            }
-            return new ResponseMessageDto()
-            {
-                Id = 0,
-                ErrorMessage = AppConsts.UpdateFailure,
-                Success = false,
-                Error = true,
-            };
-        }
-
         public async Task<TeamDto> GetById(long id)
         {
             if (id == 0)
@@ -242,7 +117,7 @@ namespace ScoringAppReact.Teams
         {
             try
             {
-                var model = await _teamRepository.GetAll(_abpSession.TenantId,null);
+                var model = await _teamRepository.GetAll(_abpSession.TenantId,null,true);
                 return model.Select(i => new TeamListDto()
                 {
                     Id = i.Id,
@@ -508,6 +383,131 @@ namespace ScoringAppReact.Teams
 
             }
 
+        }
+
+        private async Task<ResponseMessageDto> CreateTeamAsync(CreateOrUpdateTeamDto model)
+        {
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                throw new UserFriendlyException("Name must required");
+                //return;
+            }
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
+            }
+
+            var result = await _teamRepository.Insert(new Team()
+            {
+                Name = model.Name,
+                Place = model.Place,
+                Zone = model.Zone,
+                Contact = model.Contact,
+                IsRegistered = true,
+                City = model.City,
+                ProfileUrl = model.ProfileUrl,
+                Type = model.Type,
+                TenantId = _abpSession.TenantId
+
+            });
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery != null && model.Gallery.Any())
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.CreateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
+
+            if (result.Id != 0)
+            {
+                return new ResponseMessageDto()
+                {
+                    Id = result.Id,
+                    SuccessMessage = AppConsts.SuccessfullyInserted,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            return new ResponseMessageDto()
+            {
+                Id = 0,
+                ErrorMessage = AppConsts.InsertFailure,
+                Success = false,
+                Error = true,
+            };
+        }
+
+        private async Task<ResponseMessageDto> UpdateTeamAsync(CreateOrUpdateTeamDto model)
+        {
+            if (model.Profile != null)
+            {
+                if (string.IsNullOrEmpty(model.Profile.Url))
+                {
+
+                    var profilePicture = _pictureGalleryAppService.GetImageUrl(model.Profile);
+                    model.ProfileUrl = profilePicture.Url;
+                }
+
+            }
+            var result = await _teamRepository.Update(new Team()
+            {
+                Id = model.Id.Value,
+                Name = model.Name,
+                Contact = model.Contact,
+                ProfileUrl = model.ProfileUrl,
+                Zone = model.Zone,
+                IsRegistered = model.IsRegistered,
+                City = model.City,
+                Place = model.Place,
+                Type = model.Type,
+                TenantId = _abpSession.TenantId
+            });
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            if (model.Gallery != null)
+            {
+                var gallery = new CreateOrUpdateGalleryDto
+                {
+                    TeamId = result.Id,
+                    Galleries = model.Gallery
+                };
+
+                await _pictureGalleryAppService.UpdateAsync(gallery);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+            }
+
+
+
+            if (result != null)
+            {
+                return new ResponseMessageDto()
+                {
+                    Id = result.Id,
+                    SuccessMessage = AppConsts.SuccessfullyUpdated,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            return new ResponseMessageDto()
+            {
+                Id = 0,
+                ErrorMessage = AppConsts.UpdateFailure,
+                Success = false,
+                Error = true,
+            };
         }
 
 

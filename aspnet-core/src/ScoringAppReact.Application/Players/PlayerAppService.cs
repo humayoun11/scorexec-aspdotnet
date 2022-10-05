@@ -488,7 +488,7 @@ namespace ScoringAppReact.Players
 
         public async Task<List<PlayerListDto>> GetTeamPlayersByMatchId(long matchId)
         {
-            var result = await _playerScoreRepository.GetAllPlayers(matchId, null, _abpSession.TenantId);
+            var result = await _playerScoreRepository.GetAll(null, matchId, null, null, _abpSession.TenantId, true, false);
             return result.Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == matchId)
              .Select(i => new PlayerListDto()
              {

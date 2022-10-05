@@ -14,6 +14,8 @@ namespace ScoringAppReact.LiveScore
         Task<LiveScoreDto> Submit(InputLiveScoreDto model);
 
         Task<LiveScoreDto> ChangeBowler(InputChangeBowler model);
+
+        Task<LiveScoreDto> ChangeBatsman(InputWicketDto model);
     }
 }
 
