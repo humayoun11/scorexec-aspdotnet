@@ -473,6 +473,7 @@ namespace ScoringAppReact.Players
             {
                 Id = i.Id,
                 Name = i.Player.Name,
+                ProfileUrl = i.Player.ProfileUrl
             }).ToList();
         }
 
@@ -483,21 +484,21 @@ namespace ScoringAppReact.Players
             {
                 Id = i.Id,
                 Name = i.Player.Name,
+                ProfileUrl = i.Player.ProfileUrl
             }).ToList();
         }
 
-        public async Task<List<PlayerListDto>> GetTeamPlayersByMatchId(long matchId)
+        public async Task<List<PlayerListDto>> GetTeamPlayersByMatchId(long matchId, long? teamId)
         {
-            var result = await _playerScoreRepository.GetAll(null, matchId, null, null, _abpSession.TenantId, true, false);
-            return result.Where(i => i.IsDeleted == false && i.TenantId == _abpSession.TenantId && i.MatchId == matchId)
-             .Select(i => new PlayerListDto()
-             {
-                 Id = i.Id,
-                 Name = i.Player.Name,
-                 TeamId = i.TeamId,
-                 ProfileUrl = i.Player.ProfileUrl,
+            var result = await _playerScoreRepository.GetAll(teamId, matchId, null, null, _abpSession.TenantId, true, false);
+            return result.Select(i => new PlayerListDto()
+            {
+                Id = i.Id,
+                Name = i.Player.Name,
+                TeamId = i.TeamId,
+                ProfileUrl = i.Player.ProfileUrl,
 
-             }).ToList();
+            }).ToList();
         }
 
         public async Task<PagedResultDto<PlayerDto>> GetPaginatedAllAsync(PagedPlayerResultRequestDto input)
@@ -522,16 +523,7 @@ namespace ScoringAppReact.Players
                     IsDeactivated = i.IsDeactivated,
                     Contact = i.Contact,
                     ProfileUrl = i.ProfileUrl,
-                    Address = i.Address,
-                    Teams = i.Teams.Where(j => j.PlayerId == i.Id).Select(j => j.Team).Select(k => new TeamDto()
-                    {
-                        Id = k.Id,
-                        Name = k.Name,
-                        Type = k.Type
-
-                    }).ToList()
-
-
+                    Address = i.Address
                 }).ToList()); ;
         }
 

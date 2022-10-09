@@ -43,7 +43,6 @@ namespace ScoringAppReact.PlayerScores.Repository
             return result;
         }
 
-
         public async Task<List<PlayerScore>> GetAllPlayers(long? matchId, long? eventId, int? tenantId)
         {
             var result = await _repository.GetAll()
@@ -54,6 +53,8 @@ namespace ScoringAppReact.PlayerScores.Repository
                 .ToListAsync();
             return result;
         }
+
+
 
         public void InsertOrUpdateRange(List<PlayerScore> models)
         {

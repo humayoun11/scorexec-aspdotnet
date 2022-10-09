@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using ScoringAppReact.LiveScore.Dto;
 using ScoringAppReact.Models;
+using ScoringAppReact.Players.Dto;
 using ScoringAppReact.PlayerScores.Dto;
 
 namespace ScoringAppReact.LiveScore
@@ -15,7 +16,11 @@ namespace ScoringAppReact.LiveScore
 
         Task<LiveScoreDto> ChangeBowler(InputChangeBowler model);
 
-        Task<LiveScoreDto> ChangeBatsman(InputWicketDto model);
+        Task<List<PlayerListDto>> ChangeBatsman(InputWicketDto model);
+
+        Task<List<PlayerListDto>> GetBatsmanOrBowlers(long matchId, long? teamId);
+
+        Task<LiveScoreDto> UpdateNewBatsman(InputNewBatsman model);
     }
 }
 

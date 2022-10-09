@@ -35,6 +35,7 @@ namespace ScoringAppReact.Players.Repository
         public async Task<IEnumerable<Player>> GetAllPaginated(PagedPlayerResultRequestDto input, int? tenantId)
         {
             return _repository.GetAll()
+                .Include(i=> i.Teams)
                 .Where(i => i.IsDeleted == false && (!tenantId.HasValue || i.TenantId == tenantId))
                 .WhereIf(input.TeamId.HasValue, i => i.Teams.Any(j => j.TeamId == input.TeamId))
                 .WhereIf(input.PlayingRole.HasValue, i => i.PlayerRoleId == input.PlayingRole)

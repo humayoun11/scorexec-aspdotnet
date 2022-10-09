@@ -14,6 +14,8 @@ using ScoringAppReact.TeamScores.Repository;
 using Abp.Domain.Uow;
 using ScoringAppReact.Teams.Repository;
 using ScoringAppReact.Matches.Repository;
+using ScoringAppReact.Players.Repository;
+using ScoringAppReact.Players.Dto;
 
 namespace ScoringAppReact.LiveScore
 {
@@ -25,13 +27,15 @@ namespace ScoringAppReact.LiveScore
         private readonly IPlayerScoreRepository _playerScoreRepository;
         private readonly ITeamScoreRepository _teamScoreRepository;
         private readonly ITeamRepository _teamRepository;
+        private readonly IPlayerRepository _playerRepository;
 
         public LiveScoreAppService(
             IMatchRepository matchRepository,
             IAbpSession abpSession,
             IPlayerScoreRepository playerScoreRepository,
             ITeamScoreRepository teamScoreRepository,
-            ITeamRepository teamRepository
+            ITeamRepository teamRepository,
+            IPlayerRepository playerRepository
             )
         {
             _matchRepository = matchRepository;
@@ -39,6 +43,7 @@ namespace ScoringAppReact.LiveScore
             _playerScoreRepository = playerScoreRepository;
             _teamScoreRepository = teamScoreRepository;
             _teamRepository = teamRepository;
+            _playerRepository = playerRepository;
         }
 
         [AbpAllowAnonymous]
@@ -47,6 +52,8 @@ namespace ScoringAppReact.LiveScore
         {
             try
             {
+
+                var players = new List<PlayerListDto>();
                 var match = await _matchRepository.GetMatchThen(matchId);
 
                 if (match == null)
@@ -86,17 +93,15 @@ namespace ScoringAppReact.LiveScore
 
                 var striker = GetBatsman(team1Players, true);
 
-                if (striker == null)
-                {
-                    throw new UserFriendlyException("striker not found");
-                }
+
 
                 var nonStriker = GetBatsman(team1Players, false);
 
-                if (nonStriker == null)
+                if (nonStriker == null || striker == null)
                 {
-                    throw new UserFriendlyException("nonStriker not found");
+                    players = await GetBatsmanOrBowlers(matchId, battingTeamId);
                 }
+
 
 
                 var bowler = GetBowler(playerScores, bowlingTeamId, newOver);
@@ -122,11 +127,17 @@ namespace ScoringAppReact.LiveScore
                 }
 
 
-                Dictionary<long, BatsmanDto> Batsmans = new Dictionary<long, BatsmanDto>
+                Dictionary<long, BatsmanDto> Batsmans = new Dictionary<long, BatsmanDto>();
+
+                if (striker != null)
                 {
-                    { striker.Id, striker },
-                    { nonStriker.Id, nonStriker }
-                };
+                    Batsmans.Add(striker.Id, striker);
+
+                }
+                if (nonStriker != null)
+                {
+                    Batsmans.Add(nonStriker.Id, nonStriker);
+                }
 
                 var extras = new ExtrasDto
                 {
@@ -135,7 +146,8 @@ namespace ScoringAppReact.LiveScore
                     NoBalls = 1,
                     LegByes = 1
                 };
-                var liveScore = new LiveScoreDto
+
+                return new LiveScoreDto
                 {
                     CurrentInning = match.MatchDetail.Inning.Value,
                     Bowler = bowler,
@@ -143,12 +155,13 @@ namespace ScoringAppReact.LiveScore
                     Team1 = team1,
                     Team2 = team2,
                     MatchId = matchId,
-                    StrikerId = striker.Id,
+                    StrikerId = striker?.Id,
                     PlayingTeamId = battingTeamId,
                     Extras = extras,
-                    BowlingTeamId = bowlingTeamId
+                    BowlingTeamId = bowlingTeamId,
+                    Players = players
                 };
-                return liveScore;
+
 
             }
             catch (Exception e)
@@ -228,81 +241,21 @@ namespace ScoringAppReact.LiveScore
             return await Get(model.MatchId, true);
         }
 
-        public async Task<LiveScoreDto> ChangeBatsman(InputWicketDto model)
+
+        public async Task<LiveScoreDto> UpdateNewBatsman(InputNewBatsman model)
         {
             try
             {
-                var playerScore = new List<PlayerScore>();
-                var players = await _playerScoreRepository.GetAll(null, model.MatchId, null, null, _abpSession.TenantId);
+                var players = await _playerScoreRepository.GetAll(model.TeamId, model.MatchId, null, null, _abpSession.TenantId);
+                var preBatsman = players.Where(i => i.HowOutId == HowOut.Not_Out && i.IsPlayedInning == true).FirstOrDefault();
+                var newBatsman = players.Where(i => i.HowOutId == HowOut.Not_Out && i.PlayerId == model.BatsmanId).FirstOrDefault();
+                newBatsman.IsPlayedInning = true;
+                if (preBatsman.IsStriker == false)
+                    newBatsman.IsStriker = true;
 
-                var batsman = players.Where(i => i.PlayerId == model.BatsmanId && i.TeamId == model.Team1Id).SingleOrDefault();
-                var bowler = players.Where(i => i.PlayerId == model.BowlerId && i.TeamId == model.Team2Id).SingleOrDefault();
-                //teamscore
-                var teamScore = await _teamScoreRepository.Get(model.Team1Id);
-
-                var isTeamBall = true;
-                var isBatsmanScore = true;
-                var isBowlerScore = true;
-
-                switch (model.Extra)
-                {
-                    case Extras.WIDE:
-                        isBatsmanScore = false;
-                        isTeamBall = false;
-                        break;
-                    case Extras.NO_BALLS:
-                        isBowlerScore = model.IsByeOrLegBye;
-                        isBatsmanScore = model.IsByeOrLegBye;
-                        isTeamBall = false;
-                        break;
-                }
-
-                switch (model.HowOutId)
-                {
-                    case HowOut.Stump:
-                        batsman.BowlerId = model.BowlerId;
-                        batsman.Fielder = model.FielderId.ToString();
-                        bowler.Wickets++;
-                        teamScore.Overs = isTeamBall == true ? OverConcatinate(teamScore.Overs, Ball.LEGAL) : teamScore.Overs;
-                        break;
-                    case HowOut.Bowled:
-                        batsman.BowlerId = model.BowlerId;
-                        if (isBatsmanScore == true) batsman.Bat_Balls++;
-                        bowler.Wickets++;
-                        break;
-                    case HowOut.Run_Out:
-                        batsman.Fielder = model.FielderId.ToString();
-                        batsman.Bat_Runs += isBatsmanScore == true ? model.Runs : 0;
-                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
-                        teamScore.TotalScore += model.Runs;
-                        break;
-                    case HowOut.Catch:
-                        batsman.BowlerId = model.BowlerId;
-                        batsman.Fielder = model.FielderId.ToString();
-                        bowler.Wickets++;
-                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
-                        break;
-                    case HowOut.Hit_Wicket:
-                        batsman.BowlerId = model.BowlerId;
-                        bowler.Wickets++;
-                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
-                        break;
-                    case HowOut.LBW:
-                        batsman.BowlerId = model.BowlerId;
-                        bowler.Wickets++;
-                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
-                        break;
-                }
-
-                batsman.HowOutId = model.HowOutId;
-
-                playerScore.Add(batsman);
-                playerScore.Add(bowler);
-
-                await _teamScoreRepository.Update(teamScore);
-                _playerScoreRepository.InsertOrUpdateRange(playerScore);
+                await _playerScoreRepository.Update(newBatsman);
                 await UnitOfWorkManager.Current.SaveChangesAsync();
-                return await Get(model.MatchId, false);
+                return await Get(model.MatchId, true);
             }
             catch (Exception e)
             {
@@ -311,10 +264,152 @@ namespace ScoringAppReact.LiveScore
 
         }
 
+        public async Task<List<PlayerListDto>> ChangeBatsman(InputWicketDto model)
+        {
+            try
+            {
+                if (model.BatsmanId == 0)
+                {
+                    throw new UserFriendlyException("BatsmanId cannot be zero or null");
+                }
+
+                if (model.StrikerId == 0)
+                {
+                    throw new UserFriendlyException("StrikerId cannot be zero or null");
+                }
+                var playerScore = new List<PlayerScore>();
+                var players = await _playerScoreRepository.GetAll(null, model.MatchId, null, null, _abpSession.TenantId);
+
+                var striker = players.Where(i => i.PlayerId == model.StrikerId && i.TeamId == model.Team1Id).SingleOrDefault();
+                var bowler = players.Where(i => i.PlayerId == model.BowlerId && i.TeamId == model.Team2Id).SingleOrDefault();
+
+                //teamscore
+                var teamScore = await _teamScoreRepository.Get(model.Team1Id);
+
+
+
+                var isTeamBall = true;
+                var isBatsmanScore = true;
+                var isBowlerScore = true;
+                var isBowlerBall = true;
+                var bowlerScore = model.Runs;
+                var totalScore = model.Runs;
+
+                switch (model.WideOrNoBall)
+                {
+                    case Extras.WIDE:
+                        isBatsmanScore = false;
+                        isTeamBall = false;
+                        isBowlerBall = false;
+                        bowlerScore = model.Runs + 1;
+                        totalScore = model.Runs + 1;
+                        break;
+                    case Extras.NO_BALLS:
+                        isBowlerScore = model.BuyOrlegBye == Extras.BYES || model.BuyOrlegBye == Extras.LEG_BYES;
+                        isBatsmanScore = model.BuyOrlegBye == Extras.BYES || model.BuyOrlegBye == Extras.LEG_BYES;
+                        isTeamBall = false;
+                        isBowlerBall = false;
+                        bowlerScore = model.BuyOrlegBye == Extras.BYES || model.BuyOrlegBye == Extras.LEG_BYES ? 1 : model.Runs + 1;
+                        totalScore = model.Runs + 1;
+                        break;
+                }
+
+                switch (model.HowOutId)
+                {
+                    case HowOut.Stump:
+                        striker.BowlerId = model.BowlerId;
+                        striker.Fielder = model.FielderId.ToString();
+                        bowler.Wickets++;
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, Ball.LEGAL) : bowler.Overs;
+                        teamScore.Overs = isTeamBall == true ? OverConcatinate(teamScore.Overs, Ball.LEGAL) : teamScore.Overs;
+                        break;
+                    case HowOut.Bowled:
+                        striker.BowlerId = model.BowlerId;
+                        if (isBatsmanScore == true) striker.Bat_Balls++;
+                        bowler.Wickets++;
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, Ball.LEGAL) : bowler.Overs;
+                        break;
+                    case HowOut.Run_Out:
+                        if (model.StrikerId == model.BatsmanId)
+                        {
+                            striker.Fielder = model.FielderId.ToString();
+                            striker.HowOutId = model.HowOutId;
+                            striker.IsStriker = false;
+
+                        }
+                        else
+                        {
+                            var whoOutPlayer = players.Where(i => i.PlayerId == model.BatsmanId && i.TeamId == model.Team1Id).SingleOrDefault();
+
+                            whoOutPlayer.HowOutId = model.HowOutId;
+                            whoOutPlayer.IsStriker = false;
+                            whoOutPlayer.Fielder = model.FielderId.ToString();
+                            playerScore.Add(whoOutPlayer);
+                        }
+                        striker.Bat_Runs += isBatsmanScore == true ? model.Runs : 0;
+                        //todo
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, isBowlerScore == true ? Ball.LEGAL : Ball.ILL_LEGAL) : bowler.Overs;
+                        bowler.Ball_Runs += bowlerScore;
+                        teamScore.Overs = OverConcatinate(teamScore.Overs, isTeamBall == true ? Ball.LEGAL : Ball.ILL_LEGAL);
+                        teamScore.TotalScore += totalScore;
+                        break;
+                    case HowOut.Catch:
+                        striker.BowlerId = model.BowlerId;
+                        striker.Fielder = model.FielderId.ToString();
+                        bowler.Wickets++;
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, Ball.LEGAL) : bowler.Overs;
+                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
+                        break;
+                    case HowOut.Hit_Wicket:
+                        striker.BowlerId = model.BowlerId;
+                        bowler.Wickets++;
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, Ball.LEGAL) : bowler.Overs;
+                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
+                        break;
+                    case HowOut.LBW:
+                        striker.BowlerId = model.BowlerId;
+                        bowler.Wickets++;
+                        bowler.Overs = isBowlerScore == true ? OverConcatinate(bowler.Overs, Ball.LEGAL) : bowler.Overs;
+                        teamScore.Overs = OverConcatinate(teamScore.Overs, Ball.LEGAL);
+                        break;
+                }
+
+                if (model.StrikerId == model.BatsmanId)
+                    striker.HowOutId = model.HowOutId;
+
+                playerScore.Add(striker);
+                playerScore.Add(bowler);
+
+                await _teamScoreRepository.Update(teamScore);
+                _playerScoreRepository.InsertOrUpdateRange(playerScore);
+                await UnitOfWorkManager.Current.SaveChangesAsync();
+                return await GetBatsmanOrBowlers(model.MatchId, model.Team1Id);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+        }
+
+        public async Task<List<PlayerListDto>> GetBatsmanOrBowlers(long matchId, long? teamId)
+        {
+            var result = await _playerScoreRepository.GetAll(teamId, matchId, null, null, _abpSession.TenantId, true, false);
+            return result.Where(j => j.IsPlayedInning == false).Select(i => new PlayerListDto()
+            {
+                Id = i.PlayerId,
+                Name = i.Player.Name,
+                TeamId = i.TeamId,
+                ProfileUrl = i.Player.ProfileUrl,
+                HowOutId = i.HowOutId
+
+            }).ToList();
+        }
+
         //private methods
         private BatsmanDto GetBatsman(IEnumerable<PlayerScore> team1Players, bool isStriker)
         {
-            return team1Players.Where(i => i.IsStriker == isStriker).Select(i => new BatsmanDto()
+            return team1Players.Where(i => i.IsStriker == isStriker && i.HowOutId == HowOut.Not_Out).Select(i => new BatsmanDto()
             {
                 Id = i.PlayerId,
                 Balls = i.Bat_Balls,
