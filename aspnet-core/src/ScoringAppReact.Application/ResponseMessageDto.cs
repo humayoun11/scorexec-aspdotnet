@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScoringAppReact.Players.Dto;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,5 +14,6 @@ namespace ScoringAppReact
         public bool Error { get; set; }
         public Object result {get; set;}
         public List<Object> array {get; set;}
+        public List<PlayerListDto> PlayerList {get; set;}
     }
 }

@@ -15,19 +15,23 @@ using Abp.Runtime.Session;
 using Abp.UI;
 using ScoringAppReact.PlayerScores.Dto;
 using Abp.EntityFrameworkCore.Repositories;
+using ScoringAppReact.PlayerScores.Repository;
 
 namespace ScoringAppReact.PlayerScores
 {
     [AbpAuthorize(PermissionNames.Pages_Roles)]
     public class PlayerScoreAppService : AbpServiceBase, IPlayerScoreAppService
     {
-        private readonly IRepository<PlayerScore, long> _repository;
         private readonly IAbpSession _abpSession;
+        private readonly IPlayerScoreRepository _playerScoreRepository;
 
-        public PlayerScoreAppService(IRepository<PlayerScore, long> repository, IAbpSession abpSession)
+        public PlayerScoreAppService(
+            IAbpSession abpSession,
+            IPlayerScoreRepository playerScoreRepository
+            )
         {
-            _repository = repository;
             _abpSession = abpSession;
+            _playerScoreRepository = playerScoreRepository;
         }
 
         public async Task<ResponseMessageDto> CreateOrEditAsync(CreateOrUpdatePlayerScoreDto model)
@@ -54,9 +58,11 @@ namespace ScoringAppReact.PlayerScores
 
             try
             {
-                var result = await _repository.InsertAsync(new PlayerScore()
+                var result = await _playerScoreRepository.Insert(new PlayerScore()
                 {
                     PlayerId = model.PlayerId,
+                    IsStriker = false,
+                    IsBowling = false,
                     Position = model.Position.Value,
                     MatchId = model.MatchId,
                     TeamId = model.TeamId,
@@ -108,10 +114,12 @@ namespace ScoringAppReact.PlayerScores
 
         private async Task<ResponseMessageDto> UpdatePlayerScoreAsync(CreateOrUpdatePlayerScoreDto model)
         {
-            var result = await _repository.UpdateAsync(new PlayerScore()
+            var result = await _playerScoreRepository.Update(new PlayerScore()
             {
                 Id = model.Id.Value,
                 PlayerId = model.PlayerId,
+                IsStriker = false,
+                IsBowling = false,
                 Position = model.Position.Value,
                 MatchId = model.MatchId,
                 TeamId = model.TeamId,
@@ -152,70 +160,66 @@ namespace ScoringAppReact.PlayerScores
             };
         }
 
-        public async Task<PlayerScoreDto> GetById(long id)
+        public async Task<PlayerScore> GetById(long id)
         {
-            var result = await _repository
-                .GetAll()
-                .Select(i => new PlayerScoreDto
-                {
-                    Id = i.Id,
-                    PlayerId = i.PlayerId,
-                    Position = i.Position,
-                    MatchId = i.MatchId,
-                    TeamId = i.TeamId,
-                    BowlerId = i.BowlerId,
-                    Bat_Runs = i.Bat_Runs,
-                    Bat_Balls = i.Bat_Balls,
-                    HowOutId = i.HowOutId,
-                    Ball_Runs = i.Ball_Runs,
-                    Overs = i.Overs,
-                    Wickets = i.Wickets,
-                    Catches = i.Catches,
-                    Stump = i.Stump,
-                    Maiden = i.Maiden,
-                    RunOut = i.RunOut,
-                    Four = i.Four,
-                    Six = i.Six,
-                    Fielder = i.Fielder,
-                    IsPlayedInning = i.IsPlayedInning,
+            try
+            {
+                return await _playerScoreRepository.Get(id);
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException(e.ToString());
+            }
 
-                }).FirstOrDefaultAsync(i => i.Id == id);
-            return result;
         }
 
         public async Task<ResponseMessageDto> DeleteAsync(long id)
         {
-            if (id == 0)
+            try
             {
-                throw new UserFriendlyException("Id id required");
-                //return;
-            }
-            var model = await _repository.FirstOrDefaultAsync(i => i.Id == id);
+                if (id == 0)
+                {
+                    throw new UserFriendlyException("Id id required");
+                    //return;
+                }
+                var model = await _playerScoreRepository.Get(id);
 
-            if (model == null)
-            {
-                throw new UserFriendlyException("No record found with associated Id");
-                //return;
-            }
-            model.IsDeleted = true;
-            var result = await _repository.UpdateAsync(model);
+                if (model == null)
+                {
+                    throw new UserFriendlyException("No record found with associated Id");
+                    //return;
+                }
+                model.IsDeleted = true;
+                var result = await _playerScoreRepository.Update(model);
 
-            return new ResponseMessageDto()
+                return new ResponseMessageDto()
+                {
+                    Id = id,
+                    SuccessMessage = AppConsts.SuccessfullyDeleted,
+                    Success = true,
+                    Error = false,
+                };
+            }
+            catch (Exception e)
             {
-                Id = id,
-                SuccessMessage = AppConsts.SuccessfullyDeleted,
-                Success = true,
-                Error = false,
-            };
+                return new ResponseMessageDto()
+                {
+                    Id = 0,
+                    ErrorMessage = e.ToString(),
+                    Success = false,
+                    Error = true,
+                };
+            }
+
         }
 
-        public async Task<List<PlayerScoreListDto>> GetAll(long teamId, long matchId)
+        public async Task<List<PlayerScoreListDto>> GetAll(long? teamId, long matchId)
         {
-            var result = await _repository.GetAll().
-                Where(i => i.IsDeleted == false &&
-                i.TenantId == _abpSession.TenantId &&
-                i.TeamId == teamId && i.MatchId == matchId)
-                .Select(i => new PlayerScoreListDto
+            try
+            {
+                var result = await _playerScoreRepository.GetAll(teamId, matchId, null, null, _abpSession.TenantId);
+
+                return result.Select(i => new PlayerScoreListDto
                 {
                     Id = i.Id,
                     PlayerId = i.PlayerId,
@@ -238,9 +242,13 @@ namespace ScoringAppReact.PlayerScores
                     Six = i.Six,
                     Fielder = i.Fielder,
                     IsPlayedInning = i.IsPlayedInning,
-                })
-                .ToListAsync();
-            return result;
+                }).ToList();
+            }
+            catch (Exception e)
+            {
+                throw new UserFriendlyException(e.ToString());
+            }
+
         }
 
 
@@ -255,7 +263,23 @@ namespace ScoringAppReact.PlayerScores
                     var obj = new PlayerScore()
                     {
                         PlayerId = item.PlayerId,
+                        IsStriker = item.IsStriker,
+                        IsBowling = item.IsBowling,
+                        HowOutId = HowOut.Not_Out,
                         Position = item.Position,
+                        Bat_Balls = 0,
+                        Bat_Runs = 0,
+                        Bat_Dots = 0,
+                        Six = 0,
+                        Four = 0,
+                        Stump = 0,
+                        Catches = 0,
+                        Ball_Runs = 0,
+                        Ball_Dots = 0,
+                        Overs = 0,
+                        Wickets = 0,
+                        Maiden = 0,
+                        RunOut = 0,
                         MatchId = item.MatchId,
                         TeamId = item.TeamId,
                         IsPlayedInning = item.IsPlayedInning,
@@ -265,7 +289,7 @@ namespace ScoringAppReact.PlayerScores
 
                 }
 
-                InsertDbRange(playerScore);
+                _playerScoreRepository.InsertOrUpdateRange(playerScore);
 
                 await UnitOfWorkManager.Current.SaveChangesAsync();
 
@@ -291,10 +315,6 @@ namespace ScoringAppReact.PlayerScores
 
         }
 
-        private void InsertDbRange(List<PlayerScore> models)
-        {
-            _repository.GetDbContext().AddRange(models);
-        }
 
     }
 }

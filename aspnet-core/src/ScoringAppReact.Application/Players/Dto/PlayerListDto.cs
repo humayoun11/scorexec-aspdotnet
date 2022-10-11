@@ -7,6 +7,7 @@ namespace ScoringAppReact.Players.Dto
     public class PlayerListDto
     {
         public long Id { get; set; }
+        public int? HowOutId { get; set; }
         public string Name { get; set; }
         public string ProfileUrl { get; set; }
         public long TeamId { get; set; }

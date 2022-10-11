@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScoringAppReact.EntityFrameworkCore;
 
 namespace ScoringAppReact.Migrations
 {
     [DbContext(typeof(ScoringAppReactDbContext))]
-    partial class ScoringAppReactDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220924200450_live-scoring")]
+    partial class livescoring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1862,9 +1864,6 @@ namespace ScoringAppReact.Migrations
                     b.Property<long?>("TeamId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("UmpireId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
@@ -1876,8 +1875,6 @@ namespace ScoringAppReact.Migrations
                     b.HasIndex("PlayerId");
 
                     b.HasIndex("TeamId");
-
-                    b.HasIndex("UmpireId");
 
                     b.ToTable("Galleries");
                 });
@@ -2635,57 +2632,6 @@ namespace ScoringAppReact.Migrations
                     b.ToTable("TeamScores");
                 });
 
-            modelBuilder.Entity("ScoringAppReact.Models.Umpire", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(25)")
-                        .HasMaxLength(25);
-
-                    b.Property<string>("Contact")
-                        .HasColumnType("nvarchar(15)")
-                        .HasMaxLength(15);
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(25)")
-                        .HasMaxLength(25);
-
-                    b.Property<string>("ProfileUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TenantId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Umpires");
-                });
-
             modelBuilder.Entity("ScoringAppReact.MultiTenancy.Tenant", b =>
                 {
                     b.Property<int>("Id")
@@ -3034,10 +2980,6 @@ namespace ScoringAppReact.Migrations
                     b.HasOne("ScoringAppReact.Models.Team", "Team")
                         .WithMany("Pictures")
                         .HasForeignKey("TeamId");
-
-                    b.HasOne("ScoringAppReact.Models.Umpire", "Umpire")
-                        .WithMany("Pictures")
-                        .HasForeignKey("UmpireId");
                 });
 
             modelBuilder.Entity("ScoringAppReact.Models.Match", b =>

@@ -18,6 +18,12 @@ using Abp.Dependency;
 using Abp.Json;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
+using ScoringAppReact.PlayerScores.Repository;
+using ScoringAppReact.TeamScores.Repository;
+using ScoringAppReact.Teams.Repository;
+using ScoringAppReact.Events.Repository;
+using ScoringAppReact.Players.Repository;
+using ScoringAppReact.Matches.Repository;
 
 namespace ScoringAppReact.Web.Host.Startup
 {
@@ -54,6 +60,7 @@ namespace ScoringAppReact.Web.Host.Startup
 
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
+            
 
             services.AddSignalR();
 
@@ -107,6 +114,13 @@ namespace ScoringAppReact.Web.Host.Startup
                     Type = SecuritySchemeType.ApiKey
                 });
             });
+
+            services.AddScoped<IPlayerScoreRepository, PlayerScoreRepository>();
+            services.AddScoped<ITeamScoreRepository, TeamScoreRepository>();
+            services.AddScoped<ITeamRepository, TeamRepository>();
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IMatchRepository, MatchRepository>();
 
             // Configure Abp and Dependency Injection
             return services.AddAbp<ScoringAppReactWebHostModule>(
