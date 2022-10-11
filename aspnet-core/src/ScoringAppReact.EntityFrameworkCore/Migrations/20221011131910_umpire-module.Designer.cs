@@ -10,7 +10,7 @@ using ScoringAppReact.EntityFrameworkCore;
 namespace ScoringAppReact.Migrations
 {
     [DbContext(typeof(ScoringAppReactDbContext))]
-    [Migration("20221011123703_umpire-module")]
+    [Migration("20221011131910_umpire-module")]
     partial class umpiremodule
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
