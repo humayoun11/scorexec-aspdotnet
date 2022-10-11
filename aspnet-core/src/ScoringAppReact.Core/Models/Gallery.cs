@@ -15,6 +15,7 @@ namespace ScoringAppReact.Models
         public long? TeamId { get; set; }
         public long? GroundId { get; set; }
         public long? EventId { get; set; }
+        public long? UmpireId { get; set; }
 
         [ForeignKey("PlayerId")]
         public Player Player { get; set; }
@@ -30,5 +31,7 @@ namespace ScoringAppReact.Models
 
         [ForeignKey("GroundId")]
         public Ground Ground { get; set; }
+        [ForeignKey("UmpireId")]
+        public Umpire Umpire { get; set; }
     }
 }

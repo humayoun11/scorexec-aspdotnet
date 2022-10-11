@@ -105,6 +105,7 @@ namespace ScoringAppReact.PictureGallery
                  (!i.PlayerId.HasValue || i.PlayerId == entityId) &&
                   (!i.GroundId.HasValue || i.GroundId == entityId) &&
                   (!i.EventId.HasValue || i.EventId == entityId) &&
+                  (!i.UmpireId.HasValue || i.UmpireId == entityId) &&
                   i.IsDeleted == false)
              .ToListAsync();
 
@@ -143,6 +144,7 @@ namespace ScoringAppReact.PictureGallery
                         PlayerId = model.PlayerId ?? null,
                         GroundId = model.GroundId ?? null,
                         TeamId = model.TeamId ?? null,
+                        UmpireId = model.UmpireId ?? null,
                     };
                     gallery.Add(result);
 
@@ -271,13 +273,16 @@ namespace ScoringAppReact.PictureGallery
                 return model.PlayerId.Value;
             if (model.GroundId.HasValue)
                 return model.GroundId.Value;
+            if (model.UmpireId.HasValue)
+                return model.UmpireId.Value;
 
             return 0;
 
         }
 
 
-        public async Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId, long? groundId)
+        public async Task<List<GalleryDto>> GetAllByEnityId(long? teamId, long? eventId, long? playerId, long? matchId, long? groundId, long? umpireId)
+            
         {
             try
             {
@@ -287,7 +292,8 @@ namespace ScoringAppReact.PictureGallery
                (!eventId.HasValue || i.EventId == eventId) &&
                (!playerId.HasValue || i.PlayerId == playerId) &&
                (!matchId.HasValue || i.MatchId == matchId) &&
-               (!groundId.HasValue || i.GroundId == groundId)) 
+               (!groundId.HasValue || i.GroundId == groundId) &&
+               (!umpireId.HasValue || i.UmpireId == umpireId))
                .Select(i => new GalleryDto()
                {
                    Id = i.Id,
@@ -302,8 +308,6 @@ namespace ScoringAppReact.PictureGallery
             }
 
         }
-
-
 
     }
 }

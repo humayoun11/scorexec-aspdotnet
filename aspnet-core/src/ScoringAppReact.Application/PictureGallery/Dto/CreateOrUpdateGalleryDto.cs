@@ -15,5 +15,6 @@ namespace ScoringAppReact.Teams.Dto
         public List<PictureDto> Galleries { get; set; }
         public int? TenantId { get; set; }
         public long Id { get; internal set; }
+        public long? UmpireId { get; internal set; }
     }
 }
