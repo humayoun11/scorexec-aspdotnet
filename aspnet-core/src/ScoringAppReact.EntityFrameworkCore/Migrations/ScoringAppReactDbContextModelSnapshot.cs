@@ -1862,9 +1862,6 @@ namespace ScoringAppReact.Migrations
                     b.Property<long?>("TeamId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("UmpireId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
@@ -1876,8 +1873,6 @@ namespace ScoringAppReact.Migrations
                     b.HasIndex("PlayerId");
 
                     b.HasIndex("TeamId");
-
-                    b.HasIndex("UmpireId");
 
                     b.ToTable("Galleries");
                 });
@@ -2635,57 +2630,6 @@ namespace ScoringAppReact.Migrations
                     b.ToTable("TeamScores");
                 });
 
-            modelBuilder.Entity("ScoringAppReact.Models.Umpire", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Age")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Contact")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Path")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Umpires");
-                });
-
             modelBuilder.Entity("ScoringAppReact.MultiTenancy.Tenant", b =>
                 {
                     b.Property<int>("Id")
@@ -3034,10 +2978,6 @@ namespace ScoringAppReact.Migrations
                     b.HasOne("ScoringAppReact.Models.Team", "Team")
                         .WithMany("Pictures")
                         .HasForeignKey("TeamId");
-
-                    b.HasOne("ScoringAppReact.Models.Umpire", "Umpire")
-                        .WithMany()
-                        .HasForeignKey("UmpireId");
                 });
 
             modelBuilder.Entity("ScoringAppReact.Models.Match", b =>
